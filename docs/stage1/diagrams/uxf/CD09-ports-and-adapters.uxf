@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>20</x>
+      <y>120</y>
+      <w>240</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;exception&gt;&gt;
+WeatherUnavailableException</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>320</x>
+      <y>90</y>
+      <w>560</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+&lt;&lt;port&gt;&gt;
+&lt;&lt;Adapter: Target&gt;&gt;
+WeatherService
+--
++forecast(location: GeoLocation, range: TimeInterval): WeatherForecast</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>940</x>
+      <y>90</y>
+      <w>630</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+&lt;&lt;port&gt;&gt;
+&lt;&lt;Adapter: Target&gt;&gt;
+CalendarImporter
+--
++importEvents(file: Path, zone: ZoneId, horizonWeeks: int): List&lt;CalendarEvent&gt;</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1630</x>
+      <y>90</y>
+      <w>610</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+&lt;&lt;port&gt;&gt;
+&lt;&lt;Adapter: Target&gt;&gt;
+PlanExporter
+--
++export(plan: Plan, tasks: List&lt;Task&gt;, range: TimeInterval, file: Path): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2300</x>
+      <y>90</y>
+      <w>280</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+&lt;&lt;port&gt;&gt;
+WorkspaceStore
+--
++load(): Workspace
++save(workspace: Workspace): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2640</x>
+      <y>90</y>
+      <w>370</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+&lt;&lt;port&gt;&gt;
+PreferenceStore
+--
++loadAll(): List&lt;Preference&gt;
++saveAll(preferences: List&lt;Preference&gt;): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>320</x>
+      <y>300</y>
+      <w>560</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Adapter: Adapter&gt;&gt;
+OpenMeteoWeatherAdapter
+--
+-http: HttpClient
+-baseUrl: URI
+--
++forecast(location: GeoLocation, range: TimeInterval): WeatherForecast
+-toForecast(json: JsonNode): WeatherForecast</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>940</x>
+      <y>305</y>
+      <w>630</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Adapter: Adapter&gt;&gt;
+IcsCalendarAdapter
+--
++importEvents(file: Path, zone: ZoneId, horizonWeeks: int): List&lt;CalendarEvent&gt;
++export(plan: Plan, tasks: List&lt;Task&gt;, range: TimeInterval, file: Path): void
+-toCalendarEvent(vevent: VEvent): CalendarEvent
+-toVEvent(block: TimeBlock, task: Task): VEvent</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2300</x>
+      <y>310</y>
+      <w>280</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>JsonWorkspaceStore
+--
+-file: Path
+-mapper: ObjectMapper
+--
++load(): Workspace
++save(workspace: Workspace): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2640</x>
+      <y>310</y>
+      <w>370</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>JsonPreferenceStore
+--
+-file: Path
+-mapper: ObjectMapper
+--
++loadAll(): List&lt;Preference&gt;
++saveAll(preferences: List&lt;Preference&gt;): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>465</x>
+      <y>540</y>
+      <w>270</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;external&gt;&gt;
+&lt;&lt;Adaptee&gt;&gt;
+Open-Meteo forecast API
+--
+hourly precipitation probability
+and temperature (free, no key)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1150</x>
+      <y>570</y>
+      <w>210</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;exception&gt;&gt;
+CalendarImportException</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1830</x>
+      <y>545</y>
+      <w>210</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;external&gt;&gt;
+&lt;&lt;Adaptee&gt;&gt;
+ical4j library
+--
+parses VEVENT / RRULE</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2315</x>
+      <y>545</y>
+      <w>250</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;external&gt;&gt;
+JSON files
+--
+~/.plannedagent/workspace.json
+~/.plannedagent/memory.json</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>20</x>
+      <y>10</y>
+      <w>1400</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>fontsize=18
+*CD09 - Ports (core.port) and infrastructure adapters (app.adapters)*
+Pattern: Adapter - external APIs, file formats and storage are hidden behind core-owned interfaces (Dependency Inversion)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>220</x>
+      <y>105</y>
+      <w>140</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;throw&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;40.0;100.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>560</x>
+      <y>160</y>
+      <w>80</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;140.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>560</x>
+      <y>400</y>
+      <w>80</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+HTTPS</panel_attributes>
+    <additional_attributes>40.0;140.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1215</x>
+      <y>160</y>
+      <w>80</w>
+      <h>185</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;145.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1411</x>
+      <y>160</y>
+      <w>397</w>
+      <h>185</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>357.8;40.0;40.4;145.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1215</x>
+      <y>395</y>
+      <w>80</w>
+      <h>215</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;throw&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;175.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1411</x>
+      <y>395</y>
+      <w>458</w>
+      <h>205</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>419.0;165.3;40.4;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2400</x>
+      <y>160</y>
+      <w>80</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;150.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2785</x>
+      <y>160</y>
+      <w>80</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;150.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2400</x>
+      <y>390</y>
+      <w>80</w>
+      <h>195</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+read / write</panel_attributes>
+    <additional_attributes>40.0;155.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2485</x>
+      <y>390</y>
+      <w>276</w>
+      <h>195</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+read / write</panel_attributes>
+    <additional_attributes>40.6;155.0;237.3;40.0</additional_attributes>
+  </element>
+</diagram>

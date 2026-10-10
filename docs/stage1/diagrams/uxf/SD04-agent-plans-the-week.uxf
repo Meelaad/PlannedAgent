@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>2040</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD04 - The agent plans the week (F04 / UC04 - bounded ReAct loop)
+obj=Student~s ACTOR
+obj=:ChatView~v
+obj=:ChatController~cc
+obj=:PlannerFacade~f
+obj=:AgentController~ag
+obj=:PreferenceMemory~pm
+obj=:ToolRegistry~tr
+obj=:PromptBuilder~pb
+obj=llm:LlmClient~llm
+obj=:ResponseParser~rp
+obj=tool:AbstractTool~tool
+obj=session:AgentSession~ses
+s-&gt;&gt;&gt;v : Plan my week, gym 3 times, keep Friday evening free
+v-&gt;&gt;&gt;cc : onSend(text)
+cc-&gt;&gt;&gt;v : setBusy(true)
+cc-&gt;&gt;&gt;f : chat(sessionId, text)
+f-&gt;&gt;&gt;f + : sessionFor(sessionId)
+f-&gt;&gt;&gt;ag : handle(session, text)
+ag-&gt;&gt;&gt;pm : relevantTo(text)
+pm.&gt;ag : preferences
+combinedFragment=loop~l1 ag ses
+ag:[until a final answer or a question, at most 8 steps]
+ag-&gt;&gt;&gt;ag + : nextAction(session)
+ag-&gt;&gt;&gt;tr : specs()
+tr.&gt;ag : tool specs
+ag-&gt;&gt;&gt;pb : buildAgentRequest(session, specs, preferences, now)
+pb.&gt;ag : request
+ag-&gt;&gt;&gt;llm : complete(request)
+llm.&gt;ag : response
+ag-&gt;&gt;&gt;rp : parseAction(response text)
+combinedFragment=opt~o1 ag rp
+ag:[MalformedOutputException - one repair]
+ag-&gt;&gt;&gt;pb : buildRepairRequest(request, badOutput, problem)
+ag-&gt;&gt;&gt;llm : complete(repairRequest)
+ag-&gt;&gt;&gt;rp : parseAction(text)
+--=o1
+combinedFragment=alt~a1 ag ses
+ag:[ToolCallAction - get_tasks, get_calendar, schedule_tasks]
+rp.&gt;ag : ToolCallAction
+ag-&gt;&gt;&gt;tr : execute(call, context)
+tr-&gt;&gt;&gt;tool : execute(call, context)
+tool.&gt;tr : ToolResult
+tr.&gt;ag : ToolResult
+ag-&gt;&gt;&gt;ag + : observe(session, result)
+combinedFragment=opt~o2 ag ses
+ag:[result carries a PlanProposal]
+ag-&gt;&gt;&gt;ses : setPendingProposal(proposal)
+--=o2
+..=a1
+ag:[FinalAnswerAction or ClarifyAction - leave loop]
+rp.&gt;ag : FinalAnswerAction
+--=a1
+--=l1
+combinedFragment=alt~a2 f ag
+f:[proposal ready]
+ag.&gt;f : AgentResponse PROPOSAL_READY with proposal
+f-&gt;&gt;&gt;f + : registerProposal(proposal)
+..=a2
+f:[ClarifyAction]
+ag.&gt;f : AgentResponse NEEDS_CLARIFICATION with question
+..=a2
+f:[step limit, still malformed, or LlmException]
+ag.&gt;f : AgentResponse FAILED - suggest Auto-schedule
+--=a2
+f.&gt;cc : AgentResponse
+cc-&gt;&gt;&gt;v : appendMessage("agent", message)
+cc-&gt;&gt;&gt;v : showProposal(proposal)
+cc-&gt;&gt;&gt;v : setBusy(false)
+ref=s cc : SD08 - apply or discard the proposal</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

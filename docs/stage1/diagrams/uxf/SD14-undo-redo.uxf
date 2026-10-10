@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>1530</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD14 - Undo and redo a plan change (F07 / UC14 - Command pattern)
+obj=Student~s ACTOR
+obj=:WeekView~v
+obj=:WeekController~wc
+obj=:PlannerFacade~f
+obj=:CommandHistory~ch
+obj=macro:MacroCommand~mc
+obj=move:MoveBlockCommand~mv
+obj=block:TimeBlock~tb
+obj=:EventBus~eb
+s-&gt;&gt;&gt;v : press Ctrl+Z
+v-&gt;&gt;&gt;wc : onUndo()
+wc-&gt;&gt;&gt;f : undo()
+f-&gt;&gt;&gt;ch : undo(workspace)
+combinedFragment=alt~a1 wc eb
+wc:[undo stack empty]
+ch.&gt;f : Optional empty
+f.&gt;wc : Optional empty
+wc-&gt;&gt;&gt;v : showStatus("Nothing to undo")
+..=a1
+wc:[a change can be undone]
+ch-&gt;&gt;&gt;mc : undo(workspace)
+combinedFragment=loop~l1 mc tb
+mc:[each command, in reverse order]
+mc-&gt;&gt;&gt;mv : undo(workspace)
+mv-&gt;&gt;&gt;tb : moveTo(oldInterval)
+--=l1
+ch-&gt;&gt;&gt;ch + : move the command to the redo stack
+ch.&gt;f : the undone command
+f-&gt;&gt;&gt;eb : publish(PLAN_CHANGED event)
+eb-&gt;&gt;&gt;wc : onEvent(event)
+wc-&gt;&gt;&gt;wc + : refresh()
+f.&gt;wc : Undid - move Gym to Tue 7am
+--=a1
+s-&gt;&gt;&gt;v : press Ctrl+Y
+v-&gt;&gt;&gt;wc : onRedo()
+wc-&gt;&gt;&gt;f : redo()
+f-&gt;&gt;&gt;ch : redo(workspace)
+ch-&gt;&gt;&gt;mc : execute(workspace)
+mc-&gt;&gt;&gt;mv : execute(workspace)
+mv-&gt;&gt;&gt;tb : moveTo(newInterval)
+f-&gt;&gt;&gt;eb : publish(PLAN_CHANGED event)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>2040</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD06 - Detect conflicts and let the agent fix them (F06 / UC06)
+obj=Student~s ACTOR
+obj=:WeekView~v
+obj=:WeekController~wc
+obj=:ChatController~cc
+obj=:ChatView~cv
+obj=:PlannerFacade~f
+obj=:ConflictDetector~cd
+obj=constraint:SchedulingConstraint~c
+obj=:AgentController~ag
+obj=:ToolRegistry~tr
+obj=edit_plan:EditPlanTool~ep
+obj=:EventBus~eb
+eb-&gt;&gt;&gt;wc : onEvent(PLAN_CHANGED event)
+wc-&gt;&gt;&gt;wc + : refresh()
+wc-&gt;&gt;&gt;f : detectConflicts(range)
+f-&gt;&gt;&gt;f + : buildConstraints(range)
+f-&gt;&gt;&gt;cd : detect(workspace, range, constraints)
+cd-&gt;&gt;&gt;cd + : findOverlaps(workspace, range)
+cd-&gt;&gt;&gt;cd + : findDeadlineMisses(workspace, range)
+cd-&gt;&gt;&gt;cd + : findOverloadedDays(workspace, range)
+cd-&gt;&gt;&gt;cd + : findDependencyViolations(workspace)
+combinedFragment=loop~l1 cd c
+cd:[each block and constraint]
+cd-&gt;&gt;&gt;c : permits(task, block interval)
+c.&gt;cd : false means a conflict of conflictType()
+--=l1
+cd.&gt;f : conflicts, e.g. OVERLAP and BAD_WEATHER
+f.&gt;wc : conflicts
+wc-&gt;&gt;&gt;v : render(blocks, events, conflicts)
+combinedFragment=opt~o1 s eb
+s:[user asks the agent to fix them]
+s-&gt;&gt;&gt;v : click Ask agent to fix
+v-&gt;&gt;&gt;wc : onAskAgentToFix()
+wc-&gt;&gt;&gt;cc : onSend("Resolve these conflicts...")
+cc-&gt;&gt;&gt;f : chat(sessionId, text)
+f-&gt;&gt;&gt;ag : handle(session, text)
+ref=ag tr : SD04 loop - LLM calls check_conflicts, then edit_plan
+ag-&gt;&gt;&gt;tr : execute(call, context)
+tr-&gt;&gt;&gt;ep : execute(call, context)
+ep.&gt;tr : ToolResult with PlanProposal and remaining conflicts
+tr.&gt;ag : ToolResult
+ag.&gt;f : AgentResponse PROPOSAL_READY
+f.&gt;cc : AgentResponse
+cc-&gt;&gt;&gt;cv : showProposal(proposal)
+ref=s cv : SD08 - apply is disabled while blocking conflicts remain
+--=o1</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

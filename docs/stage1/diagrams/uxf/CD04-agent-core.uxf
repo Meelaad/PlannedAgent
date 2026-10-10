@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1725</x>
+      <y>90</y>
+      <w>120</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+&lt;&lt;sealed&gt;&gt;
+AgentAction</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>435</x>
+      <y>295</y>
+      <w>120</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+LlmClient
+(see CD06)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1020</x>
+      <y>295</y>
+      <w>130</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+PromptBuilder
+(see CD06)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1440</x>
+      <y>295</y>
+      <w>140</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+ResponseParser
+(see CD06)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1670</x>
+      <y>250</y>
+      <w>230</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;record&gt;&gt;
+ToolCallAction
+--
++thought: String
++toolName: String
++args: Map&lt;String, Object&gt;
+--
++toCall(): ToolCall</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1960</x>
+      <y>280</y>
+      <w>160</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;record&gt;&gt;
+FinalAnswerAction
+--
++message: String</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2180</x>
+      <y>280</y>
+      <w>160</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;record&gt;&gt;
+ClarifyAction
+--
++question: String</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>20</x>
+      <y>595</y>
+      <w>150</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+PreferenceStore
+(see CD09)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>230</x>
+      <y>515</y>
+      <w>530</w>
+      <h>210</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;long-term memory&gt;&gt;
+PreferenceMemory
+--
+-store: PreferenceStore
+-preferences: List&lt;Preference&gt;
+--
++remember(preference: Preference): Preference
++forget(id: String): boolean
++all(): List&lt;Preference&gt;
++relevantTo(text: String): List&lt;Preference&gt;
++effectiveSettings(base: UserSettings): UserSettings
++toConstraints(settings: UserSettings): List&lt;SchedulingConstraint&gt;</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>820</x>
+      <y>480</y>
+      <w>530</w>
+      <h>280</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;agent&gt;&gt;
+AgentController
+--
+-llm: LlmClient
+-tools: ToolRegistry
+-promptBuilder: PromptBuilder
+-parser: ResponseParser
+-preferences: PreferenceMemory
+-events: EventBus
+-workspace: Workspace
+-clock: Clock
+-maxSteps: int = 8
+--
++handle(session: AgentSession, userMessage: String): AgentResponse
+-nextAction(session: AgentSession): AgentAction
+-observe(session: AgentSession, result: ToolResult): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1450</x>
+      <y>595</y>
+      <w>120</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+ToolRegistry
+(see CD05)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>435</x>
+      <y>940</y>
+      <w>120</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+EventBus
+(see CD07)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>885</x>
+      <y>850</y>
+      <w>400</w>
+      <h>230</h>
+    </coordinates>
+    <panel_attributes>AgentSession
+--
+-id: String
+-conversation: ConversationMemory
+-scratchpad: List&lt;ChatMessage&gt;
+-pendingProposal: PlanProposal
+--
++getId(): String
++getConversation(): ConversationMemory
++getScratchpad(): List&lt;ChatMessage&gt;
++getPendingProposal(): Optional&lt;PlanProposal&gt;
++setPendingProposal(proposal: PlanProposal): void
++clearPendingProposal(): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1410</x>
+      <y>900</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;record&gt;&gt;
+AgentResponse
+--
++outcome: Outcome
++message: String
++proposal: PlanProposal
++warnings: List&lt;String&gt;</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1685</x>
+      <y>900</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+Outcome
+--
+ANSWERED
+PROPOSAL_READY
+NEEDS_CLARIFICATION
+FAILED</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>940</x>
+      <y>1170</y>
+      <w>290</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;short-term memory&gt;&gt;
+ConversationMemory
+--
+-turns: Deque&lt;ChatMessage&gt;
+-maxTurns: int = 20
+--
++append(message: ChatMessage): void
++recent(): List&lt;ChatMessage&gt;</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1450</x>
+      <y>1215</y>
+      <w>120</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+PlanProposal
+(see CD07)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>20</x>
+      <y>10</y>
+      <w>1400</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>fontsize=18
+*CD04 - Agent core: loop, session and memory (core.agent, core.memory)*
+AgentController runs a bounded ReAct loop: build prompt -&gt; LLM -&gt; parse action -&gt; run tool -&gt; observe (max 8 steps)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>504</x>
+      <y>305</y>
+      <w>355</w>
+      <h>220</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+llm</panel_attributes>
+    <additional_attributes>40.2;40.0;316.0;180.3</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1045</x>
+      <y>305</y>
+      <w>80</w>
+      <h>215</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;175.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1243</x>
+      <y>305</y>
+      <w>271</w>
+      <h>215</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>231.6;40.0;40.3;175.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>720</x>
+      <y>580</y>
+      <w>140</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+preferences</panel_attributes>
+    <additional_attributes>40.0;40.0;100.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1310</x>
+      <y>580</y>
+      <w>180</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+tools</panel_attributes>
+    <additional_attributes>140.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>497</x>
+      <y>720</y>
+      <w>387</w>
+      <h>260</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+events</panel_attributes>
+    <additional_attributes>40.8;220.0;348.6;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1045</x>
+      <y>720</y>
+      <w>80</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;130.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1217</x>
+      <y>720</y>
+      <w>252</w>
+      <h>220</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;create&gt;&gt;</panel_attributes>
+    <additional_attributes>212.9;180.0;40.5;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1505</x>
+      <y>120</y>
+      <w>270</w>
+      <h>215</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;create&gt;&gt;</panel_attributes>
+    <additional_attributes>230.6;40.0;40.3;175.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1745</x>
+      <y>120</y>
+      <w>80</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;130.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1790</x>
+      <y>120</y>
+      <w>236</w>
+      <h>200</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.8;40.0;197.7;160.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1805</x>
+      <y>109</y>
+      <w>415</w>
+      <h>217</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.6;375.0;178.2</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>130</x>
+      <y>580</y>
+      <w>140</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+store</panel_attributes>
+    <additional_attributes>40.0;40.0;100.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1045</x>
+      <y>1040</y>
+      <w>80</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=1</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;130.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1222</x>
+      <y>1040</y>
+      <w>288</w>
+      <h>215</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2=0..1
+pending</panel_attributes>
+    <additional_attributes>40.7;40.0;249.4;175.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1470</x>
+      <y>990</y>
+      <w>80</w>
+      <h>265</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=0..1</panel_attributes>
+    <additional_attributes>40.0;225.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1570</x>
+      <y>925</y>
+      <w>155</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>115.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+</diagram>

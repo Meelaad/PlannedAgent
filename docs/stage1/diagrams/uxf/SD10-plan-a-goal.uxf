@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>1870</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD10 - Plan a goal with validation and repair (F10 / UC10 - Composite result)
+obj=Student~s ACTOR
+obj=:GoalsView~v
+obj=:GoalsController~gc
+obj=:PlannerFacade~f
+obj=:SlotFinder~sf
+obj=:GoalPlanner~gp
+obj=:PromptBuilder~pb
+obj=:StructuredOutputClient~soc
+obj=draft:GoalDraft~gd
+obj=:Workspace~ws
+obj=store:WorkspaceStore~ss
+s-&gt;&gt;&gt;v : Prepare for the EECS 3311 final, due Dec 10, click Plan goal
+v-&gt;&gt;&gt;gc : onPlanGoal(text, deadline)
+gc-&gt;&gt;&gt;f : planGoal(text, deadline)
+combinedFragment=alt~a0 gc ss
+gc:[deadline is not in the future]
+f.&gt;gc : IllegalArgumentException
+..=a0
+gc:[deadline valid]
+f-&gt;&gt;&gt;ws : busyIntervals(range)
+ws.&gt;f : busy
+f-&gt;&gt;&gt;sf : freeSlots(horizon, busy, settings, 30)
+sf.&gt;f : free slots, total freeMinutes
+f-&gt;&gt;&gt;gp : decompose(text, deadline, freeMinutes, now)
+gp-&gt;&gt;&gt;pb : buildGoalRequest(text, deadline, freeMinutes, now)
+pb.&gt;gp : request
+gp-&gt;&gt;&gt;soc : call(request, GoalDraft)
+soc.&gt;gp : draft
+gp-&gt;&gt;&gt;gp + : validate(draft, freeMinutes, now)
+combinedFragment=loop~l1 gp soc
+gp:[issues remain and fewer than 2 repairs]
+gp-&gt;&gt;&gt;pb : buildRepairRequest(request, draftJson, issues)
+gp-&gt;&gt;&gt;soc : call(repairRequest, GoalDraft)
+soc.&gt;gp : revised draft
+gp-&gt;&gt;&gt;gp + : validate(draft, freeMinutes, now)
+--=l1
+gp.&gt;f : GoalDraft, remaining issues listed
+f.&gt;gc : GoalDraft
+gc-&gt;&gt;&gt;v : showDraft(draft)
+--=a0
+s-&gt;&gt;&gt;v : edit the tree and click Save
+v-&gt;&gt;&gt;gc : onSaveGoal(draft)
+gc-&gt;&gt;&gt;f : saveGoal(draft)
+f-&gt;&gt;&gt;gd : toGoal()
+gd.&gt;f : Goal with milestone Goals and leaf Tasks
+f-&gt;&gt;&gt;ws : addGoal(goal)
+combinedFragment=loop~l2 f ws
+f:[each leaf task]
+f-&gt;&gt;&gt;ws : addTask(task)
+--=l2
+f-&gt;&gt;&gt;ss : save(workspace)
+f.&gt;gc : goal
+gc-&gt;&gt;&gt;v : showGoals(goals)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

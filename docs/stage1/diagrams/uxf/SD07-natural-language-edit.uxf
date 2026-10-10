@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>1870</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD07 - Edit the plan in natural language (F07 / UC07 - Template Method in action)
+obj=Student~s ACTOR
+obj=:ChatController~cc
+obj=:PlannerFacade~f
+obj=:AgentController~ag
+obj=:ToolRegistry~tr
+obj=resolve_date:ResolveDateTool~rd
+obj=:DateResolver~dr
+obj=edit_plan:EditPlanTool~ep
+obj=:PlanCommandFactory~pcf
+obj=:Workspace~ws
+obj=:ConflictDetector~cd
+s-&gt;&gt;&gt;cc : Move gym to tomorrow 7am
+cc-&gt;&gt;&gt;f : chat(sessionId, text)
+f-&gt;&gt;&gt;ag : handle(session, text)
+ref=ag tr : nextAction - the LLM chooses resolve_date (SD04)
+ag-&gt;&gt;&gt;tr : execute(call, context)
+tr-&gt;&gt;&gt;rd : execute(call, context)
+rd-&gt;&gt;&gt;rd + : validate(args)
+rd-&gt;&gt;&gt;rd + : doExecute(args, context)
+rd-&gt;&gt;&gt;dr : resolve("tomorrow 7am", now)
+dr.&gt;rd : 2026-10-13 07h00
+rd.&gt;tr : ToolResult success
+tr.&gt;ag : ToolResult
+ref=ag tr : nextAction - get_calendar finds block b42 Gym
+ag-&gt;&gt;&gt;tr : execute(call, context)
+tr-&gt;&gt;&gt;ep : execute(call, context)
+ep-&gt;&gt;&gt;ep + : validate(args)
+combinedFragment=alt~a1 ag cd
+ag:[arguments valid]
+ep-&gt;&gt;&gt;ep + : doExecute(args, context)
+ep-&gt;&gt;&gt;pcf : fromOperation(operation, workspace)
+pcf.&gt;ep : MoveBlockCommand
+ep-&gt;&gt;&gt;ws : snapshot()
+ws.&gt;ep : copy
+ep-&gt;&gt;&gt;cd : detect(snapshot, range, constraints)
+cd.&gt;ep : conflicts, none
+ep.&gt;tr : ToolResult success with PlanProposal
+tr.&gt;ag : ToolResult
+ag.&gt;f : AgentResponse PROPOSAL_READY
+f.&gt;cc : AgentResponse
+ref=s cc : SD08 - apply the proposal, SD14 - undo
+..=a1
+ag:[blockId missing or invalid]
+ep.&gt;tr : ToolResult failure, blockId is required
+tr.&gt;ag : error observation, the tool never ran
+ag-&gt;&gt;&gt;ag + : observe(session, result)
+ref=ag ep : next step - LLM corrects the call or asks which block
+--=a1</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

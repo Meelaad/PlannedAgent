@@ -1,0 +1,765 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>100</x>
+      <y>95</y>
+      <w>230</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;JavaFX Application&gt;&gt;
+PlannedAgentApp
+--
++start(stage: Stage): void
+_+main(args: String[]): void_</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1750</x>
+      <y>90</y>
+      <w>220</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;MVC: View&gt;&gt;
+MainView
+--
+-tabs: TabPane
+--
++show(stage: Stage): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>20</x>
+      <y>520</y>
+      <w>390</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;MVC: View&gt;&gt;
+ChatView
+--
++appendMessage(role: String, text: String): void
++showProposal(proposal: PlanProposal): void
++setBusy(busy: boolean): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>460</x>
+      <y>500</y>
+      <w>490</w>
+      <h>150</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;MVC: View&gt;&gt;
+WeekView
+--
++render(blocks: List&lt;TimeBlock&gt;, events: List&lt;CalendarEvent&gt;,
+     conflicts: List&lt;Conflict&gt;): void
++showPreview(proposal: PlanProposal): void
++showUnscheduled(reasons: Map&lt;String, String&gt;): void
++showStatus(text: String): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1075</x>
+      <y>520</y>
+      <w>350</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;MVC: View&gt;&gt;
+TasksView
+--
++showTasks(tasks: List&lt;Task&gt;): void
++showDrafts(drafts: List&lt;TaskDraft&gt;): void
++showError(message: String): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1710</x>
+      <y>525</y>
+      <w>300</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;MVC: View&gt;&gt;
+GoalsView
+--
++showDraft(draft: GoalDraft): void
++showGoals(goals: List&lt;Goal&gt;): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2325</x>
+      <y>510</y>
+      <w>350</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;MVC: View&gt;&gt;
+ReviewDialog
+--
++showItems(items: List&lt;ReviewItem&gt;): void
++outcomes(): Map&lt;String, Boolean&gt;
++reason(): String
++showResult(response: AgentResponse): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2855</x>
+      <y>535</y>
+      <w>320</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;MVC: View&gt;&gt;
+InsightsView
+--
++showReport(report: WeeklyReport): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>3250</x>
+      <y>535</y>
+      <w>430</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;MVC: View&gt;&gt;
+MemoryView
+--
++showPreferences(preferences: List&lt;Preference&gt;): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>65</x>
+      <y>800</y>
+      <w>300</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;MVC: Controller&gt;&gt;
+ChatController
+--
+-facade: PlannerFacade
+-view: ChatView
+-sessionId: String
+--
++onSend(text: String): void
++onConfirm(proposalId: String): void
++onReject(proposalId: String): void
++onEvent(event: AgentEvent): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>525</x>
+      <y>740</y>
+      <w>360</w>
+      <h>310</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;MVC: Controller&gt;&gt;
+WeekController
+--
+-facade: PlannerFacade
+-view: WeekView
+-range: TimeInterval
+--
++onAutoSchedule(strategyName: String): void
++onApply(proposalId: String): void
++onCheckConflicts(): void
++onAskAgentToFix(): void
++onCheckWeather(): void
++onUndo(): void
++onRedo(): void
++onImportIcs(file: File): void
++onExportIcs(file: File): void
++onEvent(event: AgentEvent): void
+-refresh(): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1000</x>
+      <y>800</y>
+      <w>500</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;MVC: Controller&gt;&gt;
+TasksController
+--
+-facade: PlannerFacade
+-view: TasksView
+--
++onExtract(text: String): void
++onSaveDrafts(drafts: List&lt;TaskDraft&gt;): void
++onAddTask(draft: TaskDraft): void
++onAddDependency(taskId: String, prerequisiteId: String): void
++onComplete(taskId: String): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1650</x>
+      <y>825</y>
+      <w>420</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;MVC: Controller&gt;&gt;
+GoalsController
+--
+-facade: PlannerFacade
+-view: GoalsView
+--
++onPlanGoal(text: String, deadline: LocalDate): void
++onSaveGoal(draft: GoalDraft): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2345</x>
+      <y>815</y>
+      <w>310</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;MVC: Controller&gt;&gt;
+ReviewController
+--
+-facade: PlannerFacade
+-dialog: ReviewDialog
+--
++onStartReview(date: LocalDate): void
++onSubmit(): void
++onApply(proposalId: String): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2850</x>
+      <y>835</y>
+      <w>330</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;MVC: Controller&gt;&gt;
+InsightsController
+--
+-facade: PlannerFacade
+-view: InsightsView
+--
++onGenerate(weekStart: LocalDate): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>3310</x>
+      <y>825</y>
+      <w>310</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;MVC: Controller&gt;&gt;
+MemoryController
+--
+-facade: PlannerFacade
+-view: MemoryView
+--
++onRefresh(): void
++onForget(preferenceId: String): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>130</x>
+      <y>1725</y>
+      <w>170</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=.
+&lt;&lt;interface&gt;&gt;
+AgentEventListener
+(see CD07)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1770</x>
+      <y>1715</y>
+      <w>180</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=.
+&lt;&lt;Facade&gt;&gt;
+&lt;&lt;MVC: Model access&gt;&gt;
+PlannerFacade
+(see CD08)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2830</x>
+      <y>1700</y>
+      <w>370</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;KUMA harness entry&gt;&gt;
+JsonLineServer
+--
+-facade: PlannerFacade
+-mapper: ObjectMapper
+--
++run(in: InputStream, out: PrintStream): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1110</x>
+      <y>2065</y>
+      <w>280</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Observer: ConcreteObserver&gt;&gt;
+CliEventPrinter
+--
+-verbose: boolean
+--
++onEvent(event: AgentEvent): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1550</x>
+      <y>1930</y>
+      <w>620</w>
+      <h>380</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;picocli @Command&gt;&gt;
+PlannedAgentCli
+--
+-facade: PlannerFacade
+-renderer: ConsoleRenderer
+--
++capture(text: String, yes: boolean): int
++tasks(action: String, args: List&lt;String&gt;): int
++importIcs(file: Path): int
++exportIcs(file: Path, from: LocalDate, to: LocalDate): int
++schedule(from: LocalDate, to: LocalDate, strategy: String, yes: boolean): int
++conflicts(from: LocalDate, to: LocalDate): int
++weather(from: LocalDate, to: LocalDate): int
++chat(): int
++ask(message: String, json: boolean): int
++undo(): int
++redo(): int
++prefs(action: String, id: String): int
++goal(text: String, by: LocalDate, yes: boolean): int
++review(date: LocalDate): int
++report(weekStart: LocalDate, out: Path): int
++serve(): int</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2220</x>
+      <y>2035</y>
+      <w>560</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>ConsoleRenderer
+--
++printTasks(tasks: List&lt;Task&gt;): void
++printPlan(blocks: List&lt;TimeBlock&gt;, events: List&lt;CalendarEvent&gt;): void
++printProposal(proposal: PlanProposal): void
++printConflicts(conflicts: List&lt;Conflict&gt;): void
++printReport(report: WeeklyReport): void
++printMessage(text: String): void
++confirm(question: String): boolean</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>20</x>
+      <y>10</y>
+      <w>1400</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>fontsize=18
+*CD10 - Presentation: JavaFX GUI (MVC) and command-line interface (app.gui, app.cli)*
+Pattern: MVC - Views render, Controllers translate user actions into PlannerFacade calls, the Model is Workspace behind the facade</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>290</x>
+      <y>105</y>
+      <w>1500</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>1460.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>370</x>
+      <y>133</y>
+      <w>1420</w>
+      <h>430</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=1</panel_attributes>
+    <additional_attributes>1380.0;40.8;40.0;391.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>866</x>
+      <y>145</y>
+      <w>923</w>
+      <h>394</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=1</panel_attributes>
+    <additional_attributes>884.0;41.0;40.5;355.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1288</x>
+      <y>160</y>
+      <w>533</w>
+      <h>400</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=1</panel_attributes>
+    <additional_attributes>494.0;40.0;40.0;360.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1820</x>
+      <y>160</y>
+      <w>80</w>
+      <h>405</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=1</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;365.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1901</x>
+      <y>160</y>
+      <w>541</w>
+      <h>390</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=1</panel_attributes>
+    <additional_attributes>40.9;40.0;502.3;350.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1930</x>
+      <y>145</y>
+      <w>1017</w>
+      <h>429</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=1</panel_attributes>
+    <additional_attributes>40.0;41.0;977.6;390.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1930</x>
+      <y>134</y>
+      <w>1425</w>
+      <h>440</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=1</panel_attributes>
+    <additional_attributes>40.0;40.5;1385.7;401.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>175</x>
+      <y>590</y>
+      <w>80</w>
+      <h>250</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+updates</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;210.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>325</x>
+      <y>933</y>
+      <w>1489</w>
+      <h>821</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>1449.4;782.0;40.0;40.9</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>665</x>
+      <y>610</y>
+      <w>80</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+updates</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;130.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>845</x>
+      <y>989</y>
+      <w>994</w>
+      <h>765</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>954.9;726.0;40.0;40.8</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1210</x>
+      <y>590</y>
+      <w>80</w>
+      <h>250</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+updates</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;210.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1276</x>
+      <y>950</y>
+      <w>591</w>
+      <h>805</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>552.3;765.0;41.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1820</x>
+      <y>585</y>
+      <w>80</w>
+      <h>280</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+updates</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;240.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1820</x>
+      <y>925</y>
+      <w>80</w>
+      <h>830</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>40.0;790.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2460</x>
+      <y>600</y>
+      <w>80</w>
+      <h>255</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+updates</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;215.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1853</x>
+      <y>935</y>
+      <w>627</w>
+      <h>820</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>40.3;780.0;587.8;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2975</x>
+      <y>575</y>
+      <w>80</w>
+      <h>300</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+updates</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;260.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1880</x>
+      <y>915</y>
+      <w>1094</w>
+      <h>840</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>40.1;800.0;1054.9;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>3425</x>
+      <y>575</y>
+      <w>80</w>
+      <h>290</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+updates</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;250.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1903</x>
+      <y>925</y>
+      <w>1471</w>
+      <h>830</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>40.5;790.0;1432.1;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>175</x>
+      <y>950</y>
+      <w>80</w>
+      <h>815</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;775.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>194</x>
+      <y>1010</y>
+      <w>462</w>
+      <h>755</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.8;715.0;423.2;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>260</x>
+      <y>1749</y>
+      <w>890</w>
+      <h>361</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.6;850.0;322.3</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1820</x>
+      <y>1765</y>
+      <w>80</w>
+      <h>205</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;165.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2130</x>
+      <y>2080</y>
+      <w>130</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>90.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1350</x>
+      <y>2080</y>
+      <w>240</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>40.0;40.0;200.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1910</x>
+      <y>1720</y>
+      <w>960</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>40.0;40.0;920.0;40.0</additional_attributes>
+  </element>
+</diagram>

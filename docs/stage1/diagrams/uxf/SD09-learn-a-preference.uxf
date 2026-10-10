@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>1700</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD09 - Learn a preference and use it later (F09 / UC09 - long-term memory)
+obj=Student~s ACTOR
+obj=:ChatController~cc
+obj=:PlannerFacade~f
+obj=:AgentController~ag
+obj=llm:LlmClient~llm
+obj=:ToolRegistry~tr
+obj=remember_preference:RememberPreferenceTool~rt
+obj=:PreferenceMemory~pm
+obj=store:PreferenceStore~ps
+obj=:MemoryController~mc
+s-&gt;&gt;&gt;cc : I never study after 10pm
+cc-&gt;&gt;&gt;f : chat(sessionId, text)
+f-&gt;&gt;&gt;ag : handle(session, text)
+ag-&gt;&gt;&gt;llm : complete(request)
+llm.&gt;ag : action remember_preference
+ag-&gt;&gt;&gt;tr : execute(call, context)
+tr-&gt;&gt;&gt;rt : execute(call, context)
+rt-&gt;&gt;&gt;rt + : validate(args)
+combinedFragment=alt~a1 ag ps
+ag:[valid - type NO_WORK_AFTER, value 22h00, category study]
+rt-&gt;&gt;&gt;rt + : doExecute(args, context)
+rt-&gt;&gt;&gt;pm : remember(preference)
+pm-&gt;&gt;&gt;pm + : replace an older rule with the same type and category
+pm-&gt;&gt;&gt;ps : saveAll(preferences)
+ps.&gt;pm : ok
+pm.&gt;rt : saved preference
+rt.&gt;tr : ToolResult success
+tr.&gt;ag : ToolResult
+..=a1
+ag:[invalid value, e.g. 25h00]
+rt.&gt;tr : ToolResult failure, time must be HH and mm
+tr.&gt;ag : error observation
+ag-&gt;&gt;&gt;ag + : observe(session, result)
+--=a1
+ag-&gt;&gt;&gt;llm : complete(request)
+llm.&gt;ag : FinalAnswerAction
+ag.&gt;f : AgentResponse ANSWERED - no study after 22h00
+f.&gt;cc : AgentResponse
+ref=f pm : later - autoSchedule calls toConstraints(settings), see SD05
+s-&gt;&gt;&gt;mc : open the Memory tab and click Forget
+mc-&gt;&gt;&gt;mc + : onForget(preferenceId)
+mc-&gt;&gt;&gt;f : forgetPreference(id)
+f-&gt;&gt;&gt;pm : forget(id)
+pm-&gt;&gt;&gt;ps : saveAll(preferences)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

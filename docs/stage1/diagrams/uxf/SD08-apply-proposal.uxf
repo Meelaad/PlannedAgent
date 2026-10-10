@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>2380</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD08 - Review and apply a plan proposal (UC13 - Command, State and Observer at run time)
+obj=Student~s ACTOR
+obj=:ChatController~cc
+obj=:PlannerFacade~f
+obj=proposal:PlanProposal~pp
+obj=:CommandHistory~ch
+obj=macro:MacroCommand~mc
+obj=cmd:AddBlockCommand~ab
+obj=:Plan~pl
+obj=task:Task~t
+obj=state:TodoState~ts
+obj=:EventBus~eb
+obj=:AutoSaver~as
+obj=:TraceRecorder~tr
+obj=:WeekController~wc
+s-&gt;&gt;&gt;cc : click Apply on the proposal card
+cc-&gt;&gt;&gt;cc + : onConfirm(proposalId)
+cc-&gt;&gt;&gt;f : confirmProposal(proposalId)
+combinedFragment=alt~a1 cc wc
+cc:[proposal unknown or already applied]
+f.&gt;cc : This proposal is no longer valid
+..=a1
+cc:[proposal has blocking conflicts]
+f-&gt;&gt;&gt;pp : hasBlockingConflicts()
+pp.&gt;f : true
+f.&gt;cc : Cannot apply - resolve the conflicts first
+..=a1
+cc:[proposal valid]
+f-&gt;&gt;&gt;pp : hasBlockingConflicts()
+pp.&gt;f : false
+f-&gt;&gt;&gt;pp : getCommand()
+pp.&gt;f : macro
+f-&gt;&gt;&gt;ch : execute(macro, workspace)
+ch-&gt;&gt;&gt;mc : execute(workspace)
+combinedFragment=loop~l1 mc ts
+mc:[each command]
+mc-&gt;&gt;&gt;ab : execute(workspace)
+ab-&gt;&gt;&gt;pl : addBlock(block)
+ab-&gt;&gt;&gt;t : schedule()
+t-&gt;&gt;&gt;ts : schedule(task)
+ts-&gt;&gt;&gt;t : changeState(ScheduledState)
+--=l1
+combinedFragment=opt~o1 mc ts
+mc:[a command throws]
+mc-&gt;&gt;&gt;mc + : undo the executed commands in reverse
+mc.&gt;ch : exception, workspace unchanged
+--=o1
+ch-&gt;&gt;&gt;ch + : push onto undo stack, clear redo stack
+f-&gt;&gt;&gt;eb : publish(PLAN_CHANGED event)
+eb-&gt;&gt;&gt;as : onEvent(event)
+as-&gt;&gt;&gt;as + : save workspace through WorkspaceStore
+eb-&gt;&gt;&gt;tr : onEvent(event)
+tr-&gt;&gt;&gt;tr + : append one JSON line to the trace
+eb-&gt;&gt;&gt;wc : onEvent(event)
+wc-&gt;&gt;&gt;wc + : refresh()
+f.&gt;cc : Applied 6 changes
+--=a1</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

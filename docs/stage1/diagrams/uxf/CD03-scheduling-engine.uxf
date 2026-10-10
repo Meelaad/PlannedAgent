@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>25</x>
+      <y>90</y>
+      <w>360</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>ScheduleResult
+--
+-placements: Map&lt;String, TimeInterval&gt;
+-unscheduled: Map&lt;String, String&gt;
+-warnings: List&lt;String&gt;
+--
++getPlacements(): Map&lt;String, TimeInterval&gt;
++getUnscheduled(): Map&lt;String, String&gt;
++getWarnings(): List&lt;String&gt;
++isComplete(): boolean</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>460</x>
+      <y>95</y>
+      <w>770</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Strategy: Context&gt;&gt;
+Scheduler
+--
+-strategy: SchedulingStrategy
+-slotFinder: SlotFinder
+--
++setStrategy(strategy: SchedulingStrategy): void
++schedule(request: ScheduleRequest): ScheduleResult
+-bestSlot(task: Task, free: List&lt;TimeInterval&gt;, request: ScheduleRequest): Optional&lt;TimeInterval&gt;</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1300</x>
+      <y>135</y>
+      <w>520</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>SlotFinder
+--
++freeSlots(horizon: TimeInterval, busy: List&lt;TimeInterval&gt;,
+     settings: UserSettings, minMinutes: int): List&lt;TimeInterval&gt;</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1890</x>
+      <y>105</y>
+      <w>530</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>DependencyGraph
+--
+-prerequisites: Map&lt;String, Set&lt;String&gt;&gt;
+--
++DependencyGraph(tasks: Collection&lt;Task&gt;)
++wouldCreateCycle(taskId: String, prerequisiteId: String): boolean
++topologicalOrder(tasks: List&lt;Task&gt;): List&lt;Task&gt;
++prerequisitesOf(taskId: String): Set&lt;String&gt;</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2505</x>
+      <y>120</y>
+      <w>590</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>DateResolver
+--
+-zone: ZoneId
+--
++resolve(phrase: String, now: ZonedDateTime): Optional&lt;LocalDateTime&gt;
++resolveRange(phrase: String, now: ZonedDateTime): Optional&lt;TimeInterval&gt;</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>20</x>
+      <y>390</y>
+      <w>370</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>StrategyRegistry
+--
+-strategies: Map&lt;String, SchedulingStrategy&gt;
+--
++register(strategy: SchedulingStrategy): void
++get(name: String): SchedulingStrategy
++names(): List&lt;String&gt;</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>550</x>
+      <y>385</y>
+      <w>590</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+&lt;&lt;Strategy: Strategy&gt;&gt;
+SchedulingStrategy
+--
++name(): String
++order(tasks: List&lt;Task&gt;, now: LocalDateTime): List&lt;Task&gt;
++slotScore(task: Task, slot: TimeInterval, settings: UserSettings): double</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1395</x>
+      <y>360</y>
+      <w>330</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;record&gt;&gt;
+ScheduleRequest
+--
++tasks: List&lt;Task&gt;
++horizon: TimeInterval
++busy: List&lt;TimeInterval&gt;
++settings: UserSettings
++constraints: List&lt;SchedulingConstraint&gt;
++dependencies: DependencyGraph
++now: LocalDateTime</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1955</x>
+      <y>395</y>
+      <w>400</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+SchedulingConstraint
+--
++permits(task: Task, slot: TimeInterval): boolean
++conflictType(): ConflictType
++describe(): String</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2490</x>
+      <y>375</y>
+      <w>620</w>
+      <h>150</h>
+    </coordinates>
+    <panel_attributes>ConflictDetector
+--
++detect(workspace: Workspace, range: TimeInterval,
+     constraints: List&lt;SchedulingConstraint&gt;): List&lt;Conflict&gt;
+-findOverlaps(workspace: Workspace, range: TimeInterval): List&lt;Conflict&gt;
+-findDeadlineMisses(workspace: Workspace, range: TimeInterval): List&lt;Conflict&gt;
+-findOverloadedDays(workspace: Workspace, range: TimeInterval): List&lt;Conflict&gt;
+-findDependencyViolations(workspace: Workspace): List&lt;Conflict&gt;</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>65</x>
+      <y>650</y>
+      <w>280</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Strategy: ConcreteStrategy&gt;&gt;
+EarliestDeadlineFirstStrategy
+--
+name: edf
+order: earliest deadline first
+slot score: earlier slot is better</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>705</x>
+      <y>650</y>
+      <w>280</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Strategy: ConcreteStrategy&gt;&gt;
+PriorityFirstStrategy
+--
+name: priority
+order: highest priority first
+slot score: earlier slot is better</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1390</x>
+      <y>640</y>
+      <w>340</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Strategy: ConcreteStrategy&gt;&gt;
+PeakHoursStrategy
+--
+name: peak
+order: priority, then deadline
+slot score: demanding tasks in peak hours,
+preferredTime respected</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2005</x>
+      <y>645</y>
+      <w>300</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>AvailabilityConstraint
+--
+-settings: UserSettings
+-preferences: List&lt;Preference&gt;
+--
+working hours and days, quiet hours,
+days off (from preferences)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2670</x>
+      <y>650</y>
+      <w>260</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>WeatherConstraint
+--
+-forecast: WeatherForecast
+-thresholdPercent: int
+--
+outdoor tasks only in dry hours</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2095</x>
+      <y>870</y>
+      <w>120</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+UserSettings
+(see CD02)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2725</x>
+      <y>870</y>
+      <w>150</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+WeatherForecast
+(see CD02)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>20</x>
+      <y>10</y>
+      <w>1400</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>fontsize=18
+*CD03 - Deterministic scheduling engine (core.scheduling)*
+Pattern: Strategy (Scheduler + SchedulingStrategy). Constraints are polymorphic and shared by Scheduler and ConflictDetector.</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>345</x>
+      <y>135</y>
+      <w>155</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;create&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;40.0;115.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1190</x>
+      <y>135</y>
+      <w>150</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+slotFinder</panel_attributes>
+    <additional_attributes>110.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>805</x>
+      <y>215</y>
+      <w>80</w>
+      <h>210</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2=1
+strategy</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;170.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1013</x>
+      <y>215</y>
+      <w>422</w>
+      <h>211</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>382.0;171.5;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>350</x>
+      <y>410</y>
+      <w>240</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2=1..*
+strategies</panel_attributes>
+    <additional_attributes>40.0;40.0;200.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>303</x>
+      <y>475</y>
+      <w>418</w>
+      <h>215</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>378.9;40.0;40.0;175.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>805</x>
+      <y>475</y>
+      <w>80</w>
+      <h>215</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;175.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>987</x>
+      <y>475</y>
+      <w>442</w>
+      <h>209</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.3;40.0;403.0;169.4</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1685</x>
+      <y>410</y>
+      <w>310</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=0..*
+constraints</panel_attributes>
+    <additional_attributes>270.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1685</x>
+      <y>205</y>
+      <w>358</w>
+      <h>208</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+dependencies</panel_attributes>
+    <additional_attributes>318.5;40.0;40.0;168.7</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2115</x>
+      <y>465</y>
+      <w>80</w>
+      <h>220</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;180.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2254</x>
+      <y>465</y>
+      <w>455</w>
+      <h>228</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.1;40.0;416.0;188.6</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2315</x>
+      <y>410</y>
+      <w>215</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;40.0;175.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2115</x>
+      <y>725</y>
+      <w>80</w>
+      <h>185</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>40.0;145.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2760</x>
+      <y>720</y>
+      <w>80</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>40.0;150.0;40.0;40.0</additional_attributes>
+  </element>
+</diagram>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>1700</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD11 - End-of-day review and smart rescheduling (F11 / UC11)
+obj=Student~s ACTOR
+obj=:WeekView~wv
+obj=:ReviewDialog~d
+obj=:ReviewController~rc
+obj=:PlannerFacade~f
+obj=:ReviewService~rs
+obj=task:Task~t
+obj=:Plan~pl
+obj=:EventBus~eb
+obj=:AgentController~ag
+s-&gt;&gt;&gt;wv : click Review today
+wv-&gt;&gt;&gt;rc : onStartReview(today)
+rc-&gt;&gt;&gt;f : startReview(today)
+f-&gt;&gt;&gt;rs : itemsFor(today)
+rs-&gt;&gt;&gt;pl : blocksIn(today)
+pl.&gt;rs : blocks
+rs.&gt;f : review items
+f.&gt;rc : items
+rc-&gt;&gt;&gt;d : showItems(items)
+s-&gt;&gt;&gt;d : mark Done or Missed, reason too tired in the evening, Submit
+d-&gt;&gt;&gt;rc : onSubmit()
+rc-&gt;&gt;&gt;d : outcomes()
+rc-&gt;&gt;&gt;d : reason()
+rc-&gt;&gt;&gt;f : submitReview(sessionId, outcomes, reason)
+combinedFragment=loop~l1 f pl
+f:[each outcome]
+f-&gt;&gt;&gt;rs : recordOutcome(taskId, done)
+combinedFragment=alt~a1 rs pl
+rs:[done]
+rs-&gt;&gt;&gt;t : complete()
+..=a1
+rs:[missed]
+rs-&gt;&gt;&gt;t : markMissed()
+rs-&gt;&gt;&gt;pl : removeBlock(blockId)
+--=a1
+--=l1
+f-&gt;&gt;&gt;eb : publish(PLAN_CHANGED event)
+f-&gt;&gt;&gt;rs : missedTasks(today)
+rs.&gt;f : missed tasks
+f-&gt;&gt;&gt;rs : buildRescheduleMessage(missed, reason)
+rs.&gt;f : message for the agent
+f-&gt;&gt;&gt;ag : handle(session, message)
+combinedFragment=alt~a2 f ag
+f:[agent succeeds]
+ref=f ag : SD04 loop - schedule_tasks prefers mornings
+ag.&gt;f : AgentResponse PROPOSAL_READY
+..=a2
+f:[LLM unavailable or FAILED - deterministic fallback]
+ag.&gt;f : AgentResponse FAILED
+f-&gt;&gt;&gt;f + : autoSchedule(nextDays, "edf")
+--=a2
+f.&gt;rc : AgentResponse with proposal
+rc-&gt;&gt;&gt;d : showResult(response)
+ref=s d : SD08 - apply the proposal through onApply(proposalId)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

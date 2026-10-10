@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>1360</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD12 - Weekly insights report from the CLI (F12 / UC12)
+obj=Student~s ACTOR
+obj=:PlannedAgentCli~cli
+obj=:PlannerFacade~f
+obj=:InsightsService~is
+obj=:Workspace~ws
+obj=:PromptBuilder~pb
+obj=:StructuredOutputClient~soc
+obj=:ConsoleRenderer~cr
+s-&gt;&gt;&gt;cli : plannedagent report, week of 2026-10-05
+cli-&gt;&gt;&gt;f : weeklyReport(weekStart)
+f-&gt;&gt;&gt;is : generateReport(weekStart)
+is-&gt;&gt;&gt;is + : computeStats(weekStart)
+is-&gt;&gt;&gt;ws : getPlan()
+is-&gt;&gt;&gt;ws : tasks()
+combinedFragment=alt~a1 f soc
+f:[no planned tasks that week]
+is.&gt;f : WeeklyReport, no data, aiGenerated false
+..=a1
+f:[stats available]
+is-&gt;&gt;&gt;pb : buildInsightsRequest(stats)
+pb.&gt;is : request
+is-&gt;&gt;&gt;soc : call(request, InsightsNarrative)
+combinedFragment=alt~a2 is soc
+is:[narrative returned]
+soc.&gt;is : InsightsNarrative
+is-&gt;&gt;&gt;is + : isGrounded(narrative, stats)
+combinedFragment=opt~o1 is is
+is:[cites numbers that are not in the stats]
+is-&gt;&gt;&gt;is + : fallbackReport(stats)
+--=o1
+..=a2
+is:[LlmException or MalformedOutputException]
+soc.&gt;is : exception
+is-&gt;&gt;&gt;is + : fallbackReport(stats)
+--=a2
+is.&gt;f : WeeklyReport
+--=a1
+f.&gt;cli : report
+cli-&gt;&gt;&gt;cr : printReport(report)
+cr.&gt;s : stats table, narrative, three suggestions</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

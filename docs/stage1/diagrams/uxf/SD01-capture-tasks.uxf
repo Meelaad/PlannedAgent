@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>2040</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD01 - Capture tasks from free text (F01 / UC01)
+obj=Student~s ACTOR
+obj=:TasksView~v
+obj=:TasksController~tc
+obj=:PlannerFacade~f
+obj=:TaskCaptureService~cap
+obj=:PromptBuilder~pb
+obj=:StructuredOutputClient~soc
+obj=llm:LlmClient~llm
+obj=:ResponseParser~rp
+obj=:DateResolver~dr
+obj=:Workspace~ws
+obj=store:WorkspaceStore~st
+s-&gt;&gt;&gt;v : type a brain dump and click Extract
+v-&gt;&gt;&gt;tc : onExtract(text)
+tc-&gt;&gt;&gt;f : captureTasks(text)
+f-&gt;&gt;&gt;cap : extract(text, now)
+cap-&gt;&gt;&gt;pb : buildExtractionRequest(text, now)
+pb.&gt;cap : request with JSON schema
+cap-&gt;&gt;&gt;soc : call(request, CaptureResult)
+soc-&gt;&gt;&gt;llm : complete(request)
+combinedFragment=alt~a1 tc st
+tc:[LLM reachable]
+llm.&gt;soc : LlmResponse
+soc-&gt;&gt;&gt;rp : parseObject(text, CaptureResult)
+combinedFragment=opt~o1 soc rp
+soc:[MalformedOutputException]
+soc-&gt;&gt;&gt;pb : buildRepairRequest(request, badOutput, problem)
+soc-&gt;&gt;&gt;llm : complete(repairRequest)
+soc-&gt;&gt;&gt;rp : parseObject(text, CaptureResult)
+--=o1
+rp.&gt;soc : CaptureResult
+soc.&gt;cap : CaptureResult
+combinedFragment=loop~l1 cap dr
+cap:[each draft]
+cap-&gt;&gt;&gt;dr : resolve(deadlinePhrase, now)
+dr.&gt;cap : Optional LocalDateTime
+cap-&gt;&gt;&gt;cap + : validate(draft, now)
+--=l1
+cap.&gt;f : CaptureResult
+f.&gt;tc : CaptureResult
+tc-&gt;&gt;&gt;v : showDrafts(drafts)
+s-&gt;&gt;&gt;v : fix rows and click Save tasks
+v-&gt;&gt;&gt;tc : onSaveDrafts(drafts)
+tc-&gt;&gt;&gt;f : saveTasks(drafts)
+combinedFragment=loop~l2 f ws
+f:[each valid draft]
+f-&gt;&gt;&gt;ws : addTask(draft.toTask())
+--=l2
+f-&gt;&gt;&gt;st : save(workspace)
+f.&gt;tc : saved tasks
+tc-&gt;&gt;&gt;v : showTasks(tasks)
+..=a1
+tc:[LlmException - quota used up or offline]
+llm.&gt;soc : LlmException
+soc.&gt;cap : LlmException
+cap.&gt;f : LlmException
+f.&gt;tc : LlmException
+tc-&gt;&gt;&gt;v : showError("AI unavailable - add the tasks manually")
+--=a1</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

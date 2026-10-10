@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>20</x>
+      <y>90</y>
+      <w>300</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>app.gui  (JavaFX, MVC)
+--
+MainView
+ChatView / ChatController
+WeekView / WeekController
+TasksView / TasksController
+GoalsView / GoalsController
+ReviewDialog / ReviewController
+InsightsView / InsightsController
+MemoryView / MemoryController
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>445</x>
+      <y>125</y>
+      <w>320</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>app.cli  (picocli)
+--
+PlannedAgentCli
+ConsoleRenderer
+CliEventPrinter
+JsonLineServer (KUMA JSON-lines mode)
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>905</x>
+      <y>130</y>
+      <w>300</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>app  (bootstrap)
+--
+AppContext (composition root)
+AppConfig
+LlmClientFactory, LlmConfig
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>455</x>
+      <y>340</y>
+      <w>300</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>core
+--
+PlannerFacade  &lt;&lt;Facade&gt;&gt;
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>20</x>
+      <y>490</y>
+      <w>300</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>core.service
+--
+TaskCaptureService
+GoalPlanner
+ReviewService
+InsightsService
+(+ drafts and reports)
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>455</x>
+      <y>500</y>
+      <w>300</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>core.agent
+--
+AgentController (bounded ReAct loop)
+AgentSession, ConversationMemory
+AgentAction (+3 actions)
+AgentResponse
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>900</x>
+      <y>470</y>
+      <w>310</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>core.agent.tools
+--
+Tool, AbstractTool &lt;&lt;Template Method&gt;&gt;
+ToolRegistry
+10 tools: get_tasks, create_tasks,
+get_calendar, find_free_slots,
+schedule_tasks, edit_plan,
+check_conflicts, get_weather,
+resolve_date, remember_preference
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>20</x>
+      <y>715</y>
+      <w>300</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>core.prompt
+--
+PromptBuilder
+ResponseParser
+StructuredOutputClient
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>455</x>
+      <y>710</y>
+      <w>300</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>core.llm
+--
+LlmClient &lt;&lt;interface&gt;&gt;
+LlmClientDecorator &lt;&lt;Decorator&gt;&gt;
+Caching / Retrying / RateLimited
+ScriptedLlmClient (tests)
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>905</x>
+      <y>735</y>
+      <w>300</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>core.memory
+--
+PreferenceMemory (long-term)
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>20</x>
+      <y>890</y>
+      <w>300</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>core.command
+--
+PlanCommand &lt;&lt;Command&gt;&gt;
+Add/Move/Remove commands
+MacroCommand, CommandHistory
+PlanCommandFactory, PlanProposal
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>440</x>
+      <y>890</y>
+      <w>330</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>core.scheduling
+--
+Scheduler, SchedulingStrategy &lt;&lt;Strategy&gt;&gt;
+SlotFinder, DependencyGraph
+SchedulingConstraint (+2)
+ConflictDetector, DateResolver
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>905</x>
+      <y>895</y>
+      <w>300</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>core.event
+--
+EventBus &lt;&lt;Observer subject&gt;&gt;
+AgentEventListener, AgentEvent
+AutoSaver
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>20</x>
+      <y>1070</y>
+      <w>300</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>core.domain
+--
+Workspace &lt;&lt;MVC Model&gt;&gt;
+Task, Goal, PlanItem &lt;&lt;Composite&gt;&gt;
+TaskState (+4) &lt;&lt;State&gt;&gt;
+Plan, TimeBlock, CalendarEvent
+Preference, Conflict, TaskDraft
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>455</x>
+      <y>1085</y>
+      <w>300</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>core.port
+--
+WeatherService
+CalendarImporter, PlanExporter
+WorkspaceStore, PreferenceStore
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>890</x>
+      <y>1070</y>
+      <w>330</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>app.adapters  &lt;&lt;Adapter&gt;&gt;
+--
+GeminiLlmClient, OllamaLlmClient
+OpenMeteoWeatherAdapter
+IcsCalendarAdapter
+JsonWorkspaceStore, JsonPreferenceStore
+TraceRecorder
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>20</x>
+      <y>10</y>
+      <w>1400</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>fontsize=18
+*CD00 - Package overview (PlannedAgent)*
+plannedagent-core = pure Java 17 (no UI, network or file code). plannedagent-app = JavaFX GUI, picocli CLI and adapters.</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>280</x>
+      <y>205</y>
+      <w>296</w>
+      <h>174</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>256.3;135.0;40.0;40.5</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>565</x>
+      <y>195</y>
+      <w>80</w>
+      <h>185</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;145.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>636</x>
+      <y>190</y>
+      <w>340</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>40.1;150.0;300.6;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>280</x>
+      <y>360</y>
+      <w>294</w>
+      <h>171</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;131.2;254.5;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>565</x>
+      <y>360</y>
+      <w>80</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;140.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>715</x>
+      <y>515</y>
+      <w>225</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>185.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>130</x>
+      <y>580</y>
+      <w>80</w>
+      <h>175</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;135.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>565</x>
+      <y>570</y>
+      <w>80</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;140.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>280</x>
+      <y>725</y>
+      <w>215</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>175.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1015</x>
+      <y>600</y>
+      <w>80</w>
+      <h>175</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;135.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>130</x>
+      <y>960</y>
+      <w>80</w>
+      <h>150</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;110.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>278</x>
+      <y>960</y>
+      <w>240</w>
+      <h>150</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>40.8;110.0;201.1;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>715</x>
+      <y>1095</y>
+      <w>215</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;implement&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;40.0;175.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1200</x>
+      <y>330</y>
+      <w>280</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>Dependency rule:
+arrows point from presentation and
+adapters toward the core; the core
+never depends on app.* (DIP).
+Adapters also implement LlmClient
+(core.llm) - see CD06.</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

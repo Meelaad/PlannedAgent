@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>1530</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD03 - Import and export a calendar from the CLI (F03 / UC03)
+obj=Student~s ACTOR
+obj=:PlannedAgentCli~cli
+obj=:PlannerFacade~f
+obj=adapter:IcsCalendarAdapter~ics
+obj=ical4j library~lib
+obj=:Workspace~ws
+obj=store:WorkspaceStore~ss
+obj=:EventBus~eb
+obj=:ConsoleRenderer~cr
+s-&gt;&gt;&gt;cli : plannedagent import fall2026.ics
+cli-&gt;&gt;&gt;f : importCalendar(file)
+f-&gt;&gt;&gt;ics : importEvents(file, zone, 16)
+ics-&gt;&gt;&gt;lib : parse the file
+combinedFragment=alt~a1 cli cr
+cli:[valid iCalendar file]
+lib.&gt;ics : VEVENT list
+combinedFragment=loop~l1 ics ics
+ics:[each VEVENT, weekly RRULE expanded for 16 weeks]
+ics-&gt;&gt;&gt;ics + : toCalendarEvent(vevent)
+--=l1
+ics.&gt;f : events
+f-&gt;&gt;&gt;ws : addEvents(events)
+ws.&gt;f : added count, duplicate UIDs skipped
+f-&gt;&gt;&gt;ss : save(workspace)
+f-&gt;&gt;&gt;eb : publish(PLAN_CHANGED event)
+f.&gt;cli : count
+cli-&gt;&gt;&gt;cr : printMessage("Imported 42 events")
+..=a1
+cli:[unreadable or invalid file]
+lib.&gt;ics : parser error
+ics.&gt;f : CalendarImportException
+f.&gt;cli : CalendarImportException
+cli-&gt;&gt;&gt;cr : printMessage("Import failed - nothing was changed")
+--=a1
+s-&gt;&gt;&gt;cli : plannedagent export week.ics with from and to dates
+cli-&gt;&gt;&gt;f : exportPlan(file, range)
+f-&gt;&gt;&gt;ics : export(plan, tasks, range, file)
+combinedFragment=loop~l2 ics ics
+ics:[each block in range]
+ics-&gt;&gt;&gt;ics + : toVEvent(block, task)
+--=l2
+ics.&gt;f : file written
+f.&gt;cli : done
+cli-&gt;&gt;&gt;cr : printMessage("Exported 9 blocks")</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

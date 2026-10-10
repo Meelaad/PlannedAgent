@@ -1,0 +1,479 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>210</x>
+      <y>165</y>
+      <w>120</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+Task
+(see CD01)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>765</x>
+      <y>165</y>
+      <w>120</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+Goal
+(see CD01)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1215</x>
+      <y>90</y>
+      <w>240</w>
+      <h>200</h>
+    </coordinates>
+    <panel_attributes>UserSettings
+--
+-workStart: LocalTime
+-workEnd: LocalTime
+-workDays: Set&lt;DayOfWeek&gt;
+-peakStart: LocalTime
+-peakEnd: LocalTime
+-maxFocusMinutesPerDay: int
+-rainThresholdPercent: int
+-zone: ZoneId
+-location: GeoLocation</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1705</x>
+      <y>135</y>
+      <w>160</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;record&gt;&gt;
+GeoLocation
+--
++name: String
++latitude: double
++longitude: double</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>170</x>
+      <y>515</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>CalendarEvent
+--
+-id: String
+-uid: String
+-title: String
+-interval: TimeInterval
+-location: String</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>600</x>
+      <y>380</y>
+      <w>450</w>
+      <h>400</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;MVC: Model&gt;&gt;
+&lt;&lt;Command: Receiver&gt;&gt;
+Workspace
+--
+-tasks: Map&lt;String, Task&gt;
+-goals: Map&lt;String, Goal&gt;
+-events: List&lt;CalendarEvent&gt;
+-plan: Plan
+-settings: UserSettings
+--
++getTask(id: String): Task
++addTask(task: Task): void
++removeTask(id: String): void
++tasks(): List&lt;Task&gt;
++tasksNeedingSchedule(): List&lt;Task&gt;
++addGoal(goal: Goal): void
++goals(): List&lt;Goal&gt;
++events(): List&lt;CalendarEvent&gt;
++addEvents(events: List&lt;CalendarEvent&gt;): int
++busyIntervals(range: TimeInterval): List&lt;TimeInterval&gt;
++getPlan(): Plan
++getSettings(): UserSettings
++snapshot(): Workspace</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1130</x>
+      <y>500</y>
+      <w>410</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>Plan
+--
+-blocks: List&lt;TimeBlock&gt;
+--
++addBlock(block: TimeBlock): void
++removeBlock(blockId: String): TimeBlock
++findBlock(blockId: String): Optional&lt;TimeBlock&gt;
++blockForTask(taskId: String): Optional&lt;TimeBlock&gt;
++blocksIn(range: TimeInterval): List&lt;TimeBlock&gt;</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1620</x>
+      <y>485</y>
+      <w>330</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>TimeBlock
+--
+-id: String
+-taskId: String
+-interval: TimeInterval
+-pinned: boolean
+--
++moveTo(newInterval: TimeInterval): void
++getInterval(): TimeInterval
++getTaskId(): String
++isPinned(): boolean</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>665</x>
+      <y>870</y>
+      <w>320</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;record&gt;&gt;
+TimeInterval
+--
++start: LocalDateTime
++end: LocalDateTime
+--
++overlaps(other: TimeInterval): boolean
++contains(other: TimeInterval): boolean
++durationMinutes(): long</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>175</x>
+      <y>1130</y>
+      <w>190</w>
+      <h>150</h>
+    </coordinates>
+    <panel_attributes>Preference
+--
+-id: String
+-type: PreferenceType
+-value: String
+-category: String
+-sourceText: String
+-createdAt: Instant</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>735</x>
+      <y>1120</y>
+      <w>180</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+PreferenceType
+--
+NO_WORK_AFTER
+NO_WORK_BEFORE
+DAY_OFF
+MAX_HOURS_PER_DAY
+PREFERRED_TIME
+NOTE</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1230</x>
+      <y>1140</y>
+      <w>210</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;record&gt;&gt;
+Conflict
+--
++type: ConflictType
++severity: Severity
++message: String
++blockIds: List&lt;String&gt;</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1680</x>
+      <y>1120</y>
+      <w>210</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+ConflictType
+--
+OVERLAP
+DEADLINE_MISSED
+OUTSIDE_AVAILABILITY
+OVERLOADED_DAY
+DEPENDENCY_ORDER
+BAD_WEATHER</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>20</x>
+      <y>1380</y>
+      <w>500</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>WeatherForecast
+--
+-hourly: List&lt;HourlyWeather&gt;
+--
++precipitationAt(time: LocalDateTime): int
++isWet(interval: TimeInterval, thresholdPercent: int): boolean
++covers(interval: TimeInterval): boolean</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>700</x>
+      <y>1385</y>
+      <w>250</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;record&gt;&gt;
+HourlyWeather
+--
++time: LocalDateTime
++precipitationProbability: int
++temperatureC: double</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1270</x>
+      <y>1390</y>
+      <w>130</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+Severity
+--
+BLOCKING
+WARNING</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>20</x>
+      <y>10</y>
+      <w>1400</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>fontsize=18
+*CD02 - Domain: workspace, plan and value objects (core.domain)*
+Workspace is the MVC Model and the Command receiver; all types here are plain Java (portable to Android)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>265</x>
+      <y>175</y>
+      <w>374</w>
+      <h>286</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=0..*
+tasks</panel_attributes>
+    <additional_attributes>335.0;246.9;40.6;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>785</x>
+      <y>175</y>
+      <w>80</w>
+      <h>245</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=0..*
+goals</panel_attributes>
+    <additional_attributes>40.0;205.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1010</x>
+      <y>241</y>
+      <w>245</w>
+      <h>206</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=1
+settings</panel_attributes>
+    <additional_attributes>40.0;166.9;205.0;40.8</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>330</x>
+      <y>540</y>
+      <w>310</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=0..*
+events</panel_attributes>
+    <additional_attributes>270.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1010</x>
+      <y>540</y>
+      <w>160</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=1
+plan</panel_attributes>
+    <additional_attributes>40.0;40.0;120.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1500</x>
+      <y>540</y>
+      <w>160</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=0..*
+blocks</panel_attributes>
+    <additional_attributes>40.0;40.0;120.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1415</x>
+      <y>150</y>
+      <w>330</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+location</panel_attributes>
+    <additional_attributes>290.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>945</x>
+      <y>603</y>
+      <w>715</w>
+      <h>324</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+interval</panel_attributes>
+    <additional_attributes>40.0;285.3;675.0;40.6</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>327</x>
+      <y>605</y>
+      <w>417</w>
+      <h>305</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+interval</panel_attributes>
+    <additional_attributes>378.0;265.0;40.5;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>325</x>
+      <y>1165</y>
+      <w>450</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+type</panel_attributes>
+    <additional_attributes>410.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1400</x>
+      <y>1165</y>
+      <w>320</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+type</panel_attributes>
+    <additional_attributes>280.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1295</x>
+      <y>1230</y>
+      <w>80</w>
+      <h>200</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+severity</panel_attributes>
+    <additional_attributes>40.0;160.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>480</x>
+      <y>1400</y>
+      <w>260</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=0..*
+hourly</panel_attributes>
+    <additional_attributes>40.0;40.0;220.0;40.0</additional_attributes>
+  </element>
+</diagram>

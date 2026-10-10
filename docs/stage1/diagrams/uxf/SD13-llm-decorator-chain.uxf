@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>1020</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD13 - One LLM call through the decorator chain (cross-cutting, every AI feature)
+obj=caller:AgentController~ag
+obj=:CachingLlmClient~ca
+obj=:RetryingLlmClient~re
+obj=:RateLimitedLlmClient~rl
+obj=:GeminiLlmClient~gm
+obj=Gemini REST API~api
+ag-&gt;&gt;&gt;ca : complete(request)
+ca-&gt;&gt;&gt;ca + : look up request.cacheKey()
+combinedFragment=alt~a1 ag api
+ag:[cache hit]
+ca.&gt;ag : cached LlmResponse, fromCache true
+..=a1
+ag:[cache miss]
+ca-&gt;&gt;&gt;re : complete(request)
+combinedFragment=loop~l1 re api
+re:[attempt 1 to maxAttempts]
+re-&gt;&gt;&gt;rl : complete(request)
+combinedFragment=alt~a2 re api
+re:[daily quota used up]
+rl.&gt;re : LlmException QUOTA_EXHAUSTED, not retryable
+re.&gt;ca : LlmException
+ca.&gt;ag : LlmException, the caller falls back
+..=a2
+re:[within quota - waits while the per-minute window is full]
+rl-&gt;&gt;&gt;gm : complete(request)
+gm-&gt;&gt;&gt;gm + : toGeminiJson(request)
+gm-&gt;&gt;&gt;api : POST generateContent with the JSON schema
+combinedFragment=alt~a3 gm api
+gm:[HTTP 200]
+api.&gt;gm : JSON body
+gm-&gt;&gt;&gt;gm + : fromGeminiJson(body)
+gm.&gt;rl : LlmResponse
+rl.&gt;re : LlmResponse
+re.&gt;ca : LlmResponse, leave the loop
+..=a3
+gm:[HTTP 429 or 503 or timeout]
+api.&gt;gm : error
+gm.&gt;rl : LlmException RATE_LIMITED, retryable
+rl.&gt;re : LlmException
+re-&gt;&gt;&gt;re + : back off baseDelay times 2 to the attempt
+--=a3
+--=a2
+--=l1
+ca-&gt;&gt;&gt;ca + : store the response under the key
+ca.&gt;ag : LlmResponse
+--=a1</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

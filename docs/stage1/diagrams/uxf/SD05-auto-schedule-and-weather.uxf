@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>2380</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD05 - Auto-schedule with a strategy and the weather constraint (F05, F08 / UC05, UC08)
+obj=Student~s ACTOR
+obj=:WeekView~v
+obj=:WeekController~wc
+obj=:PlannerFacade~f
+obj=:StrategyRegistry~sr
+obj=weather:OpenMeteoWeatherAdapter~w
+obj=Open-Meteo API~api
+obj=:Workspace~ws
+obj=:Scheduler~sch
+obj=strategy:PeakHoursStrategy~st
+obj=:SlotFinder~sf
+obj=constraint:SchedulingConstraint~c
+obj=:PlanCommandFactory~pcf
+obj=:ConflictDetector~cd
+s-&gt;&gt;&gt;v : choose Peak hours and click Auto-schedule
+v-&gt;&gt;&gt;wc : onAutoSchedule("peak")
+wc-&gt;&gt;&gt;f : autoSchedule(range, "peak")
+f-&gt;&gt;&gt;sr : get("peak")
+sr.&gt;f : PeakHoursStrategy
+f-&gt;&gt;&gt;sch : setStrategy(strategy)
+f-&gt;&gt;&gt;ws : tasksNeedingSchedule()
+ws.&gt;f : tasks
+f-&gt;&gt;&gt;f + : buildConstraints(range)
+combinedFragment=opt~o1 f api
+f:[at least one outdoor task]
+f-&gt;&gt;&gt;w : forecast(location, range)
+w-&gt;&gt;&gt;api : GET hourly precipitation probability
+combinedFragment=alt~a1 f api
+f:[forecast received]
+api.&gt;w : JSON
+w.&gt;f : WeatherForecast, adds WeatherConstraint
+..=a1
+f:[timeout or HTTP error]
+api.&gt;w : error
+w.&gt;f : WeatherUnavailableException, adds warning
+--=a1
+--=o1
+f-&gt;&gt;&gt;ws : busyIntervals(range)
+ws.&gt;f : busy intervals
+f-&gt;&gt;&gt;sch : schedule(request)
+sch-&gt;&gt;&gt;sf : freeSlots(horizon, busy, settings, 15)
+sf.&gt;sch : free slots
+sch-&gt;&gt;&gt;st : order(tasks, now)
+st.&gt;sch : ordered tasks, prerequisites first
+combinedFragment=loop~l1 sch c
+sch:[each task in order]
+sch-&gt;&gt;&gt;sch + : bestSlot(task, free, request)
+combinedFragment=loop~l2 sch c
+sch:[each candidate slot]
+sch-&gt;&gt;&gt;c : permits(task, slot)
+c.&gt;sch : true or false
+sch-&gt;&gt;&gt;st : slotScore(task, slot, settings)
+st.&gt;sch : score
+--=l2
+--=l1
+sch.&gt;f : ScheduleResult with unscheduled reasons
+f-&gt;&gt;&gt;pcf : fromSchedule(result)
+pcf.&gt;f : MacroCommand
+f-&gt;&gt;&gt;ws : snapshot()
+ws.&gt;f : copy used to simulate the change
+f-&gt;&gt;&gt;cd : detect(snapshot, range, constraints)
+cd.&gt;f : conflicts
+f-&gt;&gt;&gt;f + : registerProposal(proposal)
+f.&gt;wc : PlanProposal
+wc-&gt;&gt;&gt;v : showPreview(proposal)
+wc-&gt;&gt;&gt;v : showUnscheduled(reasons)
+ref=s wc : SD08 - apply or discard the proposal</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

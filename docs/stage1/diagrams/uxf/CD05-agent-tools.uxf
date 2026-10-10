@@ -1,0 +1,551 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>460</x>
+      <y>90</y>
+      <w>130</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+ParamType
+--
+STRING
+INTEGER
+BOOLEAN
+DATE_TIME
+STRING_LIST
+OBJECT_LIST</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>785</x>
+      <y>110</y>
+      <w>180</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;record&gt;&gt;
+ParamSpec
+--
++name: String
++type: ParamType
++required: boolean
++description: String</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1120</x>
+      <y>105</y>
+      <w>210</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;record&gt;&gt;
+ToolSpec
+--
++name: String
++description: String
++params: List&lt;ParamSpec&gt;
+--
++toJsonSchema(): String</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1450</x>
+      <y>125</y>
+      <w>470</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+Tool
+--
++spec(): ToolSpec
++execute(call: ToolCall, context: ToolContext): ToolResult</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1990</x>
+      <y>115</y>
+      <w>470</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>ToolRegistry
+--
+-tools: Map&lt;String, Tool&gt;
+--
++register(tool: Tool): void
++specs(): List&lt;ToolSpec&gt;
++execute(call: ToolCall, context: ToolContext): ToolResult</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2540</x>
+      <y>125</y>
+      <w>230</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;record&gt;&gt;
+ToolCall
+--
++toolName: String
++args: Map&lt;String, Object&gt;</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2905</x>
+      <y>120</y>
+      <w>200</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;record&gt;&gt;
+ToolContext
+--
++session: AgentSession
++workspace: Workspace
++now: ZonedDateTime</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>3200</x>
+      <y>90</y>
+      <w>430</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;record&gt;&gt;
+ToolResult
+--
++ok: boolean
++toolName: String
++data: Object
++error: String
+--
+_+success(toolName: String, data: Object): ToolResult_
+_+failure(toolName: String, error: String): ToolResult_</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>3670</x>
+      <y>95</y>
+      <w>370</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>ToolArgs
+--
+-values: Map&lt;String, Object&gt;
+--
++string(name: String): String
++integer(name: String): int
++dateTime(name: String): LocalDateTime
++list(name: String): List&lt;Map&lt;String, Object&gt;&gt;
++has(name: String): boolean</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1420</x>
+      <y>370</y>
+      <w>530</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Template Method: AbstractClass&gt;&gt;
+/AbstractTool/
+--
++execute(call: ToolCall, context: ToolContext): ToolResult {final}
+#validate(args: Map&lt;String, Object&gt;): List&lt;String&gt;
+/#doExecute(args: ToolArgs, context: ToolContext): ToolResult/
+--
+execute(): 1 validate args against spec()
+2 if invalid: return failure (tool never runs)
+3 doExecute(args, context)
+4 exceptions become ToolResult.failure</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>20</x>
+      <y>785</y>
+      <w>310</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;tool: get_tasks&gt;&gt;
+&lt;&lt;Template Method: ConcreteClass&gt;&gt;
+GetTasksTool
+--
+#doExecute(args, context): ToolResult</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>370</x>
+      <y>775</y>
+      <w>310</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;tool: create_tasks&gt;&gt;
+&lt;&lt;Template Method: ConcreteClass&gt;&gt;
+CreateTasksTool
+--
+-commands: PlanCommandFactory
+--
+#doExecute(args, context): ToolResult</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>720</x>
+      <y>785</y>
+      <w>310</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;tool: get_calendar&gt;&gt;
+&lt;&lt;Template Method: ConcreteClass&gt;&gt;
+GetCalendarTool
+--
+#doExecute(args, context): ToolResult</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1070</x>
+      <y>775</y>
+      <w>310</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;tool: find_free_slots&gt;&gt;
+&lt;&lt;Template Method: ConcreteClass&gt;&gt;
+FindFreeSlotsTool
+--
+-slotFinder: SlotFinder
+--
+#doExecute(args, context): ToolResult</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1530</x>
+      <y>730</y>
+      <w>310</w>
+      <h>210</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;tool: schedule_tasks&gt;&gt;
+&lt;&lt;Template Method: ConcreteClass&gt;&gt;
+ScheduleTasksTool
+--
+-scheduler: Scheduler
+-strategies: StrategyRegistry
+-preferences: PreferenceMemory
+-weather: WeatherService
+-commands: PlanCommandFactory
+-conflicts: ConflictDetector
+--
+#doExecute(args, context): ToolResult</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2070</x>
+      <y>755</y>
+      <w>310</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;tool: edit_plan&gt;&gt;
+&lt;&lt;Template Method: ConcreteClass&gt;&gt;
+EditPlanTool
+--
+-commands: PlanCommandFactory
+-conflicts: ConflictDetector
+-preferences: PreferenceMemory
+--
+#doExecute(args, context): ToolResult</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2500</x>
+      <y>765</y>
+      <w>310</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;tool: check_conflicts&gt;&gt;
+&lt;&lt;Template Method: ConcreteClass&gt;&gt;
+CheckConflictsTool
+--
+-conflicts: ConflictDetector
+-preferences: PreferenceMemory
+--
+#doExecute(args, context): ToolResult</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2850</x>
+      <y>775</y>
+      <w>310</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;tool: get_weather&gt;&gt;
+&lt;&lt;Template Method: ConcreteClass&gt;&gt;
+GetWeatherTool
+--
+-weather: WeatherService
+--
+#doExecute(args, context): ToolResult</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>3260</x>
+      <y>775</y>
+      <w>310</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;tool: resolve_date&gt;&gt;
+&lt;&lt;Template Method: ConcreteClass&gt;&gt;
+ResolveDateTool
+--
+-dateResolver: DateResolver
+--
+#doExecute(args, context): ToolResult</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>3700</x>
+      <y>775</y>
+      <w>310</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;tool: remember_preference&gt;&gt;
+&lt;&lt;Template Method: ConcreteClass&gt;&gt;
+RememberPreferenceTool
+--
+-preferences: PreferenceMemory
+--
+#doExecute(args, context): ToolResult</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>20</x>
+      <y>10</y>
+      <w>1400</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>fontsize=18
+*CD05 - Agent tools (core.agent.tools)*
+Pattern: Template Method - AbstractTool.execute() fixes the skeleton (validate -&gt; doExecute -&gt; wrap errors); each tool implements doExecute()</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1645</x>
+      <y>185</y>
+      <w>80</w>
+      <h>225</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;185.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1880</x>
+      <y>135</y>
+      <w>150</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2=1..*
+tools</panel_attributes>
+    <additional_attributes>110.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1290</x>
+      <y>135</y>
+      <w>200</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;describe&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;40.0;160.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>925</x>
+      <y>135</y>
+      <w>235</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=0..*
+params</panel_attributes>
+    <additional_attributes>195.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>550</x>
+      <y>135</y>
+      <w>275</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>40.0;40.0;235.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2420</x>
+      <y>135</y>
+      <w>160</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>120.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>290</x>
+      <y>489</y>
+      <w>1170</w>
+      <h>347</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>1130.0;40.9;40.0;308.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>640</x>
+      <y>509</y>
+      <w>820</w>
+      <h>316</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>780.0;40.5;40.0;276.6</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>944</x>
+      <y>520</y>
+      <w>572</w>
+      <h>305</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>533.0;40.0;40.5;265.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1259</x>
+      <y>520</y>
+      <w>347</w>
+      <h>295</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>307.9;40.0;40.6;255.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1645</x>
+      <y>520</y>
+      <w>80</w>
+      <h>250</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;210.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1783</x>
+      <y>520</y>
+      <w>364</w>
+      <h>275</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>40.6;40.0;325.2;235.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1894</x>
+      <y>520</y>
+      <w>645</w>
+      <h>295</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>40.1;40.0;606.0;255.9</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1910</x>
+      <y>499</y>
+      <w>980</w>
+      <h>332</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>40.0;40.3;940.0;292.6</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1910</x>
+      <y>481</y>
+      <w>1390</w>
+      <h>360</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>40.0;40.7;1350.0;320.8</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1910</x>
+      <y>470</y>
+      <w>1830</w>
+      <h>378</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>40.0;40.2;1790.0;338.6</additional_attributes>
+  </element>
+</diagram>

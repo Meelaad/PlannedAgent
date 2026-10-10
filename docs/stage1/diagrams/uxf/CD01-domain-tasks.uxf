@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>75</x>
+      <y>90</y>
+      <w>220</w>
+      <h>260</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;record&gt;&gt;
+TaskDraft
+--
++title: String
++estimatedMinutes: int
++deadlinePhrase: String
++deadline: LocalDateTime
++priority: Priority
++category: String
++outdoor: boolean
++preferredTime: TimeOfDay
++issues: List&lt;String&gt;
+--
++toTask(): Task
++isValid(): boolean</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>425</x>
+      <y>135</y>
+      <w>250</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+&lt;&lt;Composite: Component&gt;&gt;
+PlanItem
+--
++getId(): String
++getTitle(): String
++estimatedMinutes(): int
++progress(): double
++getDeadline(): LocalDateTime</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>755</x>
+      <y>140</y>
+      <w>190</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+TaskStatus
+--
+TODO
+SCHEDULED
+DONE
+MISSED
+--
++toState(): TaskState</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1055</x>
+      <y>140</y>
+      <w>130</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+Priority
+--
+LOW
+MEDIUM
+HIGH
+URGENT
+--
++weight(): int</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>20</x>
+      <y>440</y>
+      <w>330</w>
+      <h>450</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Composite: Leaf&gt;&gt;
+&lt;&lt;State: Context&gt;&gt;
+Task
+--
+-id: String
+-title: String
+-estimatedMinutes: int
+-deadline: LocalDateTime
+-priority: Priority
+-category: String
+-outdoor: boolean
+-preferredTime: TimeOfDay
+-prerequisiteIds: Set&lt;String&gt;
+-state: TaskState
+--
++schedule(): void
++unschedule(): void
++complete(): void
++markMissed(): void
++reopen(): void
++restoreStatus(status: TaskStatus): void
++needsScheduling(): boolean
++getStatus(): TaskStatus
++addPrerequisite(taskId: String): void
++isOutdoor(): boolean
+~changeState(next: TaskState): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>420</x>
+      <y>545</y>
+      <w>260</w>
+      <h>240</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Composite: Composite&gt;&gt;
+Goal
+--
+-id: String
+-title: String
+-deadline: LocalDateTime
+-children: List&lt;PlanItem&gt;
+--
++add(item: PlanItem): void
++remove(item: PlanItem): void
++getChildren(): List&lt;PlanItem&gt;
++estimatedMinutes(): int
++progress(): double
++leafTasks(): List&lt;Task&gt;</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>785</x>
+      <y>600</y>
+      <w>130</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+TimeOfDay
+--
+MORNING
+AFTERNOON
+EVENING
+ANY</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>60</x>
+      <y>980</y>
+      <w>250</w>
+      <h>200</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+&lt;&lt;State: State&gt;&gt;
+TaskState
+--
++schedule(task: Task): void
++unschedule(task: Task): void
++complete(task: Task): void
++markMissed(task: Task): void
++reopen(task: Task): void
++needsScheduling(): boolean
++status(): TaskStatus</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>85</x>
+      <y>1280</y>
+      <w>200</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;State: ConcreteState&gt;&gt;
+TodoState
+--
+schedule -&gt; SCHEDULED
+complete -&gt; DONE
+other calls: illegal</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>450</x>
+      <y>1270</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;State: ConcreteState&gt;&gt;
+ScheduledState
+--
+unschedule -&gt; TODO
+complete -&gt; DONE
+markMissed -&gt; MISSED
+other calls: illegal</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>750</x>
+      <y>1285</y>
+      <w>200</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;State: ConcreteState&gt;&gt;
+DoneState
+--
+reopen -&gt; TODO
+other calls: illegal</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1020</x>
+      <y>1270</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;State: ConcreteState&gt;&gt;
+MissedState
+--
+schedule -&gt; SCHEDULED
+complete -&gt; DONE
+reopen -&gt; TODO
+other calls: illegal</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>435</x>
+      <y>1490</y>
+      <w>230</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;exception&gt;&gt;
+IllegalTransitionException
+--
+extends RuntimeException</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>20</x>
+      <y>10</y>
+      <w>1400</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>fontsize=18
+*CD01 - Domain: tasks, goals and task lifecycle (core.domain)*
+Patterns: Composite (PlanItem, Task, Goal) and State (Task, TaskState and four concrete states)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>145</x>
+      <y>310</y>
+      <w>80</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;create&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;130.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>310</x>
+      <y>265</y>
+      <w>210</w>
+      <h>238</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>170.3;40.0;40.0;198.8</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>480</x>
+      <y>265</y>
+      <w>80</w>
+      <h>320</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;280.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>540</x>
+      <y>265</y>
+      <w>80</w>
+      <h>320</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2=0..*
+children</panel_attributes>
+    <additional_attributes>40.0;280.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>145</x>
+      <y>850</y>
+      <w>80</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+state</panel_attributes>
+    <additional_attributes>40.0;130.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>145</x>
+      <y>1140</y>
+      <w>80</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;140.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>245</x>
+      <y>1348</y>
+      <w>270</w>
+      <h>181</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;throw&gt;&gt;</panel_attributes>
+    <additional_attributes>230.1;142.0;40.0;40.4</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>270</x>
+      <y>1127</y>
+      <w>226</w>
+      <h>182</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.3;187.0;143.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>510</x>
+      <y>1360</y>
+      <w>80</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;throw&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;130.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>270</x>
+      <y>1087</y>
+      <w>520</w>
+      <h>248</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.9;480.0;209.7</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>571</x>
+      <y>1345</y>
+      <w>241</w>
+      <h>185</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;throw&gt;&gt;</panel_attributes>
+    <additional_attributes>40.5;145.0;202.1;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>270</x>
+      <y>1074</y>
+      <w>790</w>
+      <h>273</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.1;750.0;233.7</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>625</x>
+      <y>1329</y>
+      <w>435</w>
+      <h>201</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;throw&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;161.7;395.0;40.2</additional_attributes>
+  </element>
+</diagram>

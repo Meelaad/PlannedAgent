@@ -1,0 +1,22 @@
+# Build output
+build/
+out/
+target/
+.gradle/
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Secrets and local data
+.env
+*.env
+.plannedagent/
+traces/

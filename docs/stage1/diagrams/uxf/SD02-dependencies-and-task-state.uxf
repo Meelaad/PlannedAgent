@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>1700</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD02 - Add a dependency and complete a task (F02 / UC02)
+obj=Student~s ACTOR
+obj=:TasksView~v
+obj=:TasksController~tc
+obj=:PlannerFacade~f
+obj=:Workspace~ws
+obj=graph:DependencyGraph~g
+obj=task:Task~t
+obj=state:TaskState~st
+obj=store:WorkspaceStore~ss
+obj=:EventBus~eb
+s-&gt;&gt;&gt;v : set Write report depends on Research sources
+v-&gt;&gt;&gt;tc : onAddDependency(taskId, prerequisiteId)
+tc-&gt;&gt;&gt;f : addDependency(taskId, prerequisiteId)
+f-&gt;&gt;&gt;ws : tasks()
+ws.&gt;f : all tasks
+f-&gt;&gt;&gt;g : DependencyGraph(tasks)
+f-&gt;&gt;&gt;g : wouldCreateCycle(taskId, prerequisiteId)
+combinedFragment=alt~a1 tc eb
+tc:[cycle found]
+g.&gt;f : true
+f.&gt;tc : IllegalArgumentException with the cycle path
+tc-&gt;&gt;&gt;v : showError(message)
+..=a1
+tc:[no cycle]
+g.&gt;f : false
+f-&gt;&gt;&gt;ws : getTask(taskId)
+ws.&gt;f : task
+f-&gt;&gt;&gt;t : addPrerequisite(prerequisiteId)
+f-&gt;&gt;&gt;ss : save(workspace)
+f-&gt;&gt;&gt;eb : publish(PLAN_CHANGED event)
+f.&gt;tc : ok
+tc-&gt;&gt;&gt;v : showTasks(tasks)
+--=a1
+s-&gt;&gt;&gt;v : right-click the task and choose Complete
+v-&gt;&gt;&gt;tc : onComplete(taskId)
+tc-&gt;&gt;&gt;f : completeTask(taskId)
+f-&gt;&gt;&gt;ws : getTask(taskId)
+ws.&gt;f : task
+f-&gt;&gt;&gt;t : complete()
+t-&gt;&gt;&gt;st : complete(task)
+combinedFragment=alt~a2 tc eb
+tc:[state is TODO, SCHEDULED or MISSED]
+st-&gt;&gt;&gt;t : changeState(DoneState)
+f-&gt;&gt;&gt;ss : save(workspace)
+f-&gt;&gt;&gt;eb : publish(PLAN_CHANGED event)
+f.&gt;tc : ok
+..=a2
+tc:[state is DONE]
+st.&gt;t : IllegalTransitionException
+t.&gt;f : IllegalTransitionException
+f.&gt;tc : IllegalTransitionException
+tc-&gt;&gt;&gt;v : showError("Task is already done")
+--=a2</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

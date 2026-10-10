@@ -1,0 +1,610 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>25</x>
+      <y>130</y>
+      <w>220</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;record&gt;&gt;
+EditOperation
+--
++op: String
++blockId: String
++taskId: String
++newStart: LocalDateTime</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>310</x>
+      <y>120</y>
+      <w>690</w>
+      <h>150</h>
+    </coordinates>
+    <panel_attributes>PlanCommandFactory
+--
++addTask(draft: TaskDraft): PlanCommand
++addBlock(taskId: String, interval: TimeInterval): PlanCommand
++moveBlock(blockId: String, newStart: LocalDateTime, workspace: Workspace): PlanCommand
++removeBlock(blockId: String): PlanCommand
++fromOperation(operation: EditOperation, workspace: Workspace): PlanCommand
++fromSchedule(result: ScheduleResult): MacroCommand</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1060</x>
+      <y>90</y>
+      <w>470</w>
+      <h>210</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Command: Invoker&gt;&gt;
+CommandHistory
+--
+-undoStack: Deque&lt;PlanCommand&gt;
+-redoStack: Deque&lt;PlanCommand&gt;
+-limit: int = 50
+--
++execute(command: PlanCommand, workspace: Workspace): void
++undo(workspace: Workspace): Optional&lt;PlanCommand&gt;
++redo(workspace: Workspace): Optional&lt;PlanCommand&gt;
++canUndo(): boolean
++canRedo(): boolean</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1605</x>
+      <y>90</y>
+      <w>270</w>
+      <h>210</h>
+    </coordinates>
+    <panel_attributes>PlanProposal
+--
+-id: String
+-summary: String
+-command: MacroCommand
+-conflicts: List&lt;Conflict&gt;
+-warnings: List&lt;String&gt;
+--
++getId(): String
++getCommand(): MacroCommand
++hasBlockingConflicts(): boolean
++describeChanges(): List&lt;String&gt;</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>45</x>
+      <y>485</y>
+      <w>180</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=.
+&lt;&lt;Command: Receiver&gt;&gt;
+Workspace
+(see CD02)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1145</x>
+      <y>455</y>
+      <w>300</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+&lt;&lt;Command: Command&gt;&gt;
+PlanCommand
+--
++execute(workspace: Workspace): void
++undo(workspace: Workspace): void
++describe(): String</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1590</x>
+      <y>410</y>
+      <w>300</w>
+      <h>220</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Command: MacroCommand&gt;&gt;
+MacroCommand
+--
+-label: String
+-commands: List&lt;PlanCommand&gt;
+--
++add(command: PlanCommand): void
++size(): int
++execute(workspace: Workspace): void
++undo(workspace: Workspace): void
+--
+execute in order; if one fails,
+undo the executed ones (atomic)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>20</x>
+      <y>790</y>
+      <w>230</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Command: ConcreteCommand&gt;&gt;
+AddTaskCommand
+--
+-task: Task</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>535</x>
+      <y>780</y>
+      <w>240</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Command: ConcreteCommand&gt;&gt;
+AddBlockCommand
+--
+-block: TimeBlock
+-previousStatus: TaskStatus</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1180</x>
+      <y>775</y>
+      <w>230</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Command: ConcreteCommand&gt;&gt;
+MoveBlockCommand
+--
+-blockId: String
+-newInterval: TimeInterval
+-oldInterval: TimeInterval</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1620</x>
+      <y>775</y>
+      <w>240</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Command: ConcreteCommand&gt;&gt;
+RemoveBlockCommand
+--
+-blockId: String
+-removed: TimeBlock
+-previousStatus: TaskStatus</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2110</x>
+      <y>95</y>
+      <w>160</w>
+      <h>200</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+EventType
+--
+USER_MESSAGE
+LLM_REQUEST
+LLM_ERROR
+TOOL_CALLED
+TOOL_RESULT
+PROPOSAL_READY
+PLAN_CHANGED
+AGENT_DONE</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2470</x>
+      <y>130</y>
+      <w>230</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;record&gt;&gt;
+AgentEvent
+--
++type: EventType
++timestamp: Instant
++sessionId: String
++data: Map&lt;String, Object&gt;</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2390</x>
+      <y>450</y>
+      <w>390</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Observer: Subject&gt;&gt;
+EventBus
+--
+-listeners: List&lt;AgentEventListener&gt;
+--
++subscribe(listener: AgentEventListener): void
++unsubscribe(listener: AgentEventListener): void
++publish(event: AgentEvent): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2840</x>
+      <y>470</y>
+      <w>280</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+&lt;&lt;Observer: Observer&gt;&gt;
+AgentEventListener
+--
++onEvent(event: AgentEvent): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2050</x>
+      <y>770</y>
+      <w>280</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Observer: ConcreteObserver&gt;&gt;
+AutoSaver
+--
+-store: WorkspaceStore
+-workspace: Workspace
+--
++onEvent(event: AgentEvent): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2445</x>
+      <y>740</y>
+      <w>280</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Observer: ConcreteObserver&gt;&gt;
+&lt;&lt;app.adapters&gt;&gt;
+TraceRecorder
+--
+-traceFile: Path
+-mapper: ObjectMapper
+--
++onEvent(event: AgentEvent): void
+--
+one JSON line per event
+(agent trace = KUMA evidence)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2860</x>
+      <y>795</y>
+      <w>240</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=.
+&lt;&lt;Observer: ConcreteObserver&gt;&gt;
+ChatController
+(see CD10)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>3180</x>
+      <y>795</y>
+      <w>240</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=.
+&lt;&lt;Observer: ConcreteObserver&gt;&gt;
+WeekController
+(see CD10)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>3480</x>
+      <y>795</y>
+      <w>240</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=.
+&lt;&lt;Observer: ConcreteObserver&gt;&gt;
+CliEventPrinter
+(see CD10)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2120</x>
+      <y>1030</y>
+      <w>140</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+WorkspaceStore
+(see CD09)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>20</x>
+      <y>10</y>
+      <w>1400</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>fontsize=18
+*CD07 - Plan commands and agent events (core.command, core.event)*
+Patterns: Command (PlanCommand, CommandHistory = invoker, Workspace = receiver; MacroCommand groups a proposal) and Observer (EventBus)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>205</x>
+      <y>155</y>
+      <w>145</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;40.0;105.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>762</x>
+      <y>230</y>
+      <w>444</w>
+      <h>265</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;create&gt;&gt;</panel_attributes>
+    <additional_attributes>405.0;225.0;40.7;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1255</x>
+      <y>260</y>
+      <w>80</w>
+      <h>235</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2=0..*
+undo / redo stacks</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;195.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1700</x>
+      <y>260</y>
+      <w>80</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=1
+command</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;150.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1405</x>
+      <y>505</y>
+      <w>225</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.0;185.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1405</x>
+      <y>455</y>
+      <w>225</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2=1..*
+children</panel_attributes>
+    <additional_attributes>185.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>185</x>
+      <y>480</y>
+      <w>1000</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;act on&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;40.0;960.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>210</x>
+      <y>520</y>
+      <w>975</w>
+      <h>319</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>935.0;40.1;40.0;279.3</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>718</x>
+      <y>545</y>
+      <w>482</w>
+      <h>275</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>442.8;40.0;40.2;235.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1255</x>
+      <y>545</y>
+      <w>80</w>
+      <h>270</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;230.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1348</x>
+      <y>545</y>
+      <w>352</w>
+      <h>270</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.3;40.0;313.0;230.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2545</x>
+      <y>220</y>
+      <w>80</w>
+      <h>270</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;publish&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;230.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2230</x>
+      <y>155</y>
+      <w>280</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>40.0;40.0;240.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2740</x>
+      <y>480</y>
+      <w>140</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2=0..*
+listeners</panel_attributes>
+    <additional_attributes>40.0;40.0;100.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2290</x>
+      <y>530</y>
+      <w>602</w>
+      <h>285</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>562.6;40.0;40.0;245.1</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2659</x>
+      <y>530</y>
+      <w>296</w>
+      <h>250</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>257.3;40.0;40.7;210.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2940</x>
+      <y>530</y>
+      <w>80</w>
+      <h>305</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;265.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2991</x>
+      <y>530</y>
+      <w>312</w>
+      <h>305</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.6;40.0;272.9;265.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>3040</x>
+      <y>530</y>
+      <w>530</w>
+      <h>305</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.0;490.0;265.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2150</x>
+      <y>850</y>
+      <w>80</w>
+      <h>220</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+store</panel_attributes>
+    <additional_attributes>40.0;180.0;40.0;40.0</additional_attributes>
+  </element>
+</diagram>

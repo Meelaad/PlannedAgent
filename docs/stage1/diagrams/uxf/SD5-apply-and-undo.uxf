@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>1870</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD5 - Apply a proposal, then undo it (F07, F02 / UC12, UC13 - Command, State and Observer at run time)
+obj=Student~s ACTOR
+obj=:MainWindow~w
+obj=:MainController~c
+obj=:PlannerFacade~f
+obj=proposal:Proposal~p
+obj=:CommandHistory~h
+obj=cmd:AddBlockCommand~ab
+obj=:Plan~pl
+obj=task:Task~t
+obj=state:TodoState~ts
+obj=:EventBus~eb
+s-&gt;&gt;&gt;w : click Apply
+w-&gt;&gt;&gt;c : onApply()
+c-&gt;&gt;&gt;f : applyProposal()
+f-&gt;&gt;&gt;p : hasConflicts()
+combinedFragment=alt~a1 c eb
+c:[the proposal has conflicts]
+p.&gt;f : true
+f.&gt;c : Fix the conflicts first
+c-&gt;&gt;&gt;w : showError(message)
+..=a1
+c:[no conflicts]
+p.&gt;f : false
+f-&gt;&gt;&gt;p : getCommands()
+p.&gt;f : commands
+f-&gt;&gt;&gt;h : run(commands, workspace)
+combinedFragment=loop~l1 h ts
+h:[each command]
+h-&gt;&gt;&gt;ab : execute(workspace)
+ab-&gt;&gt;&gt;pl : add(block)
+ab-&gt;&gt;&gt;t : schedule()
+t-&gt;&gt;&gt;ts : schedule(task)
+ts-&gt;&gt;&gt;t : setState(new ScheduledState())
+--=l1
+h-&gt;&gt;&gt;h + : push the commands on the undo stack
+f-&gt;&gt;&gt;f + : changed("plan updated")
+f-&gt;&gt;&gt;eb : notifyObservers("PLAN", "6 blocks added")
+eb-&gt;&gt;&gt;c : update("PLAN", "6 blocks added")
+c-&gt;&gt;&gt;w : showWeek(plan, events)
+--=a1
+s-&gt;&gt;&gt;w : click Undo
+w-&gt;&gt;&gt;c : onUndo()
+c-&gt;&gt;&gt;f : undo()
+f-&gt;&gt;&gt;h : undo(workspace)
+combinedFragment=alt~a2 c eb
+c:[nothing to undo]
+h.&gt;f : false
+f.&gt;c : false
+c-&gt;&gt;&gt;w : showError("Nothing to undo")
+..=a2
+c:[a change can be undone]
+combinedFragment=loop~l2 h t
+h:[each command, in reverse order]
+h-&gt;&gt;&gt;ab : undo(workspace)
+ab-&gt;&gt;&gt;pl : remove(blockId)
+ab-&gt;&gt;&gt;t : unschedule()
+--=l2
+h.&gt;f : true
+f-&gt;&gt;&gt;eb : notifyObservers("PLAN", "undo")
+--=a2</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

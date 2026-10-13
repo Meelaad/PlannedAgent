@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>1360</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD8 - End-of-day review and rescheduling (F10 / UC10)
+obj=Student~s ACTOR
+obj=:MainWindow~w
+obj=:MainController~c
+obj=:PlannerFacade~f
+obj=task:Task~t
+obj=:Plan~pl
+obj=:EventBus~eb
+obj=:Agent~a
+s-&gt;&gt;&gt;w : click Review today, tick Done or Missed for each block
+w-&gt;&gt;&gt;c : onReview(done, missed)
+c-&gt;&gt;&gt;f : reviewDay(done, missed)
+combinedFragment=loop~l1 f t
+f:[each task marked done]
+f-&gt;&gt;&gt;t : complete()
+--=l1
+combinedFragment=loop~l2 f pl
+f:[each task marked missed]
+f-&gt;&gt;&gt;t : markMissed()
+f-&gt;&gt;&gt;pl : remove(blockId)
+--=l2
+f-&gt;&gt;&gt;eb : notifyObservers("PLAN", "day reviewed")
+f-&gt;&gt;&gt;a : handle("Reschedule my missed tasks", workspace)
+combinedFragment=alt~a1 f a
+f:[the agent returns a proposal]
+a.&gt;f : AgentReply with a proposal
+..=a1
+f:[LlmException - fall back to plain scheduling]
+a.&gt;f : LlmException
+f-&gt;&gt;&gt;f + : autoSchedule("deadline")
+--=a1
+f.&gt;c : reply
+c-&gt;&gt;&gt;w : showProposal(proposal)
+ref=s c : SD5 - apply the proposal</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

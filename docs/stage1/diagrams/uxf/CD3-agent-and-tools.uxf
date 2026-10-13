@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>40</x>
+      <y>100</y>
+      <w>230</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>AgentStep
+--
++tool: String
++args: Map&lt;String, String&gt;
++answer: String
+--
+tool empty = final answer</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>450</x>
+      <y>90</y>
+      <w>320</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;short-term memory&gt;&gt;
+ConversationMemory
+--
+-messages: List&lt;String&gt;
+-limit: int = 20
+--
++add(role: String, text: String): void
++recent(): List&lt;String&gt;</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1005</x>
+      <y>125</y>
+      <w>120</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=.
+&lt;&lt;interface&gt;&gt;
+LlmClient
+(see CD4)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>70</x>
+      <y>385</y>
+      <w>170</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>AgentReply
+--
++text: String
++proposal: Proposal</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>375</x>
+      <y>330</y>
+      <w>470</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>Agent
+--
+-llm: LlmClient
+-tools: Map&lt;String, Tool&gt;
+-memory: ConversationMemory
+-events: EventBus
+-maxSteps: int = 6
+--
++handle(message: String, workspace: Workspace): AgentReply
+-buildRequest(workspace: Workspace): LlmRequest
+-parseStep(text: String): AgentStep</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1005</x>
+      <y>400</y>
+      <w>120</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+EventBus
+(see CD6)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>70</x>
+      <y>625</y>
+      <w>170</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>ToolResult
+--
++ok: boolean
++text: String
++proposal: Proposal</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>350</x>
+      <y>620</y>
+      <w>520</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+Tool
+--
++name(): String
++description(): String
++run(args: Map&lt;String, String&gt;, workspace: Workspace): ToolResult</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>20</x>
+      <y>990</y>
+      <w>270</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;tool: get_tasks&gt;&gt;
+GetTasksTool
+--
+lists the tasks and their status</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>460</x>
+      <y>990</y>
+      <w>300</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;tool: get_schedule&gt;&gt;
+GetScheduleTool
+--
+lists events and blocks for some days</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>930</x>
+      <y>950</y>
+      <w>270</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;tool: schedule_tasks&gt;&gt;
+ScheduleTasksTool
+--
+-scheduler: Scheduler
+-weather: WeatherService
+-checker: ConflictChecker
+--
+uses the strategy named in args,
+returns a Proposal of new blocks</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1260</x>
+      <y>960</y>
+      <w>220</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;tool: move_task&gt;&gt;
+MoveTaskTool
+--
+-checker: ConflictChecker
+-weather: WeatherService
+--
+checks the move on a copy,
+returns a Proposal</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1540</x>
+      <y>980</y>
+      <w>230</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;tool: remember_preference&gt;&gt;
+RememberPreferenceTool
+--
+checks the rule and value,
+then saves a Preference</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>20</x>
+      <y>10</y>
+      <w>1500</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>fontsize=18
+*CD3 - The AI agent, its memory and its tools (package agent)*
+The Agent runs a short loop: ask the LLM for the next step, run the chosen tool, remember the result, repeat (at most 6 steps)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>570</x>
+      <y>190</y>
+      <w>80</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+memory</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;140.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>733</x>
+      <y>154</y>
+      <w>311</w>
+      <h>215</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+llm</panel_attributes>
+    <additional_attributes>272.0;40.9;40.1;176.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>218</x>
+      <y>180</y>
+      <w>268</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;create&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;40.0;228.9;150.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>200</x>
+      <y>385</y>
+      <w>215</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;create&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;40.0;175.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>805</x>
+      <y>385</y>
+      <w>240</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+events</panel_attributes>
+    <additional_attributes>200.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>570</x>
+      <y>480</y>
+      <w>80</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2=1..*
+tools</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;140.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>200</x>
+      <y>635</y>
+      <w>190</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;create&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;40.0;150.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>166</x>
+      <y>690</y>
+      <w>413</w>
+      <h>340</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>373.5;40.0;40.3;300.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>570</x>
+      <y>690</y>
+      <w>80</w>
+      <h>340</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;300.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>640</x>
+      <y>690</y>
+      <w>361</w>
+      <h>300</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.5;40.0;322.5;260.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>687</x>
+      <y>690</y>
+      <w>612</w>
+      <h>328</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.7;40.0;573.0;288.6</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>731</x>
+      <y>690</y>
+      <w>848</w>
+      <h>340</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.9;40.0;809.0;300.9</additional_attributes>
+  </element>
+</diagram>

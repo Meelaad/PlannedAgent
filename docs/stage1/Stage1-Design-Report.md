@@ -2,27 +2,22 @@
 
 **EECS 3311 Software Design, Fall 2026. Course Project, Stage 1 (Software and Agent Design)**
 **Author:** Milad Jafarieh
-**Project:** PlannedAgent, an AI planning agent that turns a messy to-do list into a conflict-free, time-blocked week
 
-> How to read this report. Every artefact carries an ID so it can be traced end to end:
-> features `F01-F12` -> use cases `UC01-UC14` -> sequence diagrams `SD01-SD14` -> class diagrams `CD00-CD10` -> design patterns `P1-P10`.
-> UML sources are UMLet files in [`diagrams/uxf/`](diagrams/uxf/), and the rendered images are in [`diagrams/png/`](diagrams/png/).
-> Section 8 is the full feature-to-design traceability table.
+> Every part of this report has an ID so it can be traced: features F01 to F11, use cases UC01 to UC13, sequence diagrams SD1 to SD9, class diagram views CD0 to CD6 and design patterns P1 to P7. The UML diagrams were drawn in UMLet; the source files are in [`diagrams/uxf/`](diagrams/uxf/) and the images in [`diagrams/png/`](diagrams/png/). Section 8 links everything together in one table.
 
 ## Contents
 
 1. [Project overview](#1-project-overview)
-2. [Feature specifications (F01-F12)](#2-feature-specifications)
-3. [UML class diagram (CD00-CD10)](#3-uml-class-diagram)
-4. [Design patterns (P1-P10)](#4-design-patterns)
+2. [Feature specifications](#2-feature-specifications)
+3. [UML class diagram](#3-uml-class-diagram)
+4. [Design patterns](#4-design-patterns)
 5. [Use-case diagram](#5-use-case-diagram)
-6. [Use-case descriptions (UC01-UC14)](#6-use-case-descriptions)
-7. [Sequence diagrams (SD01-SD14)](#7-sequence-diagrams)
+6. [Use-case descriptions](#6-use-case-descriptions)
+7. [Sequence diagrams](#7-sequence-diagrams)
 8. [Feature-to-design traceability table](#8-feature-to-design-traceability-table)
 9. [How each feature is realized](#9-how-each-feature-is-realized)
 10. [Important design decisions](#10-important-design-decisions)
-11. [Design for testing (preview of Stages 2-3)](#11-design-for-testing)
-12. [Stage 1 requirement checklist](#12-stage-1-requirement-checklist)
+11. [Stage 1 requirement checklist](#11-stage-1-requirement-checklist)
 
 ---
 
@@ -30,1015 +25,685 @@
 
 ### 1.1 Problem and motivation
 
-Students juggle classes, assignments, part-time shifts, workouts and errands. Their tasks live in one place (a to-do list) and their time in another (a calendar), so deciding when to do each task is a manual, daily chore. That plan also breaks as soon as something changes: a sick day, a class that runs late, rain on the day of a planned run.
+Students have classes, labs, assignments, a part-time job, workouts and errands. The tasks live in a to-do list and the time lives in a calendar, so every week the student has to decide by hand when each task will happen. That plan also breaks as soon as something changes: a missed task, a class that runs late, a rainy day.
 
-Existing tools cover only part of the job:
-
-* To-do apps store tasks but do not schedule them.
-* Calendars hold events but do not plan tasks into free time.
-* Rule-based auto-schedulers need perfectly structured input and cannot take an instruction like *"I'm sick today, push everything non-urgent but keep my 3 pm lab."*
-* General chatbots can talk about plans, but they cannot see the calendar, cannot guarantee a plan without double-booking, and sometimes invent events.
+To-do apps store tasks but do not place them in time. Calendars show events but do not plan tasks. A chatbot can talk about a plan, but it cannot see the calendar, it cannot promise a plan without double-booking, and it can make things up.
 
 ### 1.2 Target users
 
-* Primary: university students (for example York University students), who mix fixed timetables with deadline-driven coursework, a job and personal goals.
-* Secondary: busy individuals who want a weekly plan built from loose notes, without learning a complex planning tool.
+University students (for example at York) who mix a fixed timetable with deadlines, work and personal goals. The app also suits anyone who wants a weekly plan built from quick notes.
 
 ### 1.3 What the agent does
 
-PlannedAgent is a desktop application with a GUI and a CLI. Its AI agent:
+PlannedAgent is a desktop app with a GUI and a command line. Its AI agent:
 
-1. Understands loose language. It turns a "brain dump" into structured tasks: duration, deadline, priority, category, and whether the task is outdoors.
-2. Plans multi-step, with tools. It reads the tasks and the calendar, finds free time, checks the weather for outdoor tasks, runs a scheduling algorithm, checks for conflicts, and proposes a time-blocked plan. It explains the plan and lists anything that did not fit.
-3. Edits the plan conversationally. For example: *"move gym to tomorrow 7 am"*, or *"I'm sick, push everything non-urgent"*. Every change is shown first, applied only after the user confirms, and can be undone.
-4. Remembers the user. It keeps long-term preferences such as *"no studying after 10 pm"* or *"Sundays off"* and turns them into hard scheduling constraints.
-5. Plans goals and learns from the day. It breaks a goal into milestones and tasks, reschedules missed tasks at the end of the day, and writes a weekly insights report grounded in real statistics.
+* turns a quick sentence into tasks ("EECS report Friday, about 3 hours, gym 3 times, groceries");
+* plans the week in steps: it reads the tasks and the schedule with tools, places the tasks in free time, checks for problems and explains the result;
+* changes the plan when asked in plain language ("move gym to Wednesday at 7am"), and every change can be undone;
+* remembers the student's rules ("no studying after 10pm") and the scheduler obeys them;
+* avoids rain for outdoor tasks, reschedules missed tasks at the end of the day and writes a short weekly report.
 
-### 1.4 Why an AI agent is appropriate
+The agent only proposes changes. The student sees each proposal and decides whether to apply it.
 
-Planning needs two kinds of work:
+### 1.4 Why an AI agent is a good fit
 
-* Language and judgment. This means interpreting "sometime this week", "after class", or "I'm too tired at night", choosing which information to gather, and explaining trade-offs. An LLM is good at this; fixed rules are not.
-* Correctness. This means no double-booking, deadlines respected, working hours and quiet hours honoured, and dates computed exactly. Deterministic code is good at this; LLMs are not.
+The problem has two sides. Understanding loose language ("sometime this week", "after class", "I was too tired tonight") and deciding what to look up next is what an LLM is good at. Exact work, such as finding free time, respecting deadlines and never placing two things at once, is what normal code is good at.
 
-An agent combines the two. The LLM decides *what to do next* and calls tools, and deterministic tools do the exact work and validate every change. A single prompt to an LLM would not be enough: the agent must loop, observe tool results, recover from tool failures, and stop to ask when a request is ambiguous.
+An agent joins the two: the LLM decides the next step and calls a tool, and the tools are plain Java that do the exact work. One single question to an LLM would not be enough, because the agent must read data, act, look at the result and sometimes ask the student a question.
 
-### 1.5 AI/LLM models
+### 1.5 AI / LLM models
 
-PlannedAgent is model-agnostic (see P2 Adapter and P3 Decorator):
-
-| Role | Model | Why |
+| Use | Model | Why |
 |---|---|---|
-| Default LLM | Google Gemini API, free tier: `gemini-3.5-flash-lite` (configurable, e.g. `gemini-3.1-flash-lite`) | Free, fast, and supports JSON-schema structured output |
-| Local / offline LLM | Qwen served by Ollama on the author's laptop (e.g. `qwen3:8b`) | Free, private and offline, with no quota; Ollama supports JSON-schema output |
-| Test double | `ScriptedLlmClient` | Deterministic, scripted responses for automated tests (Stage 3) |
+| Default (cloud) | Google Gemini API, free tier, model `gemini-3.5-flash-lite` (a setting) | Free, fast, can answer in JSON |
+| Local option | Qwen running on the author's laptop through Ollama (for example `qwen3:8b`) | Free, private, works offline, no daily limit |
 
-Free-tier quotas are small and change over time. The design therefore treats quota as a constraint: it caches responses, rate-limits requests, retries with back-off, and has a deterministic fallback for every AI feature. The agent is designed so that a small, cheap model is enough: the LLM gets narrow jobs with strict JSON schemas, and deterministic code does everything else.
+The model is chosen with one setting (`PLANNER_LLM=gemini` or `PLANNER_LLM=ollama`). The rest of the program does not change, because both are hidden behind the same `LlmClient` interface (Adapter pattern, P5).
 
-### 1.6 How the LLM interacts with the rest of the system
+### 1.6 How the AI connects to the rest of the system
 
-* The core does not call any vendor API itself. All AI calls go through the `LlmClient` interface (CD06). The concrete adapter (`GeminiLlmClient` or `OllamaLlmClient`) is chosen from configuration by `LlmClientFactory`, which wraps it in decorators (`CachingLlmClient` -> `RetryingLlmClient` -> `RateLimitedLlmClient`).
-* Agent mode (chat). `AgentController` runs a bounded ReAct loop, at most 8 steps:
-  1. `PromptBuilder` builds a request containing the system rules, the tool catalogue (`ToolSpec`s), relevant remembered preferences and the recent conversation.
-  2. The LLM answers with one JSON action: `ToolCallAction`, `FinalAnswerAction` or `ClarifyAction`.
-  3. `ResponseParser` turns that answer into an action object.
-  4. `ToolRegistry` validates the action's arguments and executes the tool.
-  5. The result goes back to the model as an observation, and the loop repeats.
-
-  This provider-neutral JSON protocol works the same way on Gemini and on local Qwen.
-* Workflow mode. Task capture, goal planning and weekly insights each make one schema-constrained call through `StructuredOutputClient`. That client parses the output, validates it, and sends one repair request if the JSON is malformed.
-* The LLM does not edit state directly. Plan changes come back as a `PlanProposal`: a set of `PlanCommand`s checked against a copy of the workspace. The user confirms the proposal before `CommandHistory` applies it, and every applied change can be undone.
+* Every AI call goes through the `LlmClient` interface, which has one method: `complete(request)`. `GeminiClient` and `OllamaClient` translate that call to each provider's own web API.
+* In chat, the `Agent` runs a short loop of at most 6 steps:
+  1. `buildRequest()` puts together the rules, the list of tools, the student's preferences and the recent conversation.
+  2. The LLM answers with one JSON step: either a tool to call with its arguments, or a final answer.
+  3. `parseStep()` reads that step.
+  4. The `Agent` runs the tool and adds the result to `ConversationMemory`.
+  5. The loop repeats until there is a final answer.
+* Two features use a single LLM call instead of the loop: adding tasks from text (`TaskExtractor`) and the weekly report (`ReportService`).
+* The LLM does not change data itself. Tools that change the plan return a `Proposal`, which is a list of command objects. The commands run only when the student clicks Apply, and they can be undone (Command pattern, P3).
 
 ### 1.7 Overall architecture
 
-![CD00 package overview](diagrams/png/CD00-package-overview.png)
-*Figure 1. CD00 package overview (source: [`CD00-package-overview.uxf`](diagrams/uxf/CD00-package-overview.uxf)).*
+![CD0 overview](diagrams/png/CD0-overview.png)
+*Figure 1. Packages and their dependencies (CD0).*
 
-PlannedAgent uses a layered, ports-and-adapters architecture split into two modules:
+The program is built in layers:
 
-* `plannedagent-core` (pure Java 17, with no UI, network or file code) holds:
-  * the domain model
-  * the deterministic scheduling engine
-  * commands and events
-  * the agent loop and tools
-  * prompting
-  * the `LlmClient` abstraction
-  * port interfaces for everything external
-
-  Because the core has no platform dependencies, it can later be reused unchanged inside an Android app.
-* `plannedagent-app` (Java 21) holds:
-  * the JavaFX GUI (MVC)
-  * the picocli CLI
-  * a JSON-lines mode (`plannedagent serve`) used by the Stage 3 KUMA test harness
-  * the infrastructure adapters: Gemini, Ollama, Open-Meteo, iCalendar and JSON storage
-
-All three front-ends call one `PlannerFacade` (P6), so the GUI and the CLI always offer the same features. Dependencies point inward: the core owns the interfaces, and the app implements them (Dependency Inversion).
-
-### 1.8 Agent capabilities (what makes it an agent)
-
-| Capability | Where it lives |
-|---|---|
-| Reasoning and planning | `AgentController` ReAct loop: thought -> tool call -> observation, until a final answer (SD04) |
-| Tool use | 10 tools behind `ToolRegistry`; every call is validated before it runs (CD05, SD07) |
-| Retrieval | Tasks, calendar and free slots through tools; relevant preferences through `PreferenceMemory.relevantTo()` |
-| Memory | Short-term: `ConversationMemory` (last 20 turns). Long-term: `PreferenceMemory`, persisted and turned into constraints (SD09) |
-| Decision making | Choosing tools and strategies, asking a clarifying question (`ClarifyAction`), refusing to apply proposals with blocking conflicts |
-| Multi-step execution and recovery | Up to 8 steps per request; tool errors become observations; malformed output gets one repair attempt; deterministic fallbacks when the LLM is unavailable |
-
-### 1.9 Interfaces: GUI and CLI
-
-**GUI (JavaFX).** One window with the tabs Week, Tasks, Goals, Insights, Memory, Settings and a chat panel on the right.
-
-* The Week tab shows a time grid of fixed events and planned blocks, with conflict badges and weather icons. Its toolbar holds: strategy drop-down, Auto-schedule, Check conflicts, Check weather, Review today, Undo/Redo, Import/Export `.ics`.
-* The chat panel shows the conversation, a live agent status line such as "checking your calendar...", and proposal cards with Apply / Discard buttons.
-
-**CLI (picocli).** Every major feature is also available from a terminal. `plannedagent serve` exposes the agent as JSON lines on stdin/stdout for automated (KUMA) testing.
-
-| Feature | GUI location | CLI command |
+| Layer | Packages | What it does |
 |---|---|---|
-| F01 Task capture | Tasks -> Quick capture -> Extract | `plannedagent capture "<text>" [--yes]` |
-| F02 Tasks and dependencies | Tasks table, New task, Depends on..., Complete | `plannedagent tasks list\|add\|done\|reopen\|delete\|depend` |
-| F03 Calendar import/export | Week -> Import .ics / Export .ics | `plannedagent import <file>` or `plannedagent export <file> --from --to` |
-| F04 Agent plans the week | Chat panel | `plannedagent chat` or `plannedagent ask "<request>" [--json]` |
-| F05 Auto-schedule | Week -> strategy + Auto-schedule | `plannedagent schedule --from --to --strategy edf\|priority\|peak` |
-| F06 Conflicts | Week -> Problems panel -> Ask agent to fix | `plannedagent conflicts --from --to` |
-| F07 Edit plan and undo/redo | Chat; Week -> Undo / Redo | `plannedagent ask "move gym..."` or `plannedagent undo` or `plannedagent redo` |
-| F08 Weather | Week -> Check weather (automatic during scheduling) | `plannedagent weather --from --to` |
-| F09 Preference memory | Chat; Memory tab | `plannedagent prefs list\|forget <id>` |
-| F10 Goal planning | Goals -> Plan goal | `plannedagent goal "<text>" --by <date>` |
-| F11 End-of-day review | Week -> Review today | `plannedagent review [--date]` |
-| F12 Weekly insights | Insights -> Generate | `plannedagent report --week <date> [--out file.md]` |
+| User interface | `ui` | Swing window (`MainWindow`, `MainController`) and the command line (`PlannerCli`) |
+| Application | `app` | `PlannerFacade`, the one entry point, plus notifications (`EventBus`) |
+| Logic | `agent`, `scheduling`, `commands` | The AI agent and its tools, the scheduler and its strategies, plan changes with undo |
+| Outside world | `ai`, `services` | LLM providers, weather, report, calendar export, file storage |
+| Data | `model` | `Workspace`, tasks with their states, events, blocks and preferences |
 
-### 1.10 Technology stack
+Arrows only point downwards. Only the `ui` package uses Swing; everything else is plain Java, so the same logic could later be reused in another app with a different screen.
 
-| Concern | Choice |
-|---|---|
-| Language | Java 21 LTS (the core compiled for Java 17 so it stays portable) |
-| GUI / CLI | JavaFX (OpenJFX) with MVC, picocli |
-| Build / tests | Gradle (two modules), JUnit 5 (Jupiter) |
-| JSON | Jackson |
-| LLM | Gemini REST API (free tier) or Ollama (local Qwen), behind `LlmClient` |
-| Weather | Open-Meteo forecast API (free, no key) |
-| Calendar files | iCalendar `.ics` via the ical4j library |
-| Storage | Local JSON files in `~/.plannedagent/`, behind `WorkspaceStore` / `PreferenceStore` |
-| UML | UMLet 15.1 (`.uxf` sources in this repository) |
+### 1.8 How the user interacts: GUI and CLI
 
-**Scope.**
-* In scope: a single user on a local desktop; the 12 features below; English input.
-* Out of scope: multi-user sharing, live two-way calendar sync, mobile UI, and splitting a long task across several blocks. The design leaves room for the last one in a later version.
+**GUI (Swing).** One window with three panels:
+
+* Tasks panel: the task list, a text box for adding tasks from a sentence, and buttons to add, edit, complete and delete tasks.
+* Week panel: the week with fixed events and planned blocks, and buttons for Auto-schedule (with a strategy list), Check conflicts, Review today, Weekly report, Undo, Redo, Add event and Export .ics.
+* Chat panel: the conversation with the agent, a status line ("using schedule_tasks"), and a proposal card with Apply and Discard.
+
+**CLI.** The same features from a terminal:
+
+| Feature | GUI | CLI |
+|---|---|---|
+| F01 Add tasks from text | Tasks panel, Add from text | `plannedagent add "<text>"` |
+| F02 Manage tasks | Tasks panel buttons | `plannedagent tasks`, `plannedagent done <id>` |
+| F03 Fixed events, export | Week panel, Add event, Export .ics | `plannedagent event add ...`, `plannedagent export week.ics` |
+| F04 Auto-schedule | Week panel, Auto-schedule | `plannedagent schedule --strategy deadline` |
+| F05 Plan with the agent | Chat panel | `plannedagent ask "<message>"` |
+| F06 Check conflicts | Week panel, Check conflicts | `plannedagent conflicts` |
+| F07 Change by chat, undo | Chat panel, Undo, Redo | `plannedagent ask "..."`, `plannedagent undo`, `plannedagent redo` |
+| F08 Weather | Outdoor box on a task, rain warnings | warnings printed by `schedule` and `conflicts` |
+| F09 Preferences | Chat panel | `plannedagent ask "I never study after 10pm"` |
+| F10 Review the day | Week panel, Review today | `plannedagent review` |
+| F11 Weekly report | Week panel, Weekly report | `plannedagent report` |
+
+### 1.9 Technology
+
+Java 21, Swing for the GUI, JUnit 5 for tests, Gson for JSON, Maven as the build tool (it opens directly in Eclipse), Java's built-in `HttpClient` for web calls, the Gemini API or Ollama for the LLM, and the Open-Meteo API for the weather.
+
+### 1.10 Scope
+
+Included: one student on one computer, the 11 features in Section 2, English input. Not included: sharing with other users, live syncing with Google Calendar, a phone app, and splitting a long task over several blocks.
 
 ---
 
 ## 2. Feature specifications
 
-PlannedAgent has 12 non-trivial features, two more than the required minimum. Login, settings screens, About and Exit are not counted.
+PlannedAgent has 11 features. Simple actions such as opening the app or changing settings are not counted.
 
 | ID | Feature | Type | Use case | Sequence diagram |
 |---|---|---|---|---|
-| F01 | Natural-language task capture | Hybrid | UC01 | SD01 |
-| F02 | Task management with dependencies and lifecycle | Deterministic | UC02 | SD02 |
-| F03 | Calendar import/export (.ics) | Deterministic | UC03 | SD03 |
-| F04 | Agent-planned week (conversational planning) | Hybrid (AI-led) | UC04, UC13 | SD04, SD08 |
-| F05 | Auto-schedule with a selectable strategy | Deterministic | UC05, UC13 | SD05, SD08 |
-| F06 | Conflict and overload detection with agent fixes | Hybrid | UC06, UC13 | SD06, SD08 |
-| F07 | Natural-language plan editing with undo/redo | Hybrid | UC07, UC13, UC14 | SD07, SD08, SD14 |
-| F08 | Weather-aware scheduling | Hybrid (external API) | UC08 | SD05, SD06 |
-| F09 | Preference memory (long-term agent memory) | Hybrid | UC09 | SD09 |
-| F10 | Goal decomposition | AI-based (validated) | UC10 | SD10 |
-| F11 | End-of-day review and smart rescheduling | Hybrid | UC11, UC13 | SD11, SD08 |
-| F12 | Weekly insights report | Hybrid | UC12 | SD12 |
+| F01 | Add tasks from plain text | Hybrid | UC01 | SD2 |
+| F02 | Manage tasks and their status | Deterministic | UC02 | SD2, SD5, SD8 |
+| F03 | Fixed events and calendar export | Deterministic | UC03 | SD9 |
+| F04 | Auto-schedule with a chosen strategy | Deterministic | UC04, UC12 | SD3, SD5 |
+| F05 | Plan the week with the agent | AI agent (hybrid) | UC05, UC12 | SD4, SD5 |
+| F06 | Check conflicts | Deterministic | UC06 | SD6 |
+| F07 | Change the plan by chat, with undo and redo | Hybrid | UC07, UC12, UC13 | SD6, SD5 |
+| F08 | Weather-aware scheduling | Hybrid (external API) | UC08 | SD3 |
+| F09 | Remember preferences | Hybrid | UC09 | SD7 |
+| F10 | End-of-day review | Hybrid | UC10, UC12 | SD8, SD5 |
+| F11 | Weekly report | Hybrid | UC11 | SD9 |
 
-### F01: Natural-language task capture
+### F01: Add tasks from plain text
 
-* **Description.** Turns free text such as *"finish EECS report by Friday ~3h, gym 3x this week, groceries, call mom"* into structured tasks: title, estimate in minutes, deadline, priority, category, outdoor flag and preferred time of day. The LLM only extracts the information. Relative dates ("Friday", "in 3 days") are resolved by the deterministic `DateResolver`, and every draft is validated before anything is saved.
-* **User interaction (GUI).** Tasks tab -> *Quick capture* text box -> Extract. An editable review table appears, with problem rows highlighted. The user fixes or deletes rows, then clicks Save tasks. CLI: `plannedagent capture "<text>"`.
-* **Input.** Free text, the current date/time and time zone, and default values from the settings.
-* **Output.** A `CaptureResult` with `TaskDraft`s and any issues, then saved `Task`s in state TODO.
-* **AI involvement.** Hybrid: an LLM extraction call constrained by a JSON schema, then deterministic date resolution, defaults and validation.
-* **Expected workflow.**
-  1. `TasksController.onExtract` calls `PlannerFacade.captureTasks`.
-  2. `TaskCaptureService.extract` builds an extraction request with `PromptBuilder`.
-  3. `StructuredOutputClient.call` sends it to the LLM and parses the JSON.
-  4. `DateResolver.resolve` fixes each deadline, and `validate` fills defaults (30 min) and flags problems.
-  5. The drafts are shown for review.
-  6. On save, each draft becomes a task in `Workspace` and is persisted.
-* **Errors and alternatives.**
-  * Empty input is rejected before any LLM call.
-  * Malformed JSON gets one automatic repair request; if it is still malformed, the user sees a message.
-  * If the LLM is unavailable or the quota is used up, the system says "AI unavailable, add tasks manually" and opens the manual form (F02).
-  * An unresolvable date phrase leaves the draft flagged "deadline unclear" for the user to fix.
-  * Estimates outside 5-600 minutes are flagged.
-  * Text with no tasks produces "No tasks found".
+* **Description.** The student types several tasks in one sentence. The LLM turns the sentence into a list of tasks, each with a title, a length in minutes, a deadline, a priority and an outdoor flag. The student checks the list before anything is saved.
+* **User interaction (GUI).** In the Tasks panel the student types into the text box and clicks Add from text. The tasks appear in a list that can be edited. Save adds them.
+* **Input.** The sentence and today's date.
+* **Output.** New `Task` objects in the To-do state, saved in the workspace.
+* **AI involvement.** Hybrid. The LLM reads the text; plain Java checks the result (title present, length from 5 to 600 minutes, deadline not in the past) and creates the tasks.
+* **Expected workflow.** `MainController.onAddText()` -> `PlannerFacade.tasksFromText()` -> `TaskExtractor.extract()` -> `LlmClient.complete()` -> `TaskExtractor.readTasks()` -> the list is shown -> `onSaveTasks()` -> `saveTasks()` -> `Workspace.addTask()` for each task -> `JsonStorage.save()` -> observers are notified (SD2).
+* **Errors and alternatives.** Empty text is rejected before any LLM call. If the LLM is not available or the daily limit is used up, the student sees "AI is not available, add the tasks by hand" and can use the normal task form (F02). If the reply is not valid JSON, nothing is saved and the student is told. A task with a problem is highlighted so the student can fix it.
 
-### F02: Task management with dependencies and lifecycle
+### F02: Manage tasks and their status
 
-* **Description.** Create, edit, delete, complete and reopen tasks. Each task has a priority, estimate, deadline, category, outdoor flag and preferred time. Tasks can have prerequisites ("Write report" after "Research sources"). Dependency cycles are rejected. A task's lifecycle (TODO -> SCHEDULED -> DONE / MISSED) is enforced by the State pattern (P8).
-* **User interaction (GUI).** Tasks tab: a sortable table with filters, a *New task* form, a *Depends on...* picker, and right-click actions (Complete, Reopen, Delete). CLI: `plannedagent tasks ...`.
-* **Input.** Task fields; task and prerequisite ids.
-* **Output.** An updated task list, or an error message for an illegal transition or a cycle.
+* **Description.** The student can add, edit, delete and complete tasks by hand. Every task has a status: To-do, Scheduled, Done or Missed. What a task can do depends on its status; for example a Done task cannot be scheduled. The State pattern (P2) handles these rules.
+* **User interaction (GUI).** The Tasks panel shows every task with its status, and has New, Edit, Delete and Mark done buttons.
+* **Input.** Task fields (title, minutes, deadline, priority, outdoor) or a task id.
+* **Output.** The updated task list, or a message if a change is not allowed.
 * **AI involvement.** Deterministic.
-* **Expected workflow.**
-  * Adding a dependency: `PlannerFacade.addDependency` builds a `DependencyGraph` from all tasks. If `wouldCreateCycle` returns false, it calls `Task.addPrerequisite`, saves, and publishes `PLAN_CHANGED`.
-  * Completing a task: `Task.complete()` delegates to its current `TaskState`, which either moves the task to `DoneState` or throws `IllegalTransitionException` (SD02).
-* **Errors and alternatives.**
-  * A cycle is rejected and the cycle path is shown (A -> B -> A).
-  * Completing a task that is already done is rejected with "Task is already done".
-  * Deleting a task that others depend on asks for confirmation and removes the dependency links.
-  * Invalid fields (an estimate of 0 or less, an empty title) produce validation messages.
+* **Expected workflow.** New, Edit and Delete call `onAddTask()`, `onEditTask()` and `onDeleteTask()`, which call `PlannerFacade.addTask()`, `updateTask()` and `deleteTask()` (`Workspace.removeTask()`). Mark done: `MainController.onComplete()` -> `PlannerFacade.completeTask()` -> `Workspace.getTask()` -> `Task.complete()` -> the current `TaskState` decides -> `Task.setState(new DoneState())` -> save and notify.
+* **Errors and alternatives.** Completing a task that is already done raises an `IllegalStateException` and the student sees "This task is already done". An empty title or a length of 0 is rejected. An unknown id gives a message.
 
-### F03: Calendar import/export (.ics)
+### F03: Fixed events and calendar export
 
-* **Description.** Imports fixed commitments, such as a course timetable or a Google Calendar export, from iCalendar files. Weekly recurrences are expanded over the planning horizon (16 weeks). Exports planned time blocks to `.ics` so they can be added to Google, Outlook or Apple Calendar.
-* **User interaction (GUI).** Week tab -> Import .ics (file chooser) / Export .ics (file chooser and date range). CLI: `plannedagent import <file>` / `plannedagent export <file> --from --to`.
-* **Input.** An `.ics` file; a date range for export.
-* **Output.** Imported `CalendarEvent`s, shown in the week view with a count; or the written `.ics` file.
+* **Description.** The student enters fixed commitments such as lectures, labs and work shifts. The scheduler does not place tasks on top of them. The planned week (events and task blocks) can be exported to an `.ics` file, which Google Calendar, Outlook and Apple Calendar can open.
+* **User interaction (GUI).** In the Week panel, Add event asks for a title, a day, a start and an end. Export .ics asks for a file name.
+* **Input.** Event title, start and end; a file name.
+* **Output.** A `FixedEvent` in the workspace; an `.ics` file.
 * **AI involvement.** Deterministic.
-* **Expected workflow.**
-  1. `PlannerFacade.importCalendar` calls `CalendarImporter.importEvents`. The `IcsCalendarAdapter` (P2) parses each VEVENT with ical4j and `toCalendarEvent` converts it.
-  2. `Workspace.addEvents` adds the events, skipping duplicates by UID.
-  3. The workspace is saved and `PLAN_CHANGED` is published.
-  4. Export works the other way: `PlanExporter.export` -> `toVEvent` for each block.
-* **Errors and alternatives.**
-  * An unreadable or invalid file raises `CalendarImportException` and nothing is imported (all-or-nothing).
-  * An event without an end time gets 1 h and a warning.
-  * Importing the same file again does not create duplicates.
-  * An unwritable export path produces an error message.
+* **Expected workflow.** `onAddEvent()` -> `PlannerFacade.addEvent()` -> `Workspace.addEvent()` -> save. `onExport()` -> `PlannerFacade.exportCalendar()` -> `CalendarExporter.export()` (SD9).
+* **Errors and alternatives.** An end time before the start time is rejected. An event that overlaps another is allowed, but the conflict check reports it. If the file cannot be written, the student sees an error.
 
-### F04: Agent-planned week (conversational planning)
+### F04: Auto-schedule with a chosen strategy
 
-* **Description.** The user asks in plain language, for example *"Plan my week; gym 3 times; keep Friday evening free."* The agent reasons step by step:
-  1. It reads tasks and calendar (`get_tasks`, `get_calendar`).
-  2. It checks the weather if there are outdoor tasks (`get_weather`).
-  3. It schedules with a suitable strategy (`schedule_tasks`).
-  4. It verifies the result (`check_conflicts`).
-
-  It then returns a plan proposal with an explanation and a list of tasks that did not fit. Nothing changes until the user clicks Apply.
-* **User interaction (GUI).** Chat panel. A live status line shows what the agent is doing ("checking your calendar..."). A proposal card lists the changes, with Apply / Discard, and the Week view previews the proposed blocks. CLI: `plannedagent chat` or `plannedagent ask`, then answer yes/no.
-* **Input.** The user's message, the workspace (tasks, events, plan), preferences, settings and the current time.
-* **Output.** An `AgentResponse` (outcome, message, optional `PlanProposal`) and, after confirmation, an updated plan.
-* **AI involvement.** Hybrid, AI-led orchestration: the LLM chooses tools and writes the explanation, and deterministic tools compute the schedule and check it.
-* **Expected workflow.**
-  1. `ChatController.onSend` calls `PlannerFacade.chat` on a background thread.
-  2. `AgentController.handle` runs the loop: `PromptBuilder` -> `LlmClient` -> `ResponseParser.parseAction` -> `ToolRegistry.execute` -> `observe`, until a final answer.
-  3. The proposal is registered and shown to the user.
-  4. When the user applies it, see SD08.
-* **Errors and alternatives.**
-  * If a tool fails (for example the weather API is down), the failure becomes an observation and the agent must continue and tell the user.
-  * Malformed LLM output gets one repair attempt, then the agent answers "I couldn't process that. Try rephrasing or use Auto-schedule.".
-  * If the 8-step limit is reached, the agent returns a partial answer with a suggestion.
-  * An ambiguous request ("move it") makes the agent ask a clarifying question (`ClarifyAction`).
-  * If the quota is used up or the LLM is offline, the user is offered deterministic Auto-schedule (F05).
-  * A proposal with blocking conflicts cannot be applied.
-
-### F05: Auto-schedule with a selectable strategy
-
-* **Description.** One-click, deterministic scheduling of all tasks that need a slot into free time, using a strategy the user picks:
-  * Earliest-Deadline-First
-  * Priority-First
-  * Peak-Hours, which puts demanding work into the user's peak-energy window and respects each task's preferred time of day
-
-  Prerequisites are always scheduled first. This feature works without any LLM, so it is also the offline fallback.
-* **User interaction (GUI).** Week tab -> strategy drop-down -> Auto-schedule. A proposal preview appears with Apply/Discard, plus a list of tasks that did not fit and why. CLI: `plannedagent schedule --strategy ...`.
-* **Input.** Date range, strategy name, tasks needing scheduling, busy intervals, settings, and preference constraints.
-* **Output.** A `PlanProposal` (a `MacroCommand` of `AddBlockCommand`s) and the reasons for any unscheduled task.
+* **Description.** One click places every task that needs a time slot into free time. The student picks the strategy: deadline first, priority first or shortest first. This feature does not use the LLM, so it also works offline. The result is a proposal that the student applies or discards.
+* **User interaction (GUI).** In the Week panel the student picks a strategy and clicks Auto-schedule. The proposal shows the new blocks, any conflicts and the tasks that did not fit, with Apply and Discard.
+* **Input.** The strategy name, the tasks that need a slot, the busy times (events and blocks), the preferences and the weather forecast.
+* **Output.** A `Proposal` made of `AddBlockCommand`s, and a reason for each task that could not be placed.
 * **AI involvement.** Deterministic.
-* **Expected workflow.**
-  1. `StrategyRegistry.get(name)` returns the strategy, and `Scheduler.setStrategy` installs it (P1).
-  2. The facade builds the constraints: availability from settings and preferences, plus weather if there are outdoor tasks (F08).
-  3. `Scheduler.schedule` gets free slots from `SlotFinder.freeSlots`, then calls `strategy.order`. For each task, every candidate slot must pass every `SchedulingConstraint.permits`, and the best one is chosen by `strategy.slotScore`.
-  4. `PlanCommandFactory.fromSchedule` builds the commands.
-  5. The commands are simulated on `Workspace.snapshot()`, and `ConflictDetector.detect` checks the result.
-  6. A proposal is returned (SD05).
-* **Errors and alternatives.**
-  * An unknown strategy name falls back to Earliest-Deadline-First with a warning.
-  * If there is no free time, the task is marked unscheduled with the reason "no free slot before deadline".
-  * A task longer than every free slot is reported as "needs N min, largest free slot M min".
-  * If the weather service is down, scheduling continues without the weather constraint, with a warning.
+* **Expected workflow.** `onAutoSchedule()` -> `autoSchedule(name)` -> `strategyFor(name)` -> `Scheduler.setStrategy()` -> `WeatherService.forecast()` -> `Scheduler.schedule()` -> `strategy.sort()` -> for each task, try 30-minute start times with `fits()` -> `ScheduleResult` -> one `AddBlockCommand` per block -> try them on `Workspace.copy()` -> `ConflictChecker.check()` -> `Proposal` (SD3). Applying it follows SD5.
+* **Errors and alternatives.** An unknown strategy name falls back to deadline first, with a warning. A task with no free slot before its deadline is listed with the reason. If the weather service is down, scheduling continues without it and the student is warned.
 
-### F06: Conflict and overload detection with agent fixes
+### F05: Plan the week with the agent
 
-* **Description.** Checks the plan automatically after every change. It detects:
-  * double-booking (blocks or events overlapping)
-  * blocks scheduled after their task's deadline
-  * blocks outside working hours or quiet hours
-  * days over the focus-time cap
-  * prerequisites scheduled after the tasks that depend on them
-  * outdoor blocks during likely rain
+* **Description.** The student asks in normal language, for example "Plan my week, gym 3 times, keep Friday evening free". The agent works in steps. It reads the tasks and the schedule with tools, schedules with a suitable strategy, and answers with an explanation and a proposal. Nothing changes until the student clicks Apply.
+* **User interaction (GUI).** The student types in the Chat panel. The status line shows which tool the agent is using. The answer appears with a proposal card (Apply, Discard).
+* **Input.** The message, the workspace, the preferences, the recent conversation and today's date.
+* **Output.** An `AgentReply` with text and, when the plan changes, a `Proposal`.
+* **AI involvement.** AI-led. The LLM decides the steps, and the tools that do the work are plain Java.
+* **Expected workflow.** `onSend()` -> `PlannerFacade.chat()` -> `Agent.handle()`. Up to 6 times: `buildRequest()` -> `LlmClient.complete()` -> `parseStep()` -> `Tool.run()` -> `ConversationMemory.add()`. When the LLM gives its final answer, the agent returns an `AgentReply` (SD4).
+* **Errors and alternatives.** If a reply is not valid JSON, the agent reminds the LLM of the format and tries again (this counts as a step). If a tool fails, the error goes back to the LLM, which can try again or ask the student. If the LLM is not available or 6 steps are used, the agent says "I could not finish, try Auto-schedule". If the request is unclear, the agent asks a question instead of guessing.
 
-  Each conflict is shown with a severity (BLOCKING or WARNING). With one click, the agent proposes a fix.
-* **User interaction (GUI).** Week tab: conflict badges on blocks and a Problems panel with an Ask agent to fix button. CLI: `plannedagent conflicts`, then `plannedagent ask "fix my conflicts"`.
-* **Input.** Plan, events, tasks, settings, preferences, and the forecast if one is available.
-* **Output.** A list of `Conflict`s (type, severity, message, block ids) and, optionally, a fix proposal from the agent.
-* **AI involvement.** Hybrid: detection is deterministic, and the fix uses the agent (F04 machinery with `check_conflicts` and `edit_plan`).
-* **Expected workflow.**
-  1. `WeekController.onEvent(PLAN_CHANGED)` calls `refresh()`, which calls `PlannerFacade.detectConflicts`.
-  2. `ConflictDetector.detect` runs its checks and every `SchedulingConstraint` on each block.
-  3. `WeekView.render` shows the conflicts.
-  4. *Ask agent to fix* sends the conflicts to the chat. The agent proposes edits that are re-checked on a snapshot (SD06).
-* **Errors and alternatives.**
-  * No conflicts: "All clear".
-  * If the agent's fix still has blocking conflicts, the proposal shows them and cannot be applied.
-  * If the weather is unknown, the rain check is skipped and a note says so.
+### F06: Check conflicts
 
-### F07: Natural-language plan editing with undo/redo
+* **Description.** Finds problems in the plan:
+  * two things planned at the same time;
+  * a block that ends after its task's deadline;
+  * an outdoor block when rain is likely;
+  * a block that breaks a preference, such as work after 10pm.
 
-* **Description.** The user edits the plan in conversation, for example *"move gym to tomorrow 7 am"* or *"I'm sick today, push everything non-urgent to later this week."* The agent resolves dates deterministically (`resolve_date`), finds the right blocks (`get_calendar`), and proposes edit commands (`edit_plan`). Every applied change goes through `CommandHistory`, so it can be undone and redone (P4).
-* **User interaction (GUI).** Chat panel; the Week toolbar has Undo / Redo (Ctrl+Z / Ctrl+Y) and a change-history list. CLI: `plannedagent ask "..."`, `plannedagent undo`, `plannedagent redo`.
-* **Input.** The edit instruction, the current plan and the current time.
-* **Output.** A `PlanProposal` of Move/Remove/Add commands; then the updated plan; then undo and redo results.
+  It runs when the student clicks Check conflicts and on every proposal. The student can then ask the agent to fix a problem (F07).
+* **User interaction (GUI).** In the Week panel, Check conflicts shows a list of problems and highlights the blocks involved.
+* **Input.** The workspace (events, blocks, tasks, preferences) and the forecast.
+* **Output.** A list of `Conflict` objects, each with a type and a message.
+* **AI involvement.** Deterministic.
+* **Expected workflow.** `onCheckConflicts()` -> `PlannerFacade.checkConflicts()` -> `ConflictChecker.check(workspace, forecast)` -> `MainWindow.showConflicts()` (SD6).
+* **Errors and alternatives.** With no problems the student sees "No conflicts found". If there is no forecast, the rain check is skipped and the student is told.
+
+### F07: Change the plan by chat, with undo and redo
+
+* **Description.** The student changes the plan in normal language, for example "Move gym to Wednesday at 7am". The agent finds the block and proposes the move. After Apply, the change can be undone and redone. Every change is a command object (Command pattern, P3).
+* **User interaction (GUI).** The Chat panel for the request, and Undo and Redo buttons in the Week panel.
+* **Input.** The message, the plan and today's date.
+* **Output.** A `Proposal` holding a `MoveBlockCommand`; after Apply, the updated plan; Undo and Redo afterwards.
 * **AI involvement.** Hybrid.
 * **Expected workflow.**
-  1. The agent loop calls `ResolveDateTool` (validate -> doExecute -> `DateResolver.resolve`).
-  2. The agent calls `EditPlanTool`. If the arguments are valid, it runs `PlanCommandFactory.fromOperation`, which creates a `MoveBlockCommand`.
-  3. The command is simulated on a snapshot and checked with `ConflictDetector.detect`, producing a proposal (SD07).
-  4. When the user applies it, see SD08.
-  5. Undo: `CommandHistory.undo` -> `MacroCommand.undo` -> `MoveBlockCommand.undo`, which moves the block back (SD14).
-* **Errors and alternatives.**
-  * A missing or invalid `blockId` means the tool returns a failure without executing. The agent then corrects the call or asks which block was meant.
-  * An ambiguous reference ("which gym session?") leads to a clarifying question.
-  * Pinned blocks stay where they are.
-  * A new time that conflicts is shown in the proposal.
-  * With nothing to undo, the user sees "Nothing to undo".
-  * The redo history is cleared after any new change.
+  1. The agent calls `get_schedule`, then `move_task`.
+  2. `MoveTaskTool.run()` checks the block id and the new time, tries the move on `Workspace.copy()` and runs `ConflictChecker.check()`. It returns a `Proposal` (SD6).
+  3. Apply: `CommandHistory.run()` -> `MoveBlockCommand.execute()` -> `TimeBlock.moveTo()`.
+  4. Undo: `CommandHistory.undo()` -> `MoveBlockCommand.undo()` (SD5).
+* **Errors and alternatives.** If the block does not exist or the time is not valid, the tool returns an error and changes nothing; the agent then asks which block was meant. If the move would cause a conflict, the proposal shows it and cannot be applied. With nothing to undo, the student sees "Nothing to undo".
 
 ### F08: Weather-aware scheduling
 
-* **Description.** Tasks marked *outdoor* (a run, a bike ride, groceries on foot) are placed only in hours whose chance of rain is below a threshold (default 40 %). The forecast comes from the free Open-Meteo API for the user's location. Already-planned outdoor blocks are re-checked and flagged when the forecast turns bad, and the agent can move them.
-* **User interaction (GUI).** Weather icons on outdoor blocks; a Check weather button; BAD_WEATHER warnings in the Problems panel; location and threshold in Settings. CLI: `plannedagent weather`; scheduling commands apply the weather check automatically.
-* **Input.** Location, date range, outdoor tasks or blocks, and the threshold.
-* **Output.** A `WeatherConstraint` used during scheduling, BAD_WEATHER conflicts, and suggestions from the agent.
-* **AI involvement.** Hybrid: an external API feeds a deterministic constraint, and the agent explains and moves blocks (`get_weather`, `edit_plan`).
-* **Expected workflow.**
-  1. `PlannerFacade.buildConstraints` or `weatherWarnings` calls `WeatherService.forecast`. `OpenMeteoWeatherAdapter` (P2) calls the API and builds a `WeatherForecast`.
-  2. A `WeatherConstraint` is created; its `permits` method uses `WeatherForecast.isWet`.
-  3. `Scheduler` and `ConflictDetector` use that constraint (SD05, SD06).
-* **Errors and alternatives.**
-  * If the API times out or fails, the system continues without the weather constraint and warns *"Weather unavailable, outdoor tasks were not checked for rain"*. The agent must pass this on to the user.
-  * For days beyond the forecast horizon (about 16 days), no weather constraint is applied.
-  * If no location is set, the user is asked to set one.
+* **Description.** Tasks marked as outdoor (a run, a bike ride) are only placed in hours with a low chance of rain (below 40%). The forecast comes from the free Open-Meteo API. Outdoor blocks already in the plan are flagged by the conflict check when rain becomes likely.
+* **User interaction (GUI).** An Outdoor box on each task; rain warnings in the conflict list.
+* **Input.** The location (latitude and longitude), the dates and the outdoor tasks.
+* **Output.** A `Forecast` used by `Scheduler.fits()` and `ConflictChecker.check()`, and warnings.
+* **AI involvement.** Hybrid. The forecast comes from an outside API, plain Java applies the rule, and the agent can explain the result or move a rainy block.
+* **Expected workflow.** `PlannerFacade.autoSchedule()` -> `WeatherService.forecast()` -> `OpenMeteoWeather.parse()` -> `Forecast` -> `Scheduler.fits()` asks `Forecast.isRainy()` (SD3).
+* **Errors and alternatives.** If the API cannot be reached (`IOException`), scheduling goes on without rain data and the student is warned. Days beyond the forecast (about 16 days) get no rain check.
 
-### F09: Preference memory (long-term agent memory)
+### F09: Remember preferences
 
-* **Description.** The agent remembers rules and habits the user states, such as *"I never study after 10 pm"*, *"Sundays are off"* or *"gym in the mornings"*. They are stored as structured preferences (type, value, category, source text) that persist across sessions. They are added to the agent's context when relevant and turned into hard scheduling constraints. The user can see and delete what the agent remembers.
-* **User interaction (GUI).** In the chat, the user states a preference and the agent confirms "Got it, no study after 22:00". The Memory tab lists preferences with Forget buttons. CLI: `plannedagent prefs list | forget <id>`.
-* **Input.** A user message containing a rule, or a deletion request.
-* **Output.** A stored `Preference`, constraints applied to future plans, and the memory list.
-* **AI involvement.** Hybrid: the LLM extracts the rule through the `remember_preference` tool, and storage, de-duplication and conversion to constraints are deterministic.
-* **Expected workflow.**
-  1. The agent calls `remember_preference`. `RememberPreferenceTool.validate` checks the type and value.
-  2. `PreferenceMemory.remember` replaces any older rule with the same type and category.
-  3. `PreferenceStore.saveAll` persists the list.
-  4. Later, `toConstraints` produces an `AvailabilityConstraint`, which the scheduler and the conflict detector both use (SD09).
-* **Errors and alternatives.**
-  * An invalid value such as "25:00" makes the tool fail, and the agent asks the user to clarify.
-  * When two rules contradict each other, the newest wins and the old one is reported as replaced.
-  * If saving fails, the agent must not claim the preference was saved.
+* **Description.** The agent remembers rules the student states, such as "I never study after 10pm" or "Sundays are off". Each rule is saved as a `Preference`, kept between sessions, and obeyed by the scheduler and the conflict check.
+* **User interaction (GUI).** The student states the rule in the Chat panel, and the agent confirms in the chat which rule it saved. To change a rule, the student states it again.
+* **Input.** A message that contains a rule.
+* **Output.** A saved `Preference`; future plans respect it.
+* **AI involvement.** Hybrid. The LLM turns the sentence into a rule and a value (`NO_WORK_AFTER`, `22:00`); plain Java checks them and stores them.
+* **Expected workflow.** The agent calls `remember_preference` -> `RememberPreferenceTool.run()` checks the rule and the value -> `Workspace.addPreference()` -> `JsonStorage.save()`. Later, `Scheduler.fits()` reads `getPreferences()` (SD7).
+* **Errors and alternatives.** An unknown rule or a bad time (such as 25:00) makes the tool return an error, and the agent asks again. Giving the same rule again replaces the old value.
 
-### F10: Goal decomposition
+### F10: End-of-day review
 
-* **Description.** Turns a larger goal with a deadline, such as *"Prepare for the EECS 3311 final by Dec 10"*, into milestones and concrete tasks with estimates, in a sensible order. The plan is checked deterministically:
-  * it fits in the free time before the deadline
-  * the estimates are valid
-  * there are no empty milestones
+* **Description.** At the end of the day the student marks each of today's blocks as done or missed.
+  * Done tasks move to the Done state.
+  * Missed tasks move to the Missed state, and their blocks are removed.
 
-  The result is saved as a `Goal` tree (Composite, P9), and its progress is computed automatically.
-* **User interaction (GUI).** Goals tab: goal text and deadline picker -> Plan goal -> editable tree preview (milestones -> tasks) -> Save, with optional *Schedule now*. CLI: `plannedagent goal "<text>" --by <date>`.
-* **Input.** The goal description, the deadline, today's date and the free minutes before the deadline.
-* **Output.** A `GoalDraft`, then a `Goal` made of milestone Goals and Tasks, with prerequisites between milestones and a progress percentage.
-* **AI involvement.** AI-based planning with deterministic validation and a repair loop.
-* **Expected workflow.**
-  1. `PlannerFacade.planGoal` computes the free minutes with `SlotFinder`.
-  2. `GoalPlanner.decompose` builds a request with `PromptBuilder.buildGoalRequest` and calls `StructuredOutputClient.call`.
-  3. `validate` checks the draft. While issues remain, it repairs at most 2 times with `buildRepairRequest`.
-  4. The draft is shown to the user.
-  5. On save, `GoalDraft.toGoal` builds the tree, and `Workspace.addGoal` / `addTask` store it (SD10).
-* **Errors and alternatives.**
-  * A deadline in the past is rejected before any LLM call.
-  * If the total estimate is larger than the free time, the issue is shown ("needs 30 h, only 18 h free") with the options to extend the deadline or trim the plan.
-  * If the draft is still invalid after 2 repairs, it is shown with its issues for manual editing.
-  * If the LLM is unavailable, the user sees a message.
-  * A vague goal leads to a request for a clearer one.
-
-### F11: End-of-day review and smart rescheduling
-
-* **Description.** At the end of the day, the user reviews today's blocks and marks each one Done or Missed, optionally saying why (for example *"too tired in the evening"*). The status changes follow the State pattern. The agent then reschedules the missed tasks for the next days and takes the reason into account (for example, it prefers mornings). If the AI is unavailable, the fallback is deterministic Auto-schedule.
-* **User interaction (GUI).** Week tab -> Review today -> a dialog with Done/Missed toggles and a reason box -> Submit -> a proposal -> Apply. CLI: `plannedagent review` (interactive prompts).
-* **Input.** The date, an outcome for each task, and an optional reason.
-* **Output.** Updated task states (DONE / MISSED) and a `PlanProposal` that reschedules the missed tasks.
+  The agent then proposes new times for the missed tasks. If the AI is not available, plain auto-schedule is used instead.
+* **User interaction (GUI).** In the Week panel, Review today opens a dialog with Done and Missed for each block. Submit produces a proposal, which the student can apply.
+* **Input.** The ids of the done tasks and of the missed tasks.
+* **Output.** Updated task states and a `Proposal` for the missed tasks.
 * **AI involvement.** Hybrid.
 * **Expected workflow.**
-  1. `ReviewService.itemsFor(today)` lists today's blocks.
-  2. `submitReview` calls `recordOutcome` for each task, which calls `Task.complete()` or `markMissed()`. Missed blocks are removed from the plan.
-  3. `buildRescheduleMessage(missed, reason)` builds the instruction for the agent, and `AgentController.handle` runs it.
-  4. The proposal is shown; applying it follows SD08 (SD11).
-* **Errors and alternatives.**
-  * With no blocks today, the user sees "Nothing to review".
-  * If the LLM fails, deterministic `autoSchedule(nextDays, "edf")` is used, with a note.
-  * A missed task whose deadline has passed is flagged.
-  * Closing the dialog changes nothing.
+  1. `onReview()` -> `PlannerFacade.reviewDay()`.
+  2. `Task.complete()` for each done task.
+  3. `Task.markMissed()` and `Plan.remove()` for each missed task.
+  4. Observers are notified.
+  5. `Agent.handle("Reschedule my missed tasks")` returns an `AgentReply` with a proposal. If it throws `LlmException`, `autoSchedule("deadline")` is used instead (SD8).
+* **Errors and alternatives.** With no blocks today the student sees "Nothing to review". A missed task whose deadline has passed is listed, so the student can change the deadline. If the LLM is not available, the fallback is used.
 
-### F12: Weekly insights report
+### F11: Weekly report
 
-* **Description.** A weekly summary:
-  * planned vs. completed minutes
-  * completion rate
-  * number of missed tasks
-  * time per category and per day
-  * the busiest day
-
-  All of these numbers are computed deterministically. The report adds a short AI-written narrative with exactly three suggestions, which must be grounded in those numbers. If the AI is unavailable, or its text cites numbers that are not in the statistics, a template narrative is used.
-* **User interaction (GUI).** Insights tab: week picker -> Generate -> a bar chart (minutes per day and per category), the statistics, and the narrative; Export .md. CLI: `plannedagent report --week <date> [--out report.md]`.
-* **Input.** The week's start date and the workspace history (blocks and task states).
-* **Output.** A `WeeklyReport` (statistics, narrative, suggestions, `aiGenerated` flag).
+* **Description.** A short summary of the week: minutes planned and done, tasks done and missed, and the busiest day. Plain Java counts the numbers. The LLM then writes three or four sentences with tips, using only those numbers. Without the AI, a fixed template text is used.
+* **User interaction (GUI).** In the Week panel, Weekly report shows the numbers and the summary.
+* **Input.** The workspace: the week's blocks and task states.
+* **Output.** A `WeeklyReport` with the numbers and the summary text.
 * **AI involvement.** Hybrid.
-* **Expected workflow.**
-  1. `InsightsService.generateReport` calls `computeStats`.
-  2. `PromptBuilder.buildInsightsRequest` builds the request, and `StructuredOutputClient.call` returns an `InsightsNarrative`.
-  3. `isGrounded` checks the narrative against the statistics; on failure, `fallbackReport` is used.
-  4. The report is rendered (SD12).
-* **Errors and alternatives.**
-  * With no data for the week, the report says "No planned tasks this week".
-  * If the LLM fails or returns malformed output, the template narrative is used (`aiGenerated = false`).
-  * A narrative that is not grounded in the statistics is rejected and replaced by the template.
+* **Expected workflow.** `onReport()` -> `PlannerFacade.weeklyReport()` -> `ReportService.weeklyReport()` -> `countStats()` -> `LlmClient.complete()` -> `WeeklyReport`. On `LlmException`, `fallbackSummary()` is used (SD9).
+* **Errors and alternatives.** With no data for the week the student sees "No tasks were planned this week". If the LLM fails, the template summary is used.
 
 ---
 
 ## 3. UML class diagram
 
-The full class model is too large for one readable picture, so it is presented as an overview (CD00) plus ten detailed views (CD01-CD10), one per package. The overview and the ten views together make up the class diagram. Each detailed view shows:
+The class diagram is split into views so that each one is easy to read. CD0 (Figure 1) gives the big picture; CD1 to CD6 show the classes with their attributes, methods and relationships. A dashed box is a class that is drawn in full in another view (for example "see CD1"). Class and method names are exactly the same in all diagrams and tables.
 
-* classes and interfaces, with their important attributes and methods (visibility `+ - # ~`, *italic* = abstract, underlined = static)
-* associations with role names and multiplicities, dependencies (`<<use>>`, `<<create>>`, `<<throw>>`), realization and inheritance, aggregation and composition
-* the role each class plays in a design pattern, written as a stereotype such as `<<Strategy: Context>>`
+Notation: `+` public, `-` private, `<<interface>>` and `<<enumeration>>` mark interfaces and enums, and the stereotype on each class shows its role in a pattern (for example `<<Strategy: Context>>`). Simple getters and setters (such as `getTitle()`) are left out to keep the boxes readable.
 
-A dashed box marks a class from another view; its full definition is in the view named inside the box (e.g. "see CD02"). Class and method names are identical in all class diagrams, sequence diagrams and tables.
-
-| View | Content | UMLet source |
+| View | What it shows | UMLet file |
 |---|---|---|
-| CD00 | Package overview and dependency direction (Figure 1, §1.7) | [`CD00-package-overview.uxf`](diagrams/uxf/CD00-package-overview.uxf) |
-| CD01 | Domain: tasks, goals, task lifecycle (Composite, State) | [`CD01-domain-tasks.uxf`](diagrams/uxf/CD01-domain-tasks.uxf) |
-| CD02 | Domain: workspace, plan, events, preferences, conflicts, weather | [`CD02-domain-workspace.uxf`](diagrams/uxf/CD02-domain-workspace.uxf) |
-| CD03 | Deterministic scheduling engine (Strategy) | [`CD03-scheduling-engine.uxf`](diagrams/uxf/CD03-scheduling-engine.uxf) |
-| CD04 | Agent core: loop, session, short- and long-term memory | [`CD04-agent-core.uxf`](diagrams/uxf/CD04-agent-core.uxf) |
-| CD05 | Agent tools (Template Method) | [`CD05-agent-tools.uxf`](diagrams/uxf/CD05-agent-tools.uxf) |
-| CD06 | LLM layer and prompting (Adapter, Decorator) | [`CD06-llm-and-prompting.uxf`](diagrams/uxf/CD06-llm-and-prompting.uxf) |
-| CD07 | Plan commands and agent events (Command, Observer) | [`CD07-commands-and-events.uxf`](diagrams/uxf/CD07-commands-and-events.uxf) |
-| CD08 | Facade, workflow services, composition root (Facade) | [`CD08-facade-and-services.uxf`](diagrams/uxf/CD08-facade-and-services.uxf) |
-| CD09 | Ports and infrastructure adapters (Adapter) | [`CD09-ports-and-adapters.uxf`](diagrams/uxf/CD09-ports-and-adapters.uxf) |
-| CD10 | Presentation: JavaFX GUI and CLI (MVC) | [`CD10-presentation-gui-cli.uxf`](diagrams/uxf/CD10-presentation-gui-cli.uxf) |
+| CD0 | Packages and how they depend on each other | [`CD0-overview.uxf`](diagrams/uxf/CD0-overview.uxf) |
+| CD1 | Model: tasks and their states, workspace, plan, events, preferences (State, MVC Model) | [`CD1-model.uxf`](diagrams/uxf/CD1-model.uxf) |
+| CD2 | Scheduler and strategies, conflict check, plan commands and undo (Strategy, Command) | [`CD2-scheduling-and-commands.uxf`](diagrams/uxf/CD2-scheduling-and-commands.uxf) |
+| CD3 | The agent, its memory and its tools | [`CD3-agent-and-tools.uxf`](diagrams/uxf/CD3-agent-and-tools.uxf) |
+| CD4 | LLM providers, task extraction and weather (Adapter) | [`CD4-ai-and-weather-adapters.uxf`](diagrams/uxf/CD4-ai-and-weather-adapters.uxf) |
+| CD5 | `PlannerFacade` and the services behind it (Facade) | [`CD5-facade-and-services.uxf`](diagrams/uxf/CD5-facade-and-services.uxf) |
+| CD6 | GUI, command line and notifications (MVC, Observer) | [`CD6-gui-cli-and-observer.uxf`](diagrams/uxf/CD6-gui-cli-and-observer.uxf) |
 
-![CD01](diagrams/png/CD01-domain-tasks.png)
-*CD01. Domain: tasks, goals and lifecycle.*
+![CD1](diagrams/png/CD1-model.png)
+*CD1. Model.*
 
-![CD02](diagrams/png/CD02-domain-workspace.png)
-*CD02. Domain: workspace, plan and value objects.*
+![CD2](diagrams/png/CD2-scheduling-and-commands.png)
+*CD2. Scheduling and plan changes.*
 
-![CD03](diagrams/png/CD03-scheduling-engine.png)
-*CD03. Deterministic scheduling engine.*
+![CD3](diagrams/png/CD3-agent-and-tools.png)
+*CD3. Agent, memory and tools.*
 
-![CD04](diagrams/png/CD04-agent-core.png)
-*CD04. Agent core.*
+![CD4](diagrams/png/CD4-ai-and-weather-adapters.png)
+*CD4. LLM and weather adapters.*
 
-![CD05](diagrams/png/CD05-agent-tools.png)
-*CD05. Agent tools.*
+![CD5](diagrams/png/CD5-facade-and-services.png)
+*CD5. Facade and services.*
 
-![CD06](diagrams/png/CD06-llm-and-prompting.png)
-*CD06. LLM layer and prompting.*
+![CD6](diagrams/png/CD6-gui-cli-and-observer.png)
+*CD6. GUI, command line and notifications.*
 
-![CD07](diagrams/png/CD07-commands-and-events.png)
-*CD07. Commands and events.*
-
-![CD08](diagrams/png/CD08-facade-and-services.png)
-*CD08. Facade, services and composition root.*
-
-![CD09](diagrams/png/CD09-ports-and-adapters.png)
-*CD09. Ports and adapters.*
-
-![CD10](diagrams/png/CD10-presentation-gui-cli.png)
-*CD10. GUI (MVC) and CLI.*
-
-### 3.1 Key relationships and multiplicities
+### 3.1 Main relationships and multiplicities
 
 | Relationship | Kind | Multiplicity | Meaning |
 |---|---|---|---|
-| `Workspace` owns `Task`, `Goal`, `CalendarEvent` | composition | 1 to 0..* | The workspace owns the user's data |
-| `Workspace` owns `Plan`, `Plan` owns `TimeBlock` | composition | 1 to 1, 1 to 0..* | The plan owns its time blocks |
-| `Goal` groups `PlanItem` | aggregation (Composite) | 1 to 0..* children | A goal groups milestones (sub-goals) and tasks |
-| `Task` -> `TaskState` | association (State) | 1 | Current lifecycle state |
-| `Scheduler` -> `SchedulingStrategy` | aggregation (Strategy) | 1 | Replaceable at run time |
-| `ScheduleRequest` -> `SchedulingConstraint` | association | 0..* | Availability, weather, ... |
-| `ToolRegistry` holds `Tool` | aggregation | 1 to 1..* | 10 registered tools |
-| 10 tool classes extend `AbstractTool` | generalization (Template Method) | n/a | Every tool inherits the fixed `execute()` skeleton |
-| `LlmClientDecorator` -> `LlmClient` | aggregation (Decorator) | `inner` 1 | Wraps the next client in the chain |
-| `GeminiLlmClient`, `OllamaLlmClient` implement `LlmClient` | realization (Adapter) | n/a | Vendor APIs behind one interface |
-| `CommandHistory` holds `PlanCommand` | aggregation (Command) | 0..* | Undo and redo stacks |
-| `PlanProposal` owns `MacroCommand` | composition | 1 | A proposal is one atomic command |
-| `EventBus` holds `AgentEventListener` | aggregation (Observer) | 0..* | Subscribed observers |
-| `AgentSession` owns `ConversationMemory` | composition | 1 | Short-term memory per conversation |
-| `PlannerFacade` -> subsystems | association (Facade) | 1 each | Single entry point |
-| Controllers -> `PlannerFacade`, View | association (MVC) | 1 | A controller updates its view and calls the model through the facade |
+| `Workspace` has `Task`, `FixedEvent`, `Preference` | composition | 1 to 0..* | The workspace owns the student's data |
+| `Workspace` has `Plan`, `Plan` has `TimeBlock` | composition | 1 to 1, 1 to 0..* | The plan owns its blocks |
+| `Task` uses `TaskState` | association (State) | 1 | The task's current state |
+| `TodoState`, `ScheduledState`, `MissedState`, `DoneState` implement `TaskState` | realization | n/a | One class per state |
+| `Scheduler` has a `SchedulingStrategy` | aggregation (Strategy) | 1 | Can be changed at run time |
+| 3 strategy classes implement `SchedulingStrategy` | realization | n/a | Interchangeable algorithms |
+| `Proposal` holds `PlanCommand`s, `CommandHistory` keeps them | aggregation (Command) | 1..* and 0..* | Changes waiting, and changes done |
+| `AddBlockCommand`, `MoveBlockCommand` implement `PlanCommand` | realization | n/a | Concrete commands |
+| `Agent` has `Tool`s and one `ConversationMemory` | aggregation, association | 1..* and 1 | Tools and short-term memory |
+| 5 tool classes implement `Tool` | realization | n/a | The agent's actions |
+| `GeminiClient`, `OllamaClient` implement `LlmClient` | realization (Adapter) | n/a | Two providers, one interface |
+| `OpenMeteoWeather` implements `WeatherService` | realization (Adapter) | n/a | Weather API behind an interface |
+| `PlannerFacade` uses the subsystems | association (Facade) | 1 each | One entry point |
+| `EventBus` keeps `PlannerObserver`s | aggregation (Observer) | 0..* | Who is notified |
+| `MainController`, `ActivityLog` implement `PlannerObserver` | realization | n/a | Concrete observers |
+| `MainController` uses `MainWindow` and `PlannerFacade` | association (MVC) | 1 each | Controller between view and model |
 
-Traditional components are the domain, scheduling engine, commands, events, ports, stores, GUI and CLI. AI and agent components are `AgentController`, `AgentSession`, `ConversationMemory`, `PreferenceMemory`, `PromptBuilder`, `ResponseParser`, `StructuredOutputClient`, `ToolRegistry` and its tools, `LlmClient` and its decorators and adapters, `TaskCaptureService`, `GoalPlanner` and `InsightsService`.
+**Normal software parts:** the model, the scheduler, the conflict check, the commands, the facade, the storage, the GUI and the CLI. **AI and agent parts:** `Agent`, `ConversationMemory`, `AgentStep`, `AgentReply`, the `Tool` classes, `LlmClient`, `GeminiClient`, `OllamaClient`, `TaskExtractor` and `ReportService`.
 
 ---
 
 ## 4. Design patterns
 
-PlannedAgent uses ten patterns (eight GoF patterns plus Composite and MVC). Each one solves a concrete problem in this application.
+PlannedAgent uses 7 patterns. All of them are taught in this course's slides (structural, behavioural and architecture lectures), and each one solves a real problem in this app.
 
-| # | Pattern | Participating classes | Features |
+| # | Pattern | Classes (role) | Features |
 |---|---|---|---|
-| P1 | Strategy | `Scheduler`, `SchedulingStrategy`, 3 strategies, `StrategyRegistry` | F04, F05, F11 |
-| P2 | Adapter | `LlmClient` (implemented by `GeminiLlmClient`, `OllamaLlmClient`); `WeatherService` (by `OpenMeteoWeatherAdapter`); `CalendarImporter`/`PlanExporter` (by `IcsCalendarAdapter`) | F01, F03, F04, F08-F12 |
-| P3 | Decorator | `LlmClient`, `LlmClientDecorator`, `CachingLlmClient`, `RetryingLlmClient`, `RateLimitedLlmClient` | every AI feature |
-| P4 | Command | `PlanCommand`, `Add/Move/RemoveBlockCommand`, `AddTaskCommand`, `MacroCommand`, `CommandHistory`, `Workspace` | F04-F07, F11 |
-| P5 | Observer | `EventBus`, `AgentEventListener`, `ChatController`, `WeekController`, `CliEventPrinter`, `TraceRecorder`, `AutoSaver` | F02-F07, F11 |
-| P6 | Facade | `PlannerFacade` (clients: GUI controllers, `PlannedAgentCli`, `JsonLineServer`) | all |
-| P7 | Template Method | `AbstractTool` and its 10 tool subclasses | F04, F06, F07, F09, F11 |
-| P8 | State | `Task`, `TaskState`, `TodoState`, `ScheduledState`, `DoneState`, `MissedState` | F02, F05, F11 |
-| P9 | Composite | `PlanItem`, `Task` (leaf), `Goal` (composite) | F10 |
-| P10 | MVC | `Workspace` / `PlannerFacade` (model), `*View` (view), `*Controller` (controller) | GUI for all |
+| P1 | Strategy | `Scheduler` (Context), `SchedulingStrategy` (Strategy), `DeadlineFirstStrategy`, `PriorityFirstStrategy`, `ShortestFirstStrategy` (ConcreteStrategy) | F04, F05, F10 |
+| P2 | State | `Task` (Context), `TaskState` (State), `TodoState`, `ScheduledState`, `MissedState`, `DoneState` (ConcreteState) | F02, F04, F10 |
+| P3 | Command | `PlanCommand` (Command), `AddBlockCommand`, `MoveBlockCommand` (ConcreteCommand), `CommandHistory` (Invoker), `Workspace` (Receiver), `PlannerFacade` (Client) | F04, F05, F07, F10 |
+| P4 | Observer | `EventBus` (Subject), `PlannerObserver` (Observer), `MainController`, `ActivityLog` (ConcreteObserver) | F01, F02, F05, F07, F10 |
+| P5 | Adapter | `LlmClient` (Target), `GeminiClient`, `OllamaClient` (Adapter), Gemini and Ollama APIs (Adaptee); `WeatherService` (Target), `OpenMeteoWeather` (Adapter), Open-Meteo API (Adaptee) | F01, F05, F07 to F11 |
+| P6 | Facade | `PlannerFacade` (Facade), `MainController` and `PlannerCli` (clients), agent, scheduler, commands and services (subsystems) | all |
+| P7 | MVC | `Workspace` (Model, reached through the facade), `MainWindow` (View), `MainController` (Controller) | all GUI features |
 
-### P1: Strategy (scheduling algorithms)
+### P1: Strategy (how tasks are ordered)
 
-* **Problem.** Users plan differently: some prefer deadline-first, some priority-first, and some want demanding work in their peak-energy hours. The agent also needs to pick an approach by name. Hard-coding these options as `if/else` inside `Scheduler` would mix several algorithms into one class and change it every time a strategy is added.
-* **Participants and roles.**
-  * `Scheduler` is the Context: it holds a `SchedulingStrategy` and calls `order()` and `slotScore()`.
-  * `SchedulingStrategy` is the Strategy interface.
-  * `EarliestDeadlineFirstStrategy`, `PriorityFirstStrategy` and `PeakHoursStrategy` are the Concrete Strategies.
-  * `StrategyRegistry` looks strategies up by name for the GUI drop-down, the CLI flag and the `schedule_tasks` tool.
-* **Why appropriate.** These are interchangeable algorithms that share one shape (order the tasks, score a slot) and are chosen at run time.
-* **Without it.** Every new strategy would mean editing and re-testing `Scheduler`, which breaks Open/Closed. The strategies also could not be unit-tested in isolation.
+* **Problem.** There are several sensible ways to decide which task gets a slot first: by deadline, by priority, or shortest first. The student picks one in the GUI, and the agent picks one by name. Writing all of them as `if/else` inside `Scheduler` would mix several algorithms in one class.
+* **Classes and roles.**
+  * `Scheduler` is the Context: it keeps a `SchedulingStrategy` and has `setStrategy()`.
+  * `SchedulingStrategy` is the Strategy interface, with `sort(tasks)`.
+  * The three strategy classes are the ConcreteStrategies.
+  * `PlannerFacade.strategyFor(name)` turns a name into a strategy object.
+* **Why this pattern.** The three algorithms do the same job in different ways and are chosen at run time. This is exactly the slides' Context and `setStrategy()` example.
+* **Without it.** Every new ordering would mean editing and retesting `Scheduler`, and the orderings could not be unit-tested on their own.
 
-### P2: Adapter (LLM providers, weather API, iCalendar)
+### P2: State (a task's status)
 
-* **Problem.** External systems have incompatible interfaces: Gemini's `generateContent` JSON, Ollama's `/api/chat`, Open-Meteo's hourly arrays, and ical4j's `VEVENT` objects. The user also wants to switch between Gemini and a local Qwen model.
-* **Participants and roles.**
-  * Targets (core interfaces): `LlmClient`, `WeatherService`, `CalendarImporter`, `PlanExporter`.
-  * Adapters: `GeminiLlmClient`, `OllamaLlmClient`, `OpenMeteoWeatherAdapter`, `IcsCalendarAdapter`.
-  * Adaptees: the vendor APIs and libraries.
-  * Clients: `AgentController`, `StructuredOutputClient`, `PlannerFacade`, `ScheduleTasksTool`, `GetWeatherTool`.
-* **Why appropriate.** The core speaks only in its own terms (`LlmRequest`/`LlmResponse`, `WeatherForecast`, `CalendarEvent`). Changing the model, weather provider or file format means adding one class.
-* **Without it.** Vendor JSON would leak into the agent and scheduler. Switching from Gemini to Qwen would touch many classes. The core could not be tested offline or reused on Android.
+* **Problem.** What a task may do depends on its status:
+  * a Done task cannot be scheduled;
+  * a To-do task cannot be "missed";
+  * a Missed task must be rescheduled.
 
-### P3: Decorator (cross-cutting LLM policies)
+  Without a pattern, `switch (status)` code would appear in the task, the scheduler and the review.
+* **Classes and roles.**
+  * `Task` is the Context. It keeps its current `TaskState`, sends each call to it (`schedule()`, `complete()`, `markMissed()`, `unschedule()`) and has `setState()`.
+  * `TaskState` is the State interface.
+  * `TodoState`, `ScheduledState`, `MissedState` and `DoneState` are the ConcreteStates. Each one decides which calls are allowed and moves the task to the next state; a call that is not allowed throws `IllegalStateException`.
+* **Why this pattern.** The rules for each status sit in one small class, as in the slides' context and state example. `needsScheduling()` lets the scheduler ask a task directly instead of checking its status.
+* **Without it.** The same rules would be copied in several places, and it would be easy to forget one, for example rescheduling a task that is already done.
 
-* **Problem.** Free-tier LLMs need caching to save quota, rate limiting (requests per minute and per day), and retries with back-off on 429/503 errors. These policies apply to every provider and every caller. Putting them in each adapter would duplicate code, and subclassing every combination would explode the number of classes.
-* **Participants and roles.**
-  * Component: `LlmClient`.
-  * Concrete components: `GeminiLlmClient`, `OllamaLlmClient`, `ScriptedLlmClient`.
-  * Decorator: the abstract `LlmClientDecorator`, which holds `inner: LlmClient`.
-  * Concrete Decorators: `CachingLlmClient`, `RetryingLlmClient`, `RateLimitedLlmClient`.
-  * `LlmClientFactory` assembles the chain `Caching(Retrying(RateLimited(provider)))` (SD13).
-* **Why appropriate.** Each policy is added transparently behind the same interface, and the policies can be combined or removed from configuration (for example, caching is turned off for KUMA runs).
-* **Without it.** The retry, quota and cache logic would be copied into every provider or every caller, and could not be tested on its own (with a fake clock).
+### P3: Command (plan changes with confirmation and undo)
 
-### P4: Command (plan changes, confirmation and undo/redo)
+* **Problem.** A change to the plan must be shown first, applied only when the student agrees, and undone if needed. Changes come from three places: auto-schedule, the agent, and the end-of-day review. The AI must not change data directly.
+* **Classes and roles.**
+  * `PlanCommand` is the Command, with `execute()`, `undo()` and `describe()`.
+  * `AddBlockCommand` and `MoveBlockCommand` are the ConcreteCommands.
+  * `CommandHistory` is the Invoker: it runs the commands and keeps undo and redo stacks.
+  * `Workspace` (with its `Plan`) is the Receiver.
+  * `PlannerFacade` is the Client.
+  * A `Proposal` holds the commands until the student clicks Apply.
+* **Why this pattern.** It turns a change into an object that can be shown, tried on a copy, run, and reversed. The slides name undo as a main use of Command.
+* **Without it.** There would be no safe preview and no undo, and a wrong AI answer would edit the student's plan directly.
 
-* **Problem.** The LLM must not change the plan directly. A change has to be described first, checked on a copy, shown to the user, applied only when confirmed, and undone if the user changes their mind. This holds whether the change comes from the agent, Auto-schedule or an end-of-day review.
-* **Participants and roles.**
-  * Command: `PlanCommand` (`execute`, `undo`, `describe`).
-  * Concrete Commands: `AddTaskCommand`, `AddBlockCommand`, `MoveBlockCommand`, `RemoveBlockCommand`.
-  * MacroCommand: groups the commands of one proposal and executes them atomically; it is also a Composite of commands.
-  * Invoker: `CommandHistory`, with the undo/redo stacks.
-  * Receiver: `Workspace`.
-  * Clients: `PlanCommandFactory` creates the commands; `PlanProposal` holds the macro until it is confirmed.
-* **Why appropriate.** A change becomes a value that can be previewed, validated on a `snapshot()`, stored, applied and reversed.
-* **Without it.** There would be no safe preview and no reliable undo. AI mistakes would go straight into user data, and rolling back a half-applied multi-step change would need special-case code.
+### P4: Observer (notifications)
 
-### P5: Observer (agent and plan events)
+* **Problem.** When the plan changes or the agent uses a tool, several parts must react:
+  * the window refreshes;
+  * the chat status line updates;
+  * the activity log records the event.
 
-* **Problem.** When the agent calls a tool or the plan changes, several independent parts must react:
-  * the chat shows live status
-  * the week view refreshes
-  * the CLI prints progress
-  * the workspace is auto-saved
-  * a JSON trace is written for evaluation
+  The facade and the agent should not need to know about any of them.
+* **Classes and roles.**
+  * `EventBus` is the Subject, with `attach()`, `detach()` and `notifyObservers()`.
+  * `PlannerObserver` is the Observer interface, with `update(type, message)`.
+  * `MainController` (refreshes the window) and `ActivityLog` (writes a line to a file) are the ConcreteObservers.
+* **Why this pattern.** It gives one-to-many notification with loose coupling, matching the Subject, Observer, `attach` and `update` structure in the slides.
+* **Without it.** `PlannerFacade` would call the Swing window directly, so the logic would depend on the GUI, and adding the log would mean editing the facade.
 
-  The agent and the facade should not know about any of them.
-* **Participants and roles.**
-  * Subject: `EventBus` (`subscribe`, `unsubscribe`, `publish`).
-  * Observer: `AgentEventListener`.
-  * Concrete Observers: `ChatController`, `WeekController`, `CliEventPrinter`, `TraceRecorder`, `AutoSaver`.
-  * Event: `AgentEvent` with an `EventType`.
-* **Why appropriate.** One-to-many notification with loose coupling; new listeners such as a notification service need no change to the publishers.
-* **Without it.** `AgentController` and `PlannerFacade` would have to call the GUI, CLI, persistence and tracing directly. The core would then depend on JavaFX and the file system, which breaks layering and portability.
+### P5: Adapter (LLM providers and the weather API)
 
-### P6: Facade (one entry point for GUI, CLI and test harness)
+* **Problem.** Gemini's web API and Ollama's web API take different request formats and return different JSON. Open-Meteo returns its own JSON too. The student wants to switch between Gemini and a local Qwen model with one setting.
+* **Classes and roles.**
+  * LLM:
+    * `LlmClient` is the Target, with one method, `complete(request)`.
+    * `GeminiClient` and `OllamaClient` are object adapters: each holds an `HttpClient` and translates our request into the provider's format and back (`toGeminiJson()`, `readText()`).
+    * The two web APIs are the Adaptees.
+  * Weather: `WeatherService` (Target), `OpenMeteoWeather` (Adapter), Open-Meteo API (Adaptee).
+  * The clients are `Agent`, `TaskExtractor`, `ReportService`, `PlannerFacade` and `ScheduleTasksTool`.
+* **Why this pattern.** The rest of the code only knows `complete(request)` and `forecast(from, to)`. Switching to the local model changes one line in `App.createLlm()`, and nothing else.
+* **Without it.** Provider-specific JSON would appear in many classes, switching models would mean editing all of them, and tests could not use a fake LLM.
 
-* **Problem.** A feature such as Auto-schedule coordinates about eight subsystems: `StrategyRegistry`, `Scheduler`, `PreferenceMemory`, `WeatherService`, `PlanCommandFactory`, `Workspace`, `ConflictDetector` and `CommandHistory`. Three front-ends need the same features: the GUI, the CLI and the JSON-lines mode used by KUMA.
-* **Participants and roles.**
-  * Facade: `PlannerFacade`.
-  * Subsystems: the agent, the scheduling engine, commands, services, memory, ports and events.
-  * Clients: the seven GUI controllers, `PlannedAgentCli` and `JsonLineServer`.
-* **Why appropriate.** It gives a simple, stable API (`chat`, `autoSchedule`, `confirmProposal`, `undo`, ...), guarantees that the GUI and CLI behave the same, and gives the KUMA harness one clean seam to call.
-* **Without it.** Each front-end would repeat the orchestration logic, and the GUI and CLI would slowly drift apart. Tests would need to wire up dozens of objects.
+### P6: Facade (one entry point)
 
-### P7: Template Method (safe, uniform tool execution)
+* **Problem.** Both the GUI and the CLI need about 15 operations, and each operation involves several subsystems. For example, auto-schedule uses the strategy, the weather, the scheduler, the commands and the conflict check.
+* **Classes and roles.**
+  * `PlannerFacade` is the Facade, with `chat()`, `autoSchedule()`, `applyProposal()`, `undo()`, `reviewDay()`, `weeklyReport()` and others.
+  * The subsystems are `Agent`, `Scheduler`, `ConflictChecker`, `CommandHistory`, `TaskExtractor`, `WeatherService`, `ReportService`, `CalendarExporter`, `JsonStorage`, `EventBus` and `Workspace`.
+  * The clients are `MainController` and `PlannerCli`.
+* **Why this pattern.** It gives a unified interface to a set of subsystems, as the slides define a facade. The GUI and the CLI get exactly the same behaviour, and the Stage 3 test harness can call the agent through the same door.
+* **Without it.** The same logic would be repeated in the GUI and the CLI, and the user interface would depend on every subsystem.
 
-* **Problem.** The LLM may call any of the 10 tools with wrong, missing or invented arguments. Every tool must follow the same safety steps:
-  1. validate the arguments against its `ToolSpec`
-  2. skip execution if the arguments are invalid
-  3. turn exceptions into an error observation the agent can recover from
-  4. publish trace events
+### P7: MVC (GUI structure)
 
-  Copying these steps into 10 tools is error-prone.
-* **Participants and roles.**
-  * AbstractClass: `AbstractTool`, whose `execute()` is `final`: `validate` -> `doExecute` -> wrap the result or error.
-  * Concrete Classes: the 10 tools, each implementing only `doExecute()` (and `spec()`).
-  * Supporting types: `ToolRegistry`, `ToolSpec`, `ToolArgs`, `ToolResult`.
-* **Why appropriate.** The steps are the same for every tool and only the actual work differs, so Template Method fits.
-* **Without it.** One tool that forgot validation could execute invalid LLM output. Behaviour such as "invalid input is never executed" (a key Stage 3 behavioural requirement) could not be guaranteed by construction.
-
-### P8: State (task lifecycle)
-
-* **Problem.** A task behaves differently depending on its status:
-  * a DONE task cannot be scheduled
-  * a MISSED task needs rescheduling
-  * a TODO task cannot be "missed"
-  * a SCHEDULED task can be unscheduled
-
-  Without the pattern, these rules would be `switch(status)` blocks spread across the scheduler, the review service, the commands and the UI.
-* **Participants and roles.**
-  * Context: `Task` (`schedule`, `unschedule`, `complete`, `markMissed`, `reopen`, `needsScheduling`).
-  * State: `TaskState`.
-  * Concrete States: `TodoState`, `ScheduledState`, `DoneState`, `MissedState`. Illegal transitions throw `IllegalTransitionException`.
-* **Why appropriate.** The transition rules live in one small class per state, and `needsScheduling()` lets the scheduler ask a question without checking the status itself.
-* **Without it.** The lifecycle rules would be duplicated and inconsistent, and an invalid transition (for example rescheduling a finished task) would be easy to miss.
-
-### P9: Composite (goals, milestones and tasks)
-
-* **Problem.** Goal decomposition (F10) produces a tree: a goal contains milestones, which contain tasks. The UI and the services must compute the total estimate, the progress and the deadline uniformly for a single task and for a whole goal tree.
-* **Participants and roles.**
-  * Component: `PlanItem`.
-  * Leaf: `Task`.
-  * Composite: `Goal`, whose `children` are `PlanItem`s; `estimatedMinutes()` and `progress()` work recursively, and `leafTasks()` flattens the tree for the scheduler.
-* **Why appropriate.** It is a part-whole hierarchy where clients should treat parts and wholes the same way.
-* **Without it.** Every caller would need to tell goals and tasks apart and walk the tree by hand, and nested milestones would need a separate type.
-
-### P10: MVC (GUI architecture)
-
-* **Problem.** The GUI has seven screens that display and change the same data. UI code must not contain planning logic, so that the same logic serves the CLI and the tests.
-* **Participants and roles.**
-  * Model: `Workspace` and the domain classes, reached through `PlannerFacade`.
-  * Views: `MainView`, `ChatView`, `WeekView`, `TasksView`, `GoalsView`, `ReviewDialog`, `InsightsView`, `MemoryView`.
-  * Controllers: `ChatController`, `WeekController`, `TasksController`, `GoalsController`, `ReviewController`, `InsightsController`, `MemoryController`.
-
-  Controllers turn UI actions into facade calls and update their views. Model changes reach the controllers through the Observer (P5).
-* **Why appropriate.** It is the standard separation for an event-driven desktop UI, and it lets the CLI reuse the model unchanged.
-* **Without it.** Planning logic would end up inside JavaFX event handlers, could not be tested without a GUI, and would have to be duplicated for the CLI.
-
-Supporting idioms (not counted above): Ports and Adapters / Dependency Inversion (`core.port`), Repository-style stores (`WorkspaceStore`, `PreferenceStore`), Registry (`ToolRegistry`, `StrategyRegistry`), Factory (`PlanCommandFactory`, `LlmClientFactory`), and a composition root (`AppContext`).
+* **Problem.** The window must show the data and let the student change it, without holding any planning logic, so that the same logic also serves the CLI.
+* **Classes and roles.**
+  * `Workspace` is the Model, reached through `PlannerFacade`.
+  * `MainWindow` is the View: it only draws, with `showTasks()`, `showWeek()`, `showProposal()` and similar methods.
+  * `MainController` is the Controller: it handles button clicks (`onSend()`, `onApply()` and so on), calls the facade and updates the view. It also observes model changes through P4.
+* **Why this pattern.** It is the standard GUI architecture from the course. It keeps Swing code apart from logic, so the view could be replaced later (for example by a phone screen) without touching the model.
+* **Without it.** Planning code would sit inside Swing button handlers, could not be tested without the GUI, and would have to be written again for the CLI.
 
 ---
 
 ## 5. Use-case diagram
 
 ![Use-case diagram](diagrams/png/UC-use-case-diagram.png)
-*Figure 2. Use-case diagram (source: [`UC-use-case-diagram.uxf`](diagrams/uxf/UC-use-case-diagram.uxf)).*
+*Figure 2. Use-case diagram (UMLet file [`UC-use-case-diagram.uxf`](diagrams/uxf/UC-use-case-diagram.uxf)).*
 
 **Actors.**
 
-* Student (primary). Uses every use case.
-* LLM service (secondary, AI service). Gemini API or local Qwen; takes part in UC01, UC04, UC06, UC07, UC09, UC10, UC11 and UC12.
-* Weather service (secondary, external API). Open-Meteo; takes part in UC08.
-* External calendar app (secondary, external system). Source and target of `.ics` files in UC03.
+* **Student.** The primary actor, who uses the system.
+* **LLM service.** The Gemini API or the local Qwen model through Ollama. It takes part in UC01, UC05, UC07, UC09, UC10 and UC11.
+* **Weather service.** The Open-Meteo API, in UC08.
+* **Calendar app.** Receives the exported `.ics` file in UC03.
 
 **Relationships.**
 
-* UC04, UC05, UC06, UC07 and UC11 `<<include>>` UC13 *Review and apply a plan proposal*, the shared confirmation step.
-* UC08 `<<extend>>`s UC04 and UC05 when outdoor tasks are present.
-* UC14 *Undo/redo* `<<extend>>`s UC13 after a proposal has been applied.
+* UC04, UC05, UC07 and UC10 include UC12, the shared step of applying or discarding a proposal.
+* UC08 extends UC04 and UC05 when outdoor tasks are involved.
+* UC13 (undo or redo) extends UC12 after a change is applied.
 
-Together, the 14 use cases cover all 12 features (see §8).
+The 13 use cases cover all 11 features (see Section 8).
 
 ---
 
 ## 6. Use-case descriptions
 
-### UC01: Capture tasks from free text
+### UC01: Add tasks from plain text
 * **Actors:** Student (primary), LLM service.
-* **Goal:** Turn a free-text brain dump into reviewed, saved tasks.
-* **Preconditions:** PlannedAgent is running; settings (time zone, defaults) are loaded.
-* **Trigger:** The Student types text in *Quick capture* and clicks Extract (or runs `plannedagent capture`).
+* **Goal:** Turn one sentence into tasks.
+* **Preconditions:** The app is running.
+* **Trigger:** The student types in the task text box and clicks Add from text (or runs `plannedagent add`).
 * **Main success scenario:**
-  1. The Student enters free text.
-  2. The system sends a schema-constrained extraction request to the LLM.
-  3. The system parses the JSON into task drafts.
-  4. The system resolves deadline phrases deterministically and validates each draft (estimate range, title, deadline not in the past).
-  5. The system shows the drafts, with problem rows highlighted.
-  6. The Student edits or removes rows and clicks Save tasks.
-  7. The system saves the tasks (state TODO) and shows them in the task list.
-* **Alternative/exception flows:**
-  * 2a. LLM unavailable or quota exhausted: the system shows "AI unavailable, add tasks manually" and opens the manual form (UC02).
-  * 3a. Malformed JSON: the system sends one repair request; if that fails, it reports the error.
-  * 4a. Unresolvable date: the draft is flagged "deadline unclear" for the Student to fix.
-  * 1a. Empty text: the request is rejected before any LLM call.
-* **Postconditions:** The new tasks are stored in the workspace and persisted.
-* **Related features:** F01.
+  1. The student enters the text.
+  2. The system sends it to the LLM.
+  3. The system reads the JSON reply into tasks.
+  4. The system checks each task (title, length, deadline).
+  5. The system shows the tasks.
+  6. The student corrects them if needed and clicks Save.
+  7. The system saves the tasks as To-do.
+* **Alternative/exception flows:** 1a. Empty text: rejected. 2a. LLM not available: message, and the student uses the normal form (UC02). 3a. Reply is not valid JSON: error, nothing saved. 4a. A task has a problem: it is highlighted.
+* **Postconditions:** The new tasks are in the workspace and saved to the file.
+* **Related features:** F01, F02.
 
-### UC02: Manage tasks and dependencies
+### UC02: Manage tasks
 * **Actors:** Student.
-* **Goal:** Keep the task list accurate, including prerequisites and status.
-* **Preconditions:** Tasks exist (or are being created).
-* **Trigger:** The Student uses the Tasks tab actions or `plannedagent tasks ...`.
+* **Goal:** Keep the task list correct.
+* **Preconditions:** The app is running.
+* **Trigger:** The student uses New, Edit, Delete or Mark done (or `plannedagent tasks` and `done`).
 * **Main success scenario:**
-  1. The Student creates or edits a task.
-  2. The Student declares that task A depends on task B.
-  3. The system checks the dependency graph for cycles.
-  4. The system records the prerequisite.
-  5. The Student completes a task.
-  6. The system applies the State transition to DONE.
-  7. The system saves and refreshes all views.
-* **Alternative/exception flows:**
-  * 3a. A cycle would be created: rejected, with the cycle path shown.
-  * 6a. Illegal transition (e.g. completing a DONE task): rejected with a message.
-  * 1a. Invalid fields: validation message.
-  * Delete a task with dependants: the system asks for confirmation and removes the links.
-* **Postconditions:** The task graph is acyclic, and statuses are consistent with the lifecycle rules.
+  1. The student adds or edits a task.
+  2. The system checks the fields and saves the task.
+  3. The student marks a task as done.
+  4. The task's state object allows the change and moves the task to Done.
+  5. The system saves the change and refreshes the views.
+* **Alternative/exception flows:** 2a. Empty title or a length of 0: rejected. 4a. The change is not allowed (for example the task is already done): message, nothing changes. 1a. Unknown id: message.
+* **Postconditions:** Task data and statuses follow the lifecycle rules.
 * **Related features:** F02.
 
-### UC03: Import / export calendar (.ics)
-* **Actors:** Student (primary), External calendar app.
-* **Goal:** Bring fixed commitments in, or send the plan out.
-* **Preconditions:** An `.ics` file is available (import), or a plan exists (export).
-* **Trigger:** Import .ics / Export .ics, or `plannedagent import|export`.
+### UC03: Add fixed events and export the calendar
+* **Actors:** Student (primary), Calendar app.
+* **Goal:** Record busy times, and get the plan into a normal calendar.
+* **Preconditions:** The app is running.
+* **Trigger:** Add event or Export .ics (or `plannedagent event add` and `export`).
 * **Main success scenario:**
-  1. The Student selects a file.
-  2. The system parses the events and expands weekly recurrences over 16 weeks.
-  3. The system adds the events, skipping duplicates by UID.
-  4. The system saves and shows the count.
-  5. (Export) The Student picks a date range and a file.
-  6. The system writes one VEVENT per block.
-* **Alternative/exception flows:**
-  * 2a. Invalid or unreadable file: `CalendarImportException`; nothing is imported.
-  * 2b. Event without an end time: 1 h default plus a warning.
-  * 6a. Unwritable path: error message.
-* **Postconditions:** Fixed events are part of the busy time used for planning, or an `.ics` file has been written.
+  1. The student enters an event's title, day, start and end.
+  2. The system checks the times and saves the event.
+  3. The student chooses Export and a file name.
+  4. The system writes the events and blocks of the week to the `.ics` file.
+  5. The student opens the file in their calendar app.
+* **Alternative/exception flows:** 2a. End before start: rejected. 2b. Overlaps another event: saved, then reported by the conflict check. 4a. File cannot be written: error.
+* **Postconditions:** The scheduler treats the event as busy time; the file exists.
 * **Related features:** F03.
 
-### UC04: Plan the week with the agent
-* **Actors:** Student (primary), LLM service; Weather service (via the UC08 extension).
-* **Goal:** Get a conflict-free, time-blocked plan from a natural-language request.
-* **Preconditions:** Tasks exist; an LLM provider is configured.
-* **Trigger:** The Student sends a planning request in the chat (or `plannedagent ask`).
+### UC04: Auto-schedule with a strategy
+* **Actors:** Student (primary); Weather service (through UC08).
+* **Goal:** Place all waiting tasks in free time without using the AI.
+* **Preconditions:** Some tasks need a time slot.
+* **Trigger:** The student picks a strategy and clicks Auto-schedule (or `plannedagent schedule`).
 * **Main success scenario:**
-  1. The Student sends the request.
-  2. The agent retrieves the relevant preferences.
-  3. The agent loops: it asks the LLM for the next action and runs the chosen tool (`get_tasks`, `get_calendar`, `schedule_tasks`, `check_conflicts`), observing each result.
-  4. The agent gives a final answer that explains the plan and lists unscheduled tasks.
-  5. The system shows the proposal.
-  6. The Student reviews and applies it (include UC13).
-* **Alternative/exception flows:**
-  * 3a. A tool fails: an error observation is returned; the agent continues and tells the Student.
-  * 3b. Malformed LLM output: one repair attempt, else FAILED with a suggestion to Auto-schedule.
-  * 3c. 8-step limit reached: partial answer.
-  * 3d. Ambiguous request: the agent asks a clarifying question and the use case resumes at step 1.
-  * 3e. Outdoor tasks: extend UC08.
-  * 2a. LLM unavailable: the Student is offered UC05.
-* **Postconditions:** A proposal exists; after UC13 the plan is updated, persisted and undoable.
-* **Related features:** F04 (uses F05, F06, F08, F09).
+  1. The system selects the strategy.
+  2. The system gets the forecast if there are outdoor tasks (UC08).
+  3. The system orders the tasks with the strategy.
+  4. For each task, the system finds the first start time that fits: free, before the deadline, allowed by the preferences, and dry for outdoor tasks.
+  5. The system builds a proposal and checks it for conflicts.
+  6. The system shows the proposal and the tasks that did not fit.
+  7. The student applies or discards it (includes UC12).
+* **Alternative/exception flows:** 1a. Unknown strategy: deadline first, with a warning. 2a. Weather not available: continue and warn. 4a. No slot fits: the task is listed with a reason.
+* **Postconditions:** A proposal is ready; after UC12 the plan is updated and can be undone.
+* **Related features:** F04, F08, F09.
 
-### UC05: Auto-schedule with a strategy
-* **Actors:** Student; Weather service (via UC08).
-* **Goal:** Schedule all tasks that need a slot, deterministically, without an LLM.
-* **Preconditions:** Tasks that need scheduling exist.
-* **Trigger:** Auto-schedule with a chosen strategy (or `plannedagent schedule`).
+### UC05: Plan the week with the agent
+* **Actors:** Student (primary), LLM service; Weather service (through UC08).
+* **Goal:** Get a plan from a normal-language request.
+* **Preconditions:** Tasks exist; an LLM is set up.
+* **Trigger:** The student sends a planning request in the chat (or `plannedagent ask`).
 * **Main success scenario:**
-  1. The Student picks a strategy and clicks Auto-schedule.
-  2. The system builds the constraints (availability and preferences, plus weather if outdoor tasks exist).
-  3. The system computes free slots and orders the tasks with the strategy, prerequisites first.
-  4. The system places each task in its best permitted slot.
-  5. The system simulates the result and checks for conflicts.
-  6. The system shows the proposal and the reasons for any unscheduled task.
-  7. The Student applies it (include UC13).
-* **Alternative/exception flows:**
-  * 1a. Unknown strategy: falls back to EDF with a warning.
-  * 2a. Weather API down: continue with a warning.
-  * 4a. No slot fits: the task is reported as unscheduled with a reason.
-* **Postconditions:** As UC04.
-* **Related features:** F05, F08.
+  1. The student sends the request.
+  2. The agent adds it to its memory.
+  3. The agent asks the LLM for the next step.
+  4. The agent runs the chosen tool (for example `get_tasks`, `get_schedule`, `schedule_tasks`) and stores the result.
+  5. Steps 3 and 4 repeat until the LLM gives a final answer, at most 6 steps.
+  6. The system shows the answer and the proposal.
+  7. The student applies or discards it (includes UC12).
+* **Alternative/exception flows:** 3a. Reply is not valid JSON: the agent asks for the right format and tries again. 4a. A tool returns an error: the LLM sees it and tries again or asks the student. 5a. 6 steps used, or the LLM is not available: "I could not finish, try Auto-schedule" (UC04). 3b. Unclear request: the agent asks a question. 4b. Outdoor tasks: UC08 extends this use case.
+* **Postconditions:** A proposal is waiting for the student.
+* **Related features:** F05.
 
-### UC06: Detect and resolve conflicts
-* **Actors:** Student, LLM service.
-* **Goal:** See plan problems and fix them.
+### UC06: Check conflicts
+* **Actors:** Student.
+* **Goal:** See what is wrong with the plan.
 * **Preconditions:** A plan exists.
-* **Trigger:** Any plan change (automatic), Check conflicts, or `plannedagent conflicts`.
+* **Trigger:** Check conflicts (or `plannedagent conflicts`).
 * **Main success scenario:**
-  1. The system detects overlaps, deadline misses, overload, availability and dependency violations, and bad weather.
-  2. The system shows them with their severity.
-  3. The Student clicks *Ask agent to fix*.
-  4. The agent proposes edits, re-checked on a snapshot.
-  5. The Student applies them (include UC13).
-* **Alternative/exception flows:**
-  * 1a. No conflicts: "All clear".
-  * 4a. The fix still has blocking conflicts: the proposal cannot be applied and the agent explains why.
-  * 1b. Weather unknown: the rain check is skipped, with a note.
-* **Postconditions:** No blocking conflicts remain in the applied plan.
+  1. The system checks for overlaps, late blocks, outdoor blocks in rain and broken preferences.
+  2. The system shows the list and highlights the blocks.
+  3. The student can ask the agent to fix a problem (UC07).
+* **Alternative/exception flows:** 1a. No problems: "No conflicts found". 1b. No forecast: rain check skipped, with a note.
+* **Postconditions:** The student knows about every problem.
 * **Related features:** F06, F08.
 
-### UC07: Edit the plan in natural language
-* **Actors:** Student, LLM service.
-* **Goal:** Change the plan conversationally.
-* **Preconditions:** A plan with blocks exists.
-* **Trigger:** A chat instruction such as "move gym to tomorrow 7 am".
+### UC07: Change the plan by chat
+* **Actors:** Student (primary), LLM service.
+* **Goal:** Change the plan by asking in normal language.
+* **Preconditions:** The plan has blocks.
+* **Trigger:** A chat message such as "Move gym to Wednesday at 7am".
 * **Main success scenario:**
-  1. The Student gives the instruction.
-  2. The agent resolves the dates deterministically (`resolve_date`).
-  3. The agent finds the target blocks (`get_calendar`).
-  4. The agent proposes edit commands (`edit_plan`), which are validated and conflict-checked.
-  5. The system shows the proposal.
-  6. The Student applies it (include UC13).
-* **Alternative/exception flows:**
-  * 4a. Invalid or missing tool arguments: the tool returns a failure without running; the agent corrects the call or asks.
-  * 3a. Ambiguous block: clarifying question.
-  * 4b. Pinned block: refused.
-  * 4c. New conflict: shown in the proposal.
-* **Postconditions:** As UC04; the change can be undone (UC14).
-* **Related features:** F07.
+  1. The agent reads the schedule with `get_schedule`.
+  2. The agent calls `move_task` with the block id and the new time.
+  3. The tool checks the arguments, tries the move on a copy of the workspace and checks for conflicts.
+  4. The system shows the proposal.
+  5. The student applies it (includes UC12).
+* **Alternative/exception flows:** 3a. Unknown block or bad time: the tool returns an error without changing anything, and the agent asks which block was meant. 3b. The move would cause a conflict: shown, and Apply is blocked.
+* **Postconditions:** The plan is changed, and the change can be undone (UC13).
+* **Related features:** F07, F06.
 
-### UC08: Check weather for outdoor tasks
-* **Actors:** Student, Weather service.
+### UC08: Use the weather forecast
+* **Actors:** Weather service (secondary). It runs as part of UC04 and UC05.
 * **Goal:** Keep outdoor tasks out of rainy hours.
-* **Preconditions:** A location is set; outdoor tasks or blocks exist.
-* **Trigger:** Check weather, or automatically during UC04/UC05 (extension point "outdoor tasks").
+* **Preconditions:** A location is set; an outdoor task exists.
+* **Trigger:** Scheduling with an outdoor task (the extension point of UC04 and UC05).
 * **Main success scenario:**
-  1. The system requests the hourly forecast.
-  2. The system builds the weather constraint.
-  3. During scheduling, outdoor tasks are placed only in dry hours.
-  4. Existing outdoor blocks in rain are flagged BAD_WEATHER.
-* **Alternative/exception flows:**
-  * 1a. API failure or timeout: continue without the constraint and warn the Student.
-  * 1b. Beyond the forecast horizon: no constraint for those days.
-  * No location set: ask the Student to set one.
-* **Postconditions:** Outdoor blocks are either in dry hours or flagged.
+  1. The system asks Open-Meteo for the hourly chance of rain.
+  2. The scheduler only places outdoor tasks in hours below the limit.
+  3. The conflict check flags outdoor blocks in rain.
+* **Alternative/exception flows:** 1a. API not reachable: continue without rain data and warn the student. 1b. Day beyond the forecast: no rain check for that day.
+* **Postconditions:** Outdoor blocks are in dry hours or flagged.
 * **Related features:** F08.
 
-### UC09: Teach and manage preferences
-* **Actors:** Student, LLM service.
-* **Goal:** Have the agent remember personal rules and apply them.
+### UC09: Teach a preference
+* **Actors:** Student (primary), LLM service.
+* **Goal:** Make the agent remember a personal rule.
 * **Preconditions:** None.
-* **Trigger:** The Student states a rule in the chat, or opens the Memory tab.
+* **Trigger:** The student states a rule in the chat.
 * **Main success scenario:**
-  1. The Student states a rule ("I never study after 10 pm").
-  2. The agent calls `remember_preference` with structured arguments.
-  3. The tool validates them.
-  4. Memory replaces any older rule with the same type and category, and persists.
-  5. The agent confirms.
-  6. Future plans use the rule as a constraint.
-  7. The Student can list or forget preferences in the Memory tab.
-* **Alternative/exception flows:**
-  * 3a. Invalid value (e.g. 25:00): the tool fails and the agent asks for clarification.
-  * 4a. Storage failure: the agent must not claim the rule was saved.
-* **Postconditions:** The preference is stored and active, or removed.
+  1. The student writes a rule ("I never study after 10pm").
+  2. The agent calls `remember_preference` with a rule and a value.
+  3. The tool checks them and saves the preference.
+  4. The agent confirms.
+  5. Later plans obey the rule.
+* **Alternative/exception flows:** 3a. Unknown rule or bad time: the tool returns an error, and the agent asks again. 3b. The same rule again: the new value replaces the old one.
+* **Postconditions:** The preference is saved and used by the scheduler and the conflict check.
 * **Related features:** F09.
 
-### UC10: Plan a goal (decomposition)
-* **Actors:** Student, LLM service.
-* **Goal:** Turn a goal and deadline into a validated tree of milestones and tasks.
-* **Preconditions:** The deadline is in the future.
-* **Trigger:** Plan goal (or `plannedagent goal`).
-* **Main success scenario:**
-  1. The Student enters the goal and deadline.
-  2. The system computes the free minutes before the deadline.
-  3. The LLM proposes milestones and tasks.
-  4. The system validates the draft (fits the free time, valid estimates, no empty milestones).
-  5. The system shows the tree.
-  6. The Student edits it and saves.
-  7. The system stores the Goal (Composite) with ordered prerequisites.
-* **Alternative/exception flows:**
-  * 1a. Deadline in the past: rejected before any LLM call.
-  * 4a. Invalid draft: up to 2 repair rounds; if still invalid, it is shown with its issues for manual editing.
-  * 3a. LLM unavailable: message.
-* **Postconditions:** The goal and its tasks exist, and goal progress is tracked.
-* **Related features:** F10.
-
-### UC11: Review the day and reschedule missed tasks
-* **Actors:** Student, LLM service.
-* **Goal:** Close the day honestly and recover missed work.
-* **Preconditions:** Blocks are scheduled for today.
+### UC10: Review the day
+* **Actors:** Student (primary), LLM service.
+* **Goal:** Close the day and find new times for missed tasks.
+* **Preconditions:** Today has planned blocks.
 * **Trigger:** Review today (or `plannedagent review`).
 * **Main success scenario:**
   1. The system lists today's blocks.
-  2. The Student marks each one Done or Missed and optionally gives a reason.
-  3. The system applies the State transitions and removes the missed blocks.
-  4. The agent reschedules the missed tasks, taking the reason into account.
-  5. The system shows the proposal.
-  6. The Student applies it (include UC13).
-* **Alternative/exception flows:**
-  * 1a. No blocks today: "Nothing to review".
-  * 4a. LLM unavailable: deterministic Auto-schedule fallback (EDF).
-  * 4b. A missed task is past its deadline: flagged.
-  * The Student cancels: nothing changes.
-* **Postconditions:** Today's statuses are recorded and the missed tasks have proposed new slots.
+  2. The student marks each one Done or Missed.
+  3. The system completes the done tasks, marks the missed tasks as Missed and removes their blocks.
+  4. The agent proposes new times for the missed tasks.
+  5. The student applies the proposal (includes UC12).
+* **Alternative/exception flows:** 1a. No blocks today: "Nothing to review". 4a. LLM not available: plain auto-schedule (deadline first) is used. 4b. A missed task is past its deadline: it is listed so the student can change the deadline.
+* **Postconditions:** Today's statuses are recorded and missed tasks have proposed new times.
+* **Related features:** F10, F02.
+
+### UC11: Get the weekly report
+* **Actors:** Student (primary), LLM service.
+* **Goal:** See how the week went.
+* **Preconditions:** The week has some data.
+* **Trigger:** Weekly report (or `plannedagent report`).
+* **Main success scenario:**
+  1. The system counts minutes planned and done, tasks done and missed, and the busiest day.
+  2. The LLM writes a short summary from those numbers.
+  3. The system shows the numbers and the summary.
+* **Alternative/exception flows:** 1a. No data: "No tasks were planned this week". 2a. LLM not available: a template summary is used.
+* **Postconditions:** The report is shown.
 * **Related features:** F11.
 
-### UC12: View weekly insights
-* **Actors:** Student, LLM service.
-* **Goal:** Understand how the week went and get grounded suggestions.
-* **Preconditions:** Plan history exists.
-* **Trigger:** Generate on the Insights tab (or `plannedagent report`).
-* **Main success scenario:**
-  1. The Student picks a week.
-  2. The system computes the statistics deterministically.
-  3. The LLM writes a narrative with three suggestions.
-  4. The system checks that the narrative only cites numbers from the statistics.
-  5. The system shows the chart, statistics and narrative (and can export Markdown).
-* **Alternative/exception flows:**
-  * 2a. No data: "No planned tasks this week".
-  * 3a. LLM failure or malformed output: template narrative (`aiGenerated = false`).
-  * 4a. Ungrounded narrative: template narrative.
-* **Postconditions:** A report is displayed or exported.
-* **Related features:** F12.
-
-### UC13: Review and apply a plan proposal (included use case)
+### UC12: Apply or discard a proposal (included)
 * **Actors:** Student.
-* **Goal:** Accept or discard a proposed set of plan changes safely.
-* **Preconditions:** A proposal was produced by UC04, UC05, UC06, UC07 or UC11.
-* **Trigger:** Apply or Discard on a proposal card (CLI: yes/no).
+* **Goal:** Accept or reject a set of planned changes safely.
+* **Preconditions:** UC04, UC05, UC07 or UC10 produced a proposal.
+* **Trigger:** Apply or Discard (CLI: answer yes or no).
 * **Main success scenario:**
-  1. The Student reviews the listed changes and conflicts.
-  2. The Student clicks Apply.
-  3. The system checks that the proposal is still valid and has no blocking conflicts.
-  4. The invoker executes the macro command atomically, and tasks move to SCHEDULED.
-  5. The system publishes PLAN_CHANGED.
-  6. The views refresh, the workspace auto-saves and the trace is recorded.
-* **Alternative/exception flows:**
-  * 2a. Discard: the proposal is dropped and nothing changes.
-  * 3a. Unknown or stale proposal: "no longer valid".
-  * 3b. Blocking conflicts: Apply is refused.
-  * 4a. A command fails mid-way: the commands already executed are undone and the workspace is unchanged.
-* **Postconditions:** Either nothing changed, or all changes were applied and recorded for undo.
-* **Related features:** F04, F05, F06, F07, F11.
+  1. The student reads the changes and any conflicts, and clicks Apply.
+  2. The system checks that the proposal has no conflicts.
+  3. The command history runs every command; the tasks move to Scheduled.
+  4. The system saves the workspace and notifies the observers.
+  5. The window refreshes and the activity log records the change.
+* **Alternative/exception flows:** 1a. Discard: nothing changes. 2a. The proposal has conflicts: Apply is refused with a message.
+* **Postconditions:** Either nothing changed, or every change was applied and can be undone.
+* **Related features:** F04, F05, F07, F10.
 
-### UC14: Undo / redo a plan change
+### UC13: Undo or redo a change
 * **Actors:** Student.
-* **Goal:** Reverse or re-apply the last plan change.
-* **Preconditions:** At least one change has been applied (undo) or undone (redo).
-* **Trigger:** Undo / Redo or Ctrl+Z / Ctrl+Y (CLI `plannedagent undo|redo`).
+* **Goal:** Reverse or repeat the last applied change.
+* **Preconditions:** A change was applied (for undo) or undone (for redo).
+* **Trigger:** Undo or Redo (or `plannedagent undo` and `redo`).
 * **Main success scenario:**
-  1. The Student presses Undo.
-  2. The invoker pops the last command and undoes its sub-commands in reverse order.
-  3. The command moves to the redo stack.
-  4. The system publishes PLAN_CHANGED, and the views refresh.
-* **Alternative/exception flows:**
-  * 2a. Nothing to undo: "Nothing to undo".
-  * After a new change, the redo stack is cleared.
-* **Postconditions:** The plan is restored to its previous state.
+  1. The student clicks Undo.
+  2. The command history undoes the last group of commands in reverse order.
+  3. The group moves to the redo stack.
+  4. The system notifies the observers and the window refreshes.
+* **Alternative/exception flows:** 2a. Nothing to undo: "Nothing to undo". After a new change, the redo stack is emptied.
+* **Postconditions:** The plan is back to its previous state.
 * **Related features:** F07.
 
 ---
 
 ## 7. Sequence diagrams
 
-The 14 sequence diagrams cover every feature and every use case. Each one shows:
+The nine sequence diagrams cover every feature and use case. Each one shows:
 
-* the initiating actor
-* the boundary objects (GUI views and controllers, or the CLI)
-* the facade, domain and agent objects
-* the LLM and external services
-* the method calls, return values, and alternative or error flows (`alt`, `opt`, `loop`, `ref`)
+* the actor and the GUI or CLI objects;
+* the controller and the facade;
+* the domain objects, the agent and the LLM;
+* outside services;
+* the method calls in order, with the important return values and the error paths (`alt`, `opt`, `loop` and `ref` frames).
 
-All messages use classes and methods exactly as they appear in the class diagrams. UMLet sources are in [`diagrams/uxf/`](diagrams/uxf/).
+Every call uses a method that exists in the class diagrams.
 
-| SD | Title | Features / use cases | Patterns shown |
+| SD | What it shows | Features / use cases | Patterns seen |
 |---|---|---|---|
-| SD01 | Capture tasks from free text | F01 / UC01 | Facade, MVC, Decorator (via `LlmClient`) |
-| SD02 | Add a dependency and complete a task | F02 / UC02 | State, Observer |
-| SD03 | Import / export a calendar (CLI) | F03 / UC03 | Adapter, Facade, Observer |
-| SD04 | The agent plans the week (ReAct loop) | F04 / UC04 | Facade, Template Method, Observer |
-| SD05 | Auto-schedule with strategy and weather | F05, F08 / UC05, UC08 | Strategy, Adapter, Command |
-| SD06 | Detect conflicts and let the agent fix them | F06 / UC06 | Observer, Template Method |
-| SD07 | Edit the plan in natural language | F07 / UC07 | Template Method, Command |
-| SD08 | Review and apply a plan proposal | UC13 (F04-F07, F11) | Command, State, Observer |
-| SD09 | Learn a preference and use it later | F09 / UC09 | Template Method |
-| SD10 | Plan a goal with validation and repair | F10 / UC10 | Composite, Facade |
-| SD11 | End-of-day review and rescheduling | F11 / UC11 | State, Strategy (fallback) |
-| SD12 | Weekly insights report (CLI) | F12 / UC12 | Facade |
-| SD13 | One LLM call through the decorator chain | all AI features | Decorator, Adapter |
-| SD14 | Undo and redo a plan change | F07 / UC14 | Command, Observer |
+| SD1 | Start-up: choosing the LLM and connecting the objects | all (setup) | Adapter, Facade, Observer |
+| SD2 | Add tasks from plain text | F01, F02 / UC01, UC02 | Facade, MVC, Observer |
+| SD3 | Auto-schedule with a strategy, the weather and preferences | F04, F08, F09 / UC04, UC08 | Strategy, Adapter, Command |
+| SD4 | The agent plans the week | F05 / UC05 | Facade, Observer |
+| SD5 | Apply a proposal, then undo it | F07, F02 / UC12, UC13 | Command, State, Observer |
+| SD6 | Check conflicts, then fix one by chat | F06, F07 / UC06, UC07 | Command (proposal) |
+| SD7 | Teach the agent a preference | F09 / UC09 | Facade |
+| SD8 | End-of-day review and rescheduling | F10 / UC10 | State, Strategy (fallback) |
+| SD9 | Fixed events, calendar export and weekly report from the CLI | F03, F11 / UC03, UC11 | Facade |
 
-![SD01](diagrams/png/SD01-capture-tasks.png)
-*SD01. Capture tasks. Alternatives: malformed JSON (one repair) and LLM unavailable (manual entry).*
+![SD1](diagrams/png/SD1-start-up.png)
+*SD1. `App` picks `GeminiClient` or `OllamaClient` from the setting, loads the workspace, creates the facade and attaches the observers. With no arguments it opens the GUI; otherwise it runs the CLI.*
 
-![SD02](diagrams/png/SD02-dependencies-and-task-state.png)
-*SD02. Dependency cycle check and the State transition to DONE; illegal transitions are rejected.*
+![SD2](diagrams/png/SD2-add-tasks-from-text.png)
+*SD2. The LLM extracts the tasks, the student checks them, the facade saves them and notifies the observers. If the LLM fails, the student adds the tasks by hand.*
 
-![SD03](diagrams/png/SD03-calendar-import-export-cli.png)
-*SD03. CLI import (all-or-nothing) and export through the iCalendar adapter.*
+![SD3](diagrams/png/SD3-auto-schedule-with-weather.png)
+*SD3. The facade sets the strategy and gets the forecast (with a path for when it fails). The scheduler sorts the tasks and tries start times with `fits()`. The result is turned into commands, checked on a copy, and returned as a proposal.*
 
-![SD04](diagrams/png/SD04-agent-plans-the-week.png)
-*SD04. The bounded ReAct loop: prompt -> LLM -> parse -> tool -> observe; outcomes are proposal, clarification or failure.*
+![SD4](diagrams/png/SD4-agent-plans-the-week.png)
+*SD4. The agent loop: build the request, call the LLM, read the step, run the tool, store the result. It ends with a proposal, or with a clear failure message.*
 
-![SD05](diagrams/png/SD05-auto-schedule-and-weather.png)
-*SD05. Strategy selection, the weather constraint (with failure path), slot scoring, simulation on a snapshot, and conflict check.*
+![SD5](diagrams/png/SD5-apply-and-undo.png)
+*SD5. Apply runs the commands through `CommandHistory`; each `AddBlockCommand` adds a block and moves its task from To-do to Scheduled through the State objects; the observers refresh the window. Undo reverses the commands.*
 
-![SD06](diagrams/png/SD06-conflicts-and-agent-fix.png)
-*SD06. Automatic conflict detection after PLAN_CHANGED and the agent-proposed fix.*
+![SD6](diagrams/png/SD6-conflicts-and-chat-edit.png)
+*SD6. The conflict check finds an overlap. The student asks for a move; `MoveTaskTool` checks the arguments and tries the move on a copy. Bad arguments are rejected before anything changes.*
 
-![SD07](diagrams/png/SD07-natural-language-edit.png)
-*SD07. `validate -> doExecute` inside each tool. Invalid arguments are rejected before the tool runs.*
+![SD7](diagrams/png/SD7-teach-a-preference.png)
+*SD7. The agent turns a sentence into a rule. The tool checks it and saves it, and the scheduler uses it later.*
 
-![SD08](diagrams/png/SD08-apply-proposal.png)
-*SD08. Atomic MacroCommand execution, the TODO -> SCHEDULED transition, and observers (auto-save, trace, view refresh).*
+![SD8](diagrams/png/SD8-review-the-day.png)
+*SD8. Done and missed tasks change state, missed blocks are removed, and the agent proposes new times. If the LLM fails, plain auto-schedule is used.*
 
-![SD09](diagrams/png/SD09-learn-a-preference.png)
-*SD09. Long-term memory: remember, persist, forget; later turned into scheduling constraints.*
-
-![SD10](diagrams/png/SD10-plan-a-goal.png)
-*SD10. Goal decomposition with deterministic validation and up to two repair rounds; the result is a Composite goal tree.*
-
-![SD11](diagrams/png/SD11-end-of-day-review.png)
-*SD11. Done/Missed transitions, agent rescheduling, and the deterministic fallback.*
-
-![SD12](diagrams/png/SD12-weekly-insights-cli.png)
-*SD12. Deterministic statistics, AI narrative, grounding check and template fallback (CLI path).*
-
-![SD13](diagrams/png/SD13-llm-decorator-chain.png)
-*SD13. Cache -> retry -> rate limit -> Gemini adapter, with quota and HTTP 429/503 handling.*
-
-![SD14](diagrams/png/SD14-undo-redo.png)
-*SD14. Undo and redo through CommandHistory and MacroCommand.*
+![SD9](diagrams/png/SD9-events-export-and-report-cli.png)
+*SD9. CLI path: add a fixed event, export the calendar, and get the weekly report (with a template if the LLM fails).*
 
 ---
 
@@ -1046,302 +711,261 @@ All messages use classes and methods exactly as they appear in the class diagram
 
 | Feature | Description | Type | Related use case | Classes | Key methods | Sequence diagram | Design pattern(s) |
 |---|---|---|---|---|---|---|---|
-| F01 | Capture tasks from free text | Hybrid | UC01 | TasksView, TasksController, PlannerFacade, TaskCaptureService, PromptBuilder, StructuredOutputClient, LlmClient, ResponseParser, DateResolver, Workspace, WorkspaceStore | `captureTasks()`, `extract()`, `buildExtractionRequest()`, `call()`, `complete()`, `parseObject()`, `resolve()`, `saveTasks()`, `addTask()` | SD01, SD13 | Facade, MVC, Decorator, Adapter |
-| F02 | Tasks, dependencies, lifecycle | Deterministic | UC02 | TasksController, PlannerFacade, DependencyGraph, Task, TaskState (+4 states), Workspace, EventBus | `addDependency()`, `wouldCreateCycle()`, `addPrerequisite()`, `completeTask()`, `complete()`, `changeState()`, `publish()` | SD02 | State, Observer, Facade |
-| F03 | Calendar import/export | Deterministic | UC03 | PlannedAgentCli, WeekController, PlannerFacade, CalendarImporter, PlanExporter, IcsCalendarAdapter, Workspace | `importCalendar()`, `importEvents()`, `toCalendarEvent()`, `addEvents()`, `exportPlan()`, `export()`, `toVEvent()` | SD03 | Adapter, Facade |
-| F04 | Agent plans the week | Hybrid (AI-led) | UC04, UC13 | ChatView, ChatController, PlannerFacade, AgentController, AgentSession, PreferenceMemory, PromptBuilder, LlmClient, ResponseParser, ToolRegistry, AbstractTool + tools, Scheduler, ConflictDetector, PlanProposal | `chat()`, `handle()`, `nextAction()`, `buildAgentRequest()`, `complete()`, `parseAction()`, `execute()`, `doExecute()`, `observe()`, `registerProposal()` | SD04, SD08, SD13 | Facade, Template Method, Strategy, Command, Observer, Decorator, MVC |
-| F05 | Auto-schedule with strategy | Deterministic | UC05, UC13 | WeekController, PlannerFacade, StrategyRegistry, Scheduler, SchedulingStrategy (+3), SlotFinder, SchedulingConstraint, PlanCommandFactory, MacroCommand, ConflictDetector | `autoSchedule()`, `get()`, `setStrategy()`, `schedule()`, `freeSlots()`, `order()`, `permits()`, `slotScore()`, `fromSchedule()`, `detect()` | SD05, SD08 | Strategy, Command, Facade |
-| F06 | Conflict detection and fixes | Hybrid | UC06, UC13 | WeekController, ChatController, PlannerFacade, ConflictDetector, SchedulingConstraint, AgentController, ToolRegistry, CheckConflictsTool, EditPlanTool | `onEvent()`, `refresh()`, `detectConflicts()`, `detect()`, `permits()`, `onAskAgentToFix()`, `handle()` | SD06, SD08 | Observer, Template Method, Command |
-| F07 | Natural-language editing with undo/redo | Hybrid | UC07, UC13, UC14 | ChatController, AgentController, ResolveDateTool, DateResolver, EditPlanTool, PlanCommandFactory, MoveBlockCommand, MacroCommand, CommandHistory, WeekController | `handle()`, `validate()`, `doExecute()`, `resolve()`, `fromOperation()`, `execute()`, `undo()`, `redo()`, `moveTo()` | SD07, SD08, SD14 | Command, Template Method, Observer |
-| F08 | Weather-aware scheduling | Hybrid (external API) | UC08 | PlannerFacade, WeatherService, OpenMeteoWeatherAdapter, WeatherForecast, WeatherConstraint, ConflictDetector, GetWeatherTool | `buildConstraints()`, `weatherWarnings()`, `forecast()`, `isWet()`, `permits()`, `detect()` | SD05, SD06 | Adapter, Strategy (constraint use), Facade |
-| F09 | Preference memory | Hybrid | UC09 | ChatController, AgentController, RememberPreferenceTool, PreferenceMemory, PreferenceStore, JsonPreferenceStore, AvailabilityConstraint, MemoryController | `handle()`, `validate()`, `doExecute()`, `remember()`, `saveAll()`, `relevantTo()`, `toConstraints()`, `forget()` | SD09 | Template Method, Adapter, Facade |
-| F10 | Goal decomposition | AI-based (validated) | UC10 | GoalsView, GoalsController, PlannerFacade, SlotFinder, GoalPlanner, PromptBuilder, StructuredOutputClient, GoalDraft, Goal, Task, Workspace | `planGoal()`, `freeSlots()`, `decompose()`, `buildGoalRequest()`, `call()`, `validate()`, `buildRepairRequest()`, `toGoal()`, `addGoal()`, `progress()` | SD10 | Composite, Facade, MVC |
-| F11 | End-of-day review and rescheduling | Hybrid | UC11, UC13 | ReviewDialog, ReviewController, PlannerFacade, ReviewService, Task, TaskState, Plan, AgentController, Scheduler | `startReview()`, `itemsFor()`, `submitReview()`, `recordOutcome()`, `complete()`, `markMissed()`, `buildRescheduleMessage()`, `handle()`, `autoSchedule()` | SD11, SD08 | State, Command, Strategy, Facade |
-| F12 | Weekly insights report | Hybrid | UC12 | InsightsView, InsightsController, PlannedAgentCli, PlannerFacade, InsightsService, PromptBuilder, StructuredOutputClient, ConsoleRenderer | `weeklyReport()`, `generateReport()`, `computeStats()`, `buildInsightsRequest()`, `call()`, `isGrounded()`, `fallbackReport()`, `printReport()` | SD12 | Facade, Decorator, MVC |
+| F01 | Add tasks from plain text | Hybrid | UC01 | MainWindow, MainController, PlannerFacade, TaskExtractor, LlmClient, Workspace, JsonStorage, EventBus | `onAddText()`, `tasksFromText()`, `extract()`, `complete()`, `readTasks()`, `saveTasks()`, `addTask()`, `save()` | SD2 | Facade, Adapter, MVC, Observer |
+| F02 | Manage tasks and their status | Deterministic | UC02 | MainController, PlannerFacade, Workspace, Task, TaskState, TodoState, ScheduledState, MissedState, DoneState | `onAddTask()`, `onEditTask()`, `onDeleteTask()`, `addTask()`, `updateTask()`, `deleteTask()`, `removeTask()`, `onComplete()`, `completeTask()`, `getTask()`, `complete()`, `setState()` | SD2, SD5, SD8 | State, Facade |
+| F03 | Fixed events and calendar export | Deterministic | UC03 | PlannerCli, MainController, PlannerFacade, Workspace, FixedEvent, CalendarExporter | `addEvent()`, `exportCalendar()`, `export()` | SD9 | Facade |
+| F04 | Auto-schedule with a strategy | Deterministic | UC04, UC12 | MainController, PlannerFacade, Scheduler, SchedulingStrategy (3), ScheduleResult, AddBlockCommand, ConflictChecker, Proposal | `autoSchedule()`, `strategyFor()`, `setStrategy()`, `schedule()`, `sort()`, `fits()`, `copy()`, `check()` | SD3, SD5 | Strategy, Command, Facade |
+| F05 | Plan the week with the agent | AI agent | UC05, UC12 | MainController, PlannerFacade, Agent, ConversationMemory, LlmClient, Tool (5 tools), ToolResult, AgentReply, EventBus | `onSend()`, `chat()`, `handle()`, `buildRequest()`, `complete()`, `parseStep()`, `run()`, `add()` | SD4, SD5 | Facade, Adapter, Observer, Command |
+| F06 | Check conflicts | Deterministic | UC06 | MainController, PlannerFacade, ConflictChecker, Conflict, Forecast | `onCheckConflicts()`, `checkConflicts()`, `check()`, `showConflicts()` | SD6 | Facade |
+| F07 | Change the plan by chat, with undo and redo | Hybrid | UC07, UC12, UC13 | Agent, MoveTaskTool, Plan, Workspace, ConflictChecker, MoveBlockCommand, CommandHistory, Proposal | `handle()`, `run()`, `find()`, `copy()`, `check()`, `execute()`, `undo()`, `redo()`, `moveTo()` | SD6, SD5 | Command, Facade |
+| F08 | Weather-aware scheduling | Hybrid | UC08 | PlannerFacade, WeatherService, OpenMeteoWeather, Forecast, Scheduler, ConflictChecker | `forecast()`, `parse()`, `isRainy()`, `fits()`, `check()` | SD3 | Adapter, Strategy |
+| F09 | Remember preferences | Hybrid | UC09 | Agent, RememberPreferenceTool, Workspace, Preference, JsonStorage, Scheduler | `handle()`, `run()`, `addPreference()`, `getPreferences()`, `save()`, `fits()` | SD7 | Facade |
+| F10 | End-of-day review | Hybrid | UC10, UC12 | MainController, PlannerFacade, Task, TaskState, Plan, EventBus, Agent | `onReview()`, `reviewDay()`, `complete()`, `markMissed()`, `remove()`, `notifyObservers()`, `handle()`, `autoSchedule()` | SD8, SD5 | State, Observer, Strategy |
+| F11 | Weekly report | Hybrid | UC11 | PlannerCli, MainController, PlannerFacade, ReportService, LlmClient, WeeklyReport | `weeklyReport()`, `countStats()`, `complete()`, `fallbackSummary()` | SD9 | Facade, Adapter |
 
 ---
 
 ## 9. How each feature is realized
 
-### F01: Capture tasks from free text
-**Related:** UC01, SD01.
+### F01: Add tasks from plain text
+**Related use case:** UC01. **Related sequence diagram:** SD2.
 
-**Classes involved.**
-* `TasksView` collects the text and shows the drafts.
-* `TasksController` turns clicks into facade calls.
+**Classes involved:**
+* `MainWindow` takes the text and shows the result.
+* `MainController` passes the click to the facade.
 * `PlannerFacade` is the entry point.
-* `TaskCaptureService` runs the extraction workflow.
-* `PromptBuilder` builds the schema-constrained request.
-* `StructuredOutputClient` calls the LLM, parses the output and repairs it once if needed.
-* `ResponseParser` converts the JSON into a `CaptureResult`.
-* `DateResolver` turns phrases into exact date-times.
-* `Workspace` and `WorkspaceStore` store and persist the tasks.
+* `TaskExtractor` asks the LLM and turns the JSON into `Task` objects.
+* `LlmClient` (`GeminiClient` or `OllamaClient`) talks to the model.
+* `Workspace` and `JsonStorage` keep and save the tasks.
+* `EventBus` tells the window to refresh.
 
-**Important methods.** `TasksController.onExtract()`, `PlannerFacade.captureTasks()`, `TaskCaptureService.extract()`, `PromptBuilder.buildExtractionRequest()`, `StructuredOutputClient.call()`, `DateResolver.resolve()`, `PlannerFacade.saveTasks()`.
+**Important methods:** `MainController.onAddText()`, `PlannerFacade.tasksFromText()`, `TaskExtractor.extract()`, `LlmClient.complete()`, `TaskExtractor.readTasks()`, `PlannerFacade.saveTasks()`, `Workspace.addTask()`, `JsonStorage.save()`.
 
-**Execution.**
-1. Extract calls `onExtract(text)`, which calls `captureTasks(text)`.
-2. The service builds a request whose JSON schema lists the task fields, and `call()` sends it through the decorated `LlmClient`.
-3. The parsed drafts get exact deadlines from `DateResolver`, then `validate()` adds defaults and flags problems.
-4. The view shows the drafts.
-5. On save, each valid draft becomes a `Task` (state TODO) via `toTask()`, `Workspace.addTask()` stores it, and the workspace is saved.
+**Execution:**
+1. When the student clicks Add from text, `onAddText()` calls `tasksFromText()`.
+2. `extract()` sends the sentence and today's date to the LLM and asks for a JSON list of tasks.
+3. `readTasks()` turns the JSON into `Task` objects in the To-do state, rejecting tasks with a missing title or a length outside 5 to 600 minutes.
+4. The window shows the list. On Save, `saveTasks()` adds each task to the `Workspace`, saves the file and notifies the observers.
 
-### F02: Task management with dependencies and lifecycle
-**Related:** UC02, SD02.
+### F02: Manage tasks and their status
+**Related use case:** UC02. **Related sequence diagrams:** SD2, SD5, SD8.
 
-**Classes involved.**
-* `TasksController` and `PlannerFacade` handle the request.
-* `DependencyGraph` detects cycles and gives the topological order.
+**Classes involved:**
+* `MainController` and `PlannerFacade` handle the request.
+* `Workspace` finds the task.
 * `Task` is the State context.
-* `TaskState` and its four concrete states hold the transition rules.
-* `Workspace` and `EventBus` store the change and notify the views.
+* `TodoState`, `ScheduledState`, `MissedState` and `DoneState` hold the rules for each status.
 
-**Important methods.** `addDependency()`, `DependencyGraph.wouldCreateCycle()`, `Task.addPrerequisite()`, `completeTask()`, `Task.complete()` -> `TaskState.complete(task)` -> `Task.changeState()`.
+**Important methods:** `PlannerFacade.completeTask()`, `Workspace.getTask()`, `Task.complete()`, `TaskState.complete(task)`, `Task.setState()`.
 
-**Execution.**
-* Adding a dependency. The facade builds a `DependencyGraph` from all tasks. If adding the edge would close a cycle, it returns an error showing the path. Otherwise it records the prerequisite, saves, and publishes `PLAN_CHANGED`.
-* Completing a task. `Task.complete()` delegates to the current state object. `TodoState`, `ScheduledState` and `MissedState` switch the task to `DoneState`; `DoneState` throws `IllegalTransitionException`, which is shown as a message.
+**Execution:**
+1. When the student clicks Mark done, `completeTask()` finds the task and calls `Task.complete()`.
+2. The task does not decide by itself: it calls `complete(this)` on its current state object.
+3. `TodoState`, `ScheduledState` and `MissedState` call `task.setState(new DoneState())`. `DoneState` throws an `IllegalStateException`, which the window shows as a message.
+4. The same idea is used when a task is scheduled (SD5) or missed (SD8).
 
-### F03: Calendar import/export
-**Related:** UC03, SD03.
+### F03: Fixed events and calendar export
+**Related use case:** UC03. **Related sequence diagram:** SD9.
 
-**Classes involved.**
-* `PlannedAgentCli` / `WeekController` are the entry points.
+**Classes involved:**
+* `PlannerCli` or `MainController` is the entry point.
 * `PlannerFacade` coordinates.
-* `CalendarImporter` and `PlanExporter` are the ports, both implemented by `IcsCalendarAdapter` (the adapter over ical4j).
-* `Workspace` stores the events, skipping duplicate UIDs.
-* `ConsoleRenderer` prints the result.
+* `Workspace` stores the `FixedEvent` objects.
+* `CalendarExporter` writes the `.ics` file.
 
-**Important methods.** `importCalendar()`, `importEvents()`, `toCalendarEvent()`, `Workspace.addEvents()`, `exportPlan()`, `export()`, `toVEvent()`.
+**Important methods:** `PlannerFacade.addEvent()`, `Workspace.addEvent()`, `PlannerFacade.exportCalendar()`, `CalendarExporter.export()`.
 
-**Execution.**
-* Import. The adapter parses the file and expands weekly recurrences over 16 weeks into `CalendarEvent`s. The facade adds them, saves and publishes `PLAN_CHANGED`. A parse error raises `CalendarImportException` before anything is added.
-* Export. The adapter maps each `TimeBlock` in range, plus its `Task`, to a VEVENT and writes the file.
+**Execution:**
+1. `addEvent()` checks that the end is after the start, adds the event to the workspace and saves.
+2. The scheduler later treats the event as busy time through `Workspace.busyBetween()`.
+3. `exportCalendar()` passes the workspace to `CalendarExporter.export()`, which writes one calendar entry (VEVENT) per event and per planned block.
 
-### F04: Agent plans the week
-**Related:** UC04, UC13, SD04, SD08, SD13.
+### F04: Auto-schedule with a chosen strategy
+**Related use cases:** UC04, UC12. **Related sequence diagrams:** SD3, SD5.
 
-**Classes involved.**
-* `ChatView` and `ChatController` form the boundary; the controller is also an Observer that shows live status.
-* `PlannerFacade` owns the sessions and the pending proposals.
-* `AgentController` runs the loop, using `AgentSession` (conversation, scratchpad, pending proposal) and `PreferenceMemory`.
-* `PromptBuilder` and `ResponseParser` handle prompts and parsing; `LlmClient` is the decorated provider.
-* `ToolRegistry` and the tools act on the world; `ScheduleTasksTool` uses `Scheduler` and `ConflictDetector`.
-* `PlanProposal` is the result.
+**Classes involved:**
+* `PlannerFacade` coordinates.
+* `Scheduler` is the Strategy context; the three `SchedulingStrategy` classes order the tasks.
+* `Workspace` gives the tasks and busy times.
+* `WeatherService` gives the forecast.
+* `ScheduleResult` holds the result.
+* `AddBlockCommand` and `Proposal` package the change.
+* `ConflictChecker` checks it.
 
-**Important methods.** `ChatController.onSend()`, `PlannerFacade.chat()`, `AgentController.handle()`, `nextAction()`, `PromptBuilder.buildAgentRequest()`, `LlmClient.complete()`, `ResponseParser.parseAction()`, `ToolRegistry.execute()`, `AbstractTool.execute()`, `observe()`, `registerProposal()`.
+**Important methods:** `PlannerFacade.autoSchedule()`, `strategyFor()`, `Scheduler.setStrategy()`, `Scheduler.schedule()`, `SchedulingStrategy.sort()`, `Scheduler.fits()`, `Workspace.copy()`, `ConflictChecker.check()`.
 
-**Execution.**
-1. `handle()` loads the relevant preferences, then repeats `nextAction()` up to 8 times. Each time it builds a prompt with the tool specs, calls the LLM, and parses one JSON action.
-2. A `ToolCallAction` is executed through the registry, and the `ToolResult` is appended to the scratchpad as an observation. If the result carries a `PlanProposal`, it becomes the session's pending proposal.
-3. A `FinalAnswerAction` ends the loop. The facade registers the proposal and returns an `AgentResponse(PROPOSAL_READY)`.
-4. The controller shows the explanation and the proposal card. Applying it follows SD08.
+**Execution:**
+1. `autoSchedule("deadline")` picks the strategy object and gives it to the scheduler, then asks for the forecast.
+2. `schedule()` gets the tasks that need a slot and sorts them with the strategy.
+3. For each task, it walks through 30-minute start times and uses `fits()` to find the first one that:
+   * is free;
+   * ends before the deadline;
+   * respects the preferences;
+   * is dry if the task is outdoor.
+4. The placed blocks become `AddBlockCommand`s. The facade runs them on a copy of the workspace and checks for conflicts, then returns a `Proposal`. Nothing is changed until Apply.
 
-### F05: Auto-schedule with a selectable strategy
-**Related:** UC05, UC13, SD05, SD08.
+### F05: Plan the week with the agent
+**Related use cases:** UC05, UC12. **Related sequence diagrams:** SD4, SD5.
 
-**Classes involved.**
-* `WeekController` and `PlannerFacade` handle the request.
-* `StrategyRegistry` provides the strategy, and `Scheduler` is the Strategy context.
-* `SchedulingStrategy` and its three implementations are the strategies.
-* `SlotFinder` finds free time; `SchedulingConstraint`, `AvailabilityConstraint` and `WeatherConstraint` filter slots.
-* `PlanCommandFactory` and `MacroCommand` turn the result into a change.
-* `ConflictDetector` checks it, and `PlanProposal` holds it.
+**Classes involved:**
+* `MainController` and `PlannerFacade` handle the request.
+* `Agent` runs the loop.
+* `ConversationMemory` keeps the recent messages.
+* `LlmClient` is the model.
+* The `Tool` classes (`GetTasksTool`, `GetScheduleTool`, `ScheduleTasksTool`, `MoveTaskTool`, `RememberPreferenceTool`) are the agent's actions; each returns a `ToolResult`.
+* `AgentReply` is the answer.
+* `EventBus` shows progress.
 
-**Important methods.** `autoSchedule()`, `StrategyRegistry.get()`, `Scheduler.setStrategy()`, `Scheduler.schedule()`, `SlotFinder.freeSlots()`, `strategy.order()`, `constraint.permits()`, `strategy.slotScore()`, `PlanCommandFactory.fromSchedule()`, `Workspace.snapshot()`, `ConflictDetector.detect()`.
+**Important methods:** `PlannerFacade.chat()`, `Agent.handle()`, `Agent.buildRequest()`, `LlmClient.complete()`, `Agent.parseStep()`, `Tool.run()`, `ConversationMemory.add()`.
 
-**Execution.**
-1. The facade installs the chosen strategy and builds the constraints (preferences, and weather if needed).
-2. `schedule()` computes free slots, orders the tasks (prerequisites first), and puts each task in the best-scoring slot that every constraint permits. Tasks that cannot be placed get a reason.
-3. The placements become a `MacroCommand` of `AddBlockCommand`s. The macro is executed on a snapshot and conflict-checked.
-4. The proposal is shown. Nothing changes until the user applies it.
+**Execution:**
+1. `chat()` calls `Agent.handle()`, which stores the message in memory.
+2. In each step, `buildRequest()` puts together the rules, the tool list, the preferences and the recent messages. The LLM answers with one JSON step, which `parseStep()` reads.
+3. If the step names a tool, the agent publishes a status event, runs the tool and stores the result.
+4. The loop ends when the LLM gives a final answer or after 6 steps.
+5. If a tool such as `schedule_tasks` returned a `Proposal`, it is passed back in the `AgentReply` and shown with Apply and Discard.
 
-### F06: Conflict and overload detection with agent fixes
-**Related:** UC06, UC13, SD06, SD08.
+### F06: Check conflicts
+**Related use case:** UC06. **Related sequence diagram:** SD6.
 
-**Classes involved.**
-* `EventBus` notifies `WeekController` (an Observer).
-* `PlannerFacade` and `ConflictDetector` (four checks plus the constraints) find the problems.
-* `WeekView` shows them.
-* `ChatController` and `AgentController` handle the fix, using `CheckConflictsTool` and `EditPlanTool`.
+**Classes involved:**
+* `MainController` and `PlannerFacade` handle the request.
+* `ConflictChecker` finds the problems and creates `Conflict` objects.
+* `Forecast` gives the rain data.
 
-**Important methods.** `WeekController.onEvent()`, `refresh()`, `PlannerFacade.detectConflicts()`, `ConflictDetector.detect()`, `findOverlaps()`, `findDeadlineMisses()`, `findOverloadedDays()`, `findDependencyViolations()`, `SchedulingConstraint.permits()`, `onAskAgentToFix()`.
+**Important methods:** `PlannerFacade.checkConflicts()`, `ConflictChecker.check()`, `MainWindow.showConflicts()`.
 
-**Execution.**
-1. Every `PLAN_CHANGED` event triggers `refresh()`, which calls `detectConflicts()`. The detector runs its four checks and the constraints (availability, weather) on each block.
-2. The view renders badges and the Problems panel.
-3. *Ask agent to fix* sends the conflict list to the chat. The agent inspects it (`check_conflicts`) and proposes moves (`edit_plan`).
-4. Each proposal is re-checked on a snapshot. A proposal with blocking conflicts cannot be applied.
+**Execution:**
+1. `check()` compares every pair of busy times for overlaps.
+2. It compares each block with its task's deadline.
+3. It asks the `Forecast` whether outdoor blocks are rainy.
+4. It compares each block with the saved preferences.
+5. Each problem becomes a `Conflict` with a type and a message, and the window lists them. The same check runs on every proposal before it can be applied.
 
-### F07: Natural-language editing with undo/redo
-**Related:** UC07, UC13, UC14, SD07, SD08, SD14.
+### F07: Change the plan by chat, with undo and redo
+**Related use cases:** UC07, UC12, UC13. **Related sequence diagrams:** SD6, SD5.
 
-**Classes involved.**
-* `AgentController` runs the loop.
-* `ResolveDateTool` (with `DateResolver`) and `EditPlanTool` (with `PlanCommandFactory` and `ConflictDetector`) are the Template Method tools.
-* `MoveBlockCommand` and `MacroCommand` are the commands, and `CommandHistory` is the invoker.
-* `WeekController` provides Undo/Redo.
+**Classes involved:**
+* `Agent` runs the loop.
+* `MoveTaskTool` checks the request.
+* `Plan` and `Workspace` hold the blocks.
+* `ConflictChecker` checks the result.
+* `MoveBlockCommand` is the change itself.
+* `CommandHistory` runs, undoes and redoes it.
 
-**Important methods.** `AbstractTool.execute()` -> `validate()` -> `doExecute()`, `DateResolver.resolve()`, `PlanCommandFactory.fromOperation()`, `CommandHistory.execute()`, `CommandHistory.undo()`, `MacroCommand.undo()`, `MoveBlockCommand.undo()`, `TimeBlock.moveTo()`, `CommandHistory.redo()`.
+**Important methods:** `MoveTaskTool.run()`, `Plan.find()`, `Workspace.copy()`, `ConflictChecker.check()`, `CommandHistory.run()`, `MoveBlockCommand.execute()`, `MoveBlockCommand.undo()`, `TimeBlock.moveTo()`, `CommandHistory.undo()`, `CommandHistory.redo()`.
 
-**Execution.**
-1. Dates are not computed by the LLM. It calls `resolve_date`, then `edit_plan` with a block id and a new start time.
-2. `EditPlanTool` validates the arguments; invalid arguments return a failure observation and nothing runs. With valid arguments it builds a `MoveBlockCommand`, simulates it on a snapshot and returns a proposal.
-3. After Apply, the macro goes through `CommandHistory`.
-4. Undo pops it and reverses each sub-command (`moveTo(oldInterval)`). Redo re-executes it.
+**Execution:**
+1. The LLM calls `move_task` with a block id and a new start time.
+2. `run()` checks that the block exists and that the time is valid and in the future. If not, it returns an error and changes nothing.
+3. Otherwise it applies a `MoveBlockCommand` to a copy of the workspace and checks it for conflicts, then returns a `Proposal`.
+4. After Apply, `CommandHistory.run()` calls `execute()`, which calls `moveTo(newStart)`. Undo calls `undo()`, which moves the block back to `oldStart`.
 
 ### F08: Weather-aware scheduling
-**Related:** UC08, SD05, SD06.
+**Related use case:** UC08. **Related sequence diagram:** SD3.
 
-**Classes involved.**
-* `WeatherService` is the port, and `OpenMeteoWeatherAdapter` the adapter.
-* `WeatherForecast` holds the data, and its `isWet()` checks a time range.
-* `WeatherConstraint` is a `SchedulingConstraint`.
-* `PlannerFacade` (in `buildConstraints()` and `weatherWarnings()`), `Scheduler` and `ConflictDetector` use the constraint; `GetWeatherTool` gives the agent access.
+**Classes involved:**
+* `WeatherService` is the interface, and `OpenMeteoWeather` the adapter that calls the API and parses its JSON.
+* `Forecast` answers rain questions.
+* `Scheduler` and `ConflictChecker` use it.
 
-**Important methods.** `forecast()`, `isWet()`, `WeatherConstraint.permits()`, `buildConstraints()`, `weatherWarnings()`.
+**Important methods:** `WeatherService.forecast()`, `OpenMeteoWeather.parse()`, `Forecast.isRainy()`, `Scheduler.fits()`.
 
-**Execution.**
-1. When outdoor tasks are involved, the facade asks the adapter for the hourly forecast and adds a `WeatherConstraint`.
-2. `permits()` returns false for outdoor tasks in hours above the rain threshold, so the scheduler skips those slots and the detector flags existing blocks as BAD_WEATHER.
-3. If the API fails, a `WeatherUnavailableException` makes the facade continue without the constraint and attach a warning, which the agent must pass on to the user.
+**Execution:**
+1. Before scheduling, the facade calls `forecast(today, today plus 7)`.
+2. `OpenMeteoWeather` sends one web request and turns the hourly rain chances into a `Forecast`.
+3. For an outdoor task, `fits()` rejects any start time where `isRainy(start, end)` is true.
+4. If the request fails, the facade continues with no forecast and warns the student.
 
-### F09: Preference memory
-**Related:** UC09, SD09.
+### F09: Remember preferences
+**Related use case:** UC09. **Related sequence diagram:** SD7.
 
-**Classes involved.**
-* `AgentController` and `ToolRegistry` run the request.
-* `RememberPreferenceTool` validates the type and the time format.
-* `PreferenceMemory` is the long-term memory: it de-duplicates, retrieves and converts.
-* `PreferenceStore` / `JsonPreferenceStore` persist it.
-* `AvailabilityConstraint` applies it during scheduling.
-* `MemoryController` and `MemoryView` let the user see and delete preferences.
+**Classes involved:**
+* `Agent` runs the loop.
+* `RememberPreferenceTool` checks and saves the rule.
+* `Preference` is the rule.
+* `Workspace` and `JsonStorage` keep it.
+* `Scheduler` and `ConflictChecker` obey it.
 
-**Important methods.** `RememberPreferenceTool.validate()`, `doExecute()`, `PreferenceMemory.remember()`, `PreferenceStore.saveAll()`, `relevantTo()`, `toConstraints()`, `forget()`.
+**Important methods:** `RememberPreferenceTool.run()`, `Workspace.addPreference()`, `JsonStorage.save()`, `Workspace.getPreferences()`, `Scheduler.fits()`.
 
-**Execution.**
-1. The LLM turns the sentence into `remember_preference(type=NO_WORK_AFTER, value=22:00, category=study)`.
-2. The tool validates the arguments, and memory replaces any older rule with the same type and category, then persists.
-3. In later requests, `relevantTo()` adds matching rules to the prompt, and `toConstraints()` turns them into an `AvailabilityConstraint`. The rule is therefore enforced by code, not left to the model's memory.
+**Execution:**
+1. The LLM turns "I never study after 10pm" into `remember_preference` with rule `NO_WORK_AFTER` and value `22:00`.
+2. The tool accepts only known rules and valid times; anything else returns an error so the LLM can ask again.
+3. The preference is added to the workspace and saved, so it survives a restart.
+4. From then on, `fits()` will not place a block that breaks it.
 
-### F10: Goal decomposition
-**Related:** UC10, SD10.
+### F10: End-of-day review
+**Related use cases:** UC10, UC12. **Related sequence diagrams:** SD8, SD5.
 
-**Classes involved.**
-* `GoalsView` and `GoalsController` are the boundary.
-* `PlannerFacade` computes the free time with `SlotFinder`.
-* `GoalPlanner` builds the request with `PromptBuilder`, calls `StructuredOutputClient`, validates and repairs.
-* `GoalDraft` and `MilestoneDraft` hold the proposed structure.
-* `Goal`, `Task` and `PlanItem` form the Composite result, stored in `Workspace`.
+**Classes involved:**
+* `MainController` and `PlannerFacade` handle the request.
+* `Task` and its state classes record the outcome.
+* `Plan` drops the missed blocks.
+* `EventBus` refreshes the window.
+* `Agent` proposes new times, with `PlannerFacade.autoSchedule()` as the fallback.
 
-**Important methods.** `planGoal()`, `SlotFinder.freeSlots()`, `GoalPlanner.decompose()`, `PromptBuilder.buildGoalRequest()`, `StructuredOutputClient.call()`, `GoalPlanner.validate()`, `PromptBuilder.buildRepairRequest()`, `GoalDraft.toGoal()`, `Workspace.addGoal()`, `Goal.progress()`.
+**Important methods:** `PlannerFacade.reviewDay()`, `Task.complete()`, `Task.markMissed()`, `Plan.remove()`, `EventBus.notifyObservers()`, `Agent.handle()`, `PlannerFacade.autoSchedule()`.
 
-**Execution.**
-1. The facade rejects a past deadline, then computes the free minutes before the deadline.
-2. The planner asks the LLM for milestones and tasks, then validates the draft: the total fits the free time, estimates are in range, and no milestone is empty.
-3. While issues remain, it sends up to two repair requests.
-4. The reviewed draft becomes a `Goal` tree with sequential prerequisites. Progress is computed recursively from the leaf tasks.
+**Execution:**
+1. `reviewDay(done, missed)` completes each done task. For each missed task it calls `markMissed()`, so the state object moves it from Scheduled to Missed, and removes its block.
+2. It then asks the agent to "reschedule my missed tasks". The agent schedules them, for example in the morning if the student said they were too tired at night, and returns a proposal.
+3. If the LLM fails, the facade uses `autoSchedule("deadline")` instead.
 
-### F11: End-of-day review and smart rescheduling
-**Related:** UC11, UC13, SD11, SD08.
+### F11: Weekly report
+**Related use case:** UC11. **Related sequence diagram:** SD9.
 
-**Classes involved.**
-* `ReviewDialog` and `ReviewController` are the boundary.
+**Classes involved:**
+* `PlannerCli` or `MainController` is the entry point.
 * `PlannerFacade` coordinates.
-* `ReviewService` lists the items, records the outcomes and builds the agent instruction.
-* `Task` and `TaskState` (State) record Done/Missed.
-* `Plan` loses the missed blocks.
-* `AgentController` reschedules, with `Scheduler` as the fallback.
+* `ReportService` counts and writes the report.
+* `LlmClient` writes the summary text.
+* `WeeklyReport` holds the result.
 
-**Important methods.** `startReview()`, `ReviewService.itemsFor()`, `submitReview()`, `recordOutcome()`, `Task.complete()`, `Task.markMissed()`, `Plan.removeBlock()`, `buildRescheduleMessage()`, `AgentController.handle()`, `PlannerFacade.autoSchedule()`.
+**Important methods:** `PlannerFacade.weeklyReport()`, `ReportService.weeklyReport()`, `countStats()`, `LlmClient.complete()`, `fallbackSummary()`.
 
-**Execution.**
-1. Each outcome triggers a State transition, and missed blocks are removed from the plan.
-2. The service writes an instruction for the agent that includes the user's reason, for example "prefer mornings; the user was too tired in the evening".
-3. The agent produces a rescheduling proposal. If the LLM fails, the facade falls back to deterministic EDF auto-scheduling.
-4. Applying the proposal follows SD08.
-
-### F12: Weekly insights report
-**Related:** UC12, SD12.
-
-**Classes involved.**
-* `InsightsView` / `InsightsController` and `PlannedAgentCli` / `ConsoleRenderer` are the boundaries.
-* `PlannerFacade` coordinates.
-* `InsightsService` computes the statistics, asks for the narrative, checks grounding and provides the fallback.
-* `PromptBuilder` and `StructuredOutputClient` handle the LLM call.
-* `WeeklyStats` and `WeeklyReport` hold the results.
-
-**Important methods.** `weeklyReport()`, `InsightsService.generateReport()`, `computeStats()`, `PromptBuilder.buildInsightsRequest()`, `StructuredOutputClient.call()`, `isGrounded()`, `fallbackReport()`, `ConsoleRenderer.printReport()`.
-
-**Execution.**
-1. The statistics are computed from the plan and the task states. No AI is involved.
-2. The LLM receives only those numbers and returns a narrative with three suggestions.
-3. `isGrounded()` checks that every number in the narrative appears in the statistics. Otherwise, or when the LLM fails, `fallbackReport()` produces a template narrative (`aiGenerated = false`).
-4. The report is shown as a chart and text, or printed in the CLI.
+**Execution:**
+1. `countStats()` adds up the minutes planned and done, the tasks done and missed, and finds the busiest day. These are plain numbers.
+2. The numbers, and only the numbers, are sent to the LLM, which writes a short summary with tips.
+3. If the LLM fails, `fallbackSummary()` builds a fixed sentence from the numbers.
+4. The result is a `WeeklyReport`, shown in the window or printed by the CLI.
 
 ---
 
 ## 10. Important design decisions
 
-| # | Decision | Rationale |
+| # | Decision | Reason |
 |---|---|---|
-| D1 | Ports-and-adapters with a pure-Java core module (`plannedagent-core`: no UI, network or file code). | Dependency Inversion keeps the core testable offline, and lets it be reused unchanged later, for example inside an Android app. |
-| D2 | Model-agnostic `LlmClient` with a provider-neutral JSON action protocol (`ToolCallAction` / `FinalAnswerAction` / `ClarifyAction`). | Works the same on the free Gemini tier and on a local Qwen model, and does not depend on each vendor's native function-calling format. The JSON schemas also make small models reliable. |
-| D3 | The LLM only proposes changes; code checks and applies them. Every change is a `PlanCommand` in a `PlanProposal`, simulated on `Workspace.snapshot()`, conflict-checked, applied only after the user confirms, and undoable. | Hallucinations or bad tool calls can never corrupt user data, and the user stays in control. |
-| D4 | Deterministic correctness: dates are resolved by `DateResolver`, schedules computed by `Scheduler`, conflicts by `ConflictDetector`. Date arithmetic and interval maths stay out of the LLM. | LLMs are unreliable at arithmetic. Keeping it in code makes the important parts unit-testable and repeatable. |
-| D5 | Built for small, free models: narrow prompts, JSON schemas, `extractJson` clean-up, one repair round, argument validation (P7), a bounded loop (8 steps), clarifying questions, and a deterministic fallback for every AI feature. | This keeps a cheaper, weaker model good enough for the job. |
-| D6 | Free-tier economics: a decorator chain for caching, retries with back-off and per-minute/per-day rate limits (P3). Workflow features use one structured call instead of the agent loop. | Keeps the app inside free quotas, and handles HTTP 429/503 without failing. |
-| D7 | Two kinds of memory: short-term `ConversationMemory` (a bounded window) and long-term structured `PreferenceMemory`, which becomes hard constraints. | Long conversations do not overflow the context, and stated rules keep being enforced even after they scroll out of the window. |
-| D8 | Everything observable: an `EventBus` with `TraceRecorder` writing one JSON line per agent step. | Live UI status, debugging, and evidence for KUMA behaviour tests in Stage 3. |
-| D9 | One facade for the GUI, the CLI and the JSON-lines mode. | Feature parity between the GUI and CLI, and one clean seam for automated agent testing. |
-| D10 | Local JSON storage behind ports, with the API key read from an environment variable (`GEMINI_API_KEY`) and is not stored in the repository or in the trace. | No database to install for graders. Secrets stay out of version control. The store can be swapped for a cloud database later without touching the core. |
-| D11 | Prompt-injection hygiene: imported `.ics` text and task titles are passed as delimited data, not as instructions. Only registered tools with validated arguments can run, and there are no shell or file-system tools. | Limits what a malicious calendar file or task title could make the agent do. |
-| D12 | Responsive GUI: agent calls run off the JavaFX thread (`javafx.concurrent.Task`), and events reach the UI via `Platform.runLater`. | The UI stays responsive during slow LLM calls. |
+| D1 | Only the `ui` package uses Swing; everything else is plain Java. | The logic can be tested without a window, and it can be reused later with another screen (for example a phone app). |
+| D2 | One `LlmClient` interface with two adapters: Gemini (cloud, free tier) and Qwen through Ollama (local), picked by the `PLANNER_LLM` setting. | Free to run. The local model keeps data on the laptop and has no daily limit. Switching providers changes one line. |
+| D3 | The LLM does not change data directly. Tools that change the plan return a `Proposal`; the change runs as commands only after the student clicks Apply, and can be undone. | A wrong AI answer cannot damage the student's plan, and the student stays in control. |
+| D4 | The agent and the LLM talk in a fixed JSON format: each reply is either one tool call or a final answer. The loop stops after 6 steps, and each tool checks its own arguments before doing anything. | Works the same way with both models. Small free models stay usable, and the agent cannot loop forever. |
+| D5 | Exact work is done in Java, not by the LLM: free slots, deadlines, overlaps, preferences, rain, and the counts in the report. | LLMs are bad at exact sums and dates. Plain code can be unit-tested. |
+| D6 | Every AI feature has a fallback: the manual task form, plain auto-schedule, and a template report. | The app stays useful when the free quota runs out or there is no internet. |
+| D7 | Two kinds of memory: `ConversationMemory` keeps the last 20 messages, and `Preference` objects are saved in the workspace file. | The conversation stays small, and the important rules are kept for good and enforced by code. |
+| D8 | Data is saved in one JSON file in the student's home folder. The Gemini API key is read from an environment variable and is not written to any file. | Nothing to install for a grader, and no secrets in the repository. |
+| D9 | Slow AI calls run in a Swing `SwingWorker`, and the window updates when the call ends. | The window does not freeze while the model is thinking. |
+| D10 | The `plannedagent ask` command and the `ActivityLog` file give a non-GUI way to talk to the agent, plus a record of every step it took. | This prepares Stage 3, where the agent's behaviour is tested automatically. JUnit tests can also replace `LlmClient` with a fake that returns fixed answers. |
 
 ---
 
-## 11. Design for testing
-
-This section previews Stages 2 and 3. The design already includes what testing needs:
-
-* Deterministic tests (JUnit 5) for:
-  * `Scheduler` and each strategy, `SlotFinder`, `ConflictDetector` and `DependencyGraph` (normal, boundary and invalid cases)
-  * `DateResolver`
-  * `TaskState` transitions
-  * the commands with undo/redo, and `MacroCommand` atomicity
-  * the decorators, with a fake `Clock`
-  * `ResponseParser` on malformed JSON
-  * the adapters, against recorded JSON
-  * facade integration tests that use `ScriptedLlmClient`, so no network is needed
-* Agent behaviour tests (KUMA). KUMA's Python harness drives `plannedagent serve` (JSON lines) and reads the trace as evidence. Planned behavioural requirements:
-  * the agent checks the calendar before scheduling
-  * it does not apply changes without confirmation
-  * it rejects invalid tool arguments
-  * it reports a weather or LLM failure instead of hiding it
-  * it respects remembered preferences
-  * it asks when a reference is ambiguous
-  * it does not invent events or tasks
-  * it completes multi-step requests
-
----
-
-## 12. Stage 1 requirement checklist
+## 11. Stage 1 requirement checklist
 
 | Requirement (stage1.pdf) | Where |
 |---|---|
-| GUI for the major functionality | §1.9, CD10, SD01-SD11 |
-| CLI for the major functionality | §1.9 (command table), CD10, SD03, SD12 |
-| At least 10 meaningful features | §2: 12 features |
-| At least 5 design patterns | §4: 10 patterns, each with problem, participants, roles, rationale and what would be harder without it |
-| At least one AI/LLM model | §1.5: Gemini free tier, local Qwen via Ollama |
-| Agent behaviour (reasoning, planning, tools, memory, retrieval, multi-step) | §1.6, §1.8, CD04, CD05, SD04 |
+| GUI for the main functions | §1.8, CD6, SD2 to SD8 |
+| CLI for the main functions | §1.8 (command table), CD6, SD9 |
+| At least 10 meaningful features | §2: 11 features |
+| At least 5 design patterns from the course | §4: 7 patterns, each with problem, classes, roles, reason and what would be harder without it |
+| At least one AI/LLM model | §1.5: Gemini API, or local Qwen through Ollama |
+| Agent behaviour: reasoning, planning, tools, memory | §1.6, CD3, SD4, SD6, SD7 |
 | Project overview: problem, users, agent, models, architecture | §1.1 to §1.7 |
-| Feature specs: ID, description, GUI interaction, input, output, AI involvement, workflow, errors | §2 (F01-F12) |
-| UML class diagram: classes, interfaces, attributes, methods, relationships, multiplicities, AI components | §3 (CD00-CD10), §3.1 |
+| Feature specs with ID, description, GUI use, input, output, AI involvement, workflow, errors | §2 |
+| Class diagram: classes, interfaces, attributes, methods, relationships, multiplicities, AI parts | §3, CD0 to CD6 |
 | Design pattern explanations | §4 |
-| Use-case diagram: actors, use cases, coverage of all features | §5 |
-| Use-case descriptions: ID, name, actors, goal, preconditions, trigger, main scenario, alternative flows, postconditions, related features | §6 (UC01-UC14) |
-| Sequence diagrams: actor, boundary, controller, domain, AI, external services, calls, returns, alternative flows | §7 (SD01-SD14) |
+| Use-case diagram covering all features | §5 |
+| Use-case descriptions with all fields | §6, UC01 to UC13 |
+| Sequence diagrams using the classes and methods from the class diagram | §7, SD1 to SD9 |
 | Feature-to-design traceability table | §8 |
 | Feature implementation explanations | §9 |
-| Explanation of important design decisions | §10 |
+| Important design decisions | §10 |

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>1530</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD3 - Auto-schedule with a strategy, the weather and preferences (F04, F08, F09 / UC04, UC08)
+obj=Student~s ACTOR
+obj=:MainWindow~w
+obj=:MainController~c
+obj=:PlannerFacade~f
+obj=weather:OpenMeteoWeather~we
+obj=:Scheduler~sch
+obj=strategy:DeadlineFirstStrategy~st
+obj=:Workspace~ws
+obj=:ConflictChecker~cc
+s-&gt;&gt;&gt;w : choose Deadline first and click Auto-schedule
+w-&gt;&gt;&gt;c : onAutoSchedule("deadline")
+c-&gt;&gt;&gt;f : autoSchedule("deadline")
+f-&gt;&gt;&gt;f + : strategyFor("deadline")
+f-&gt;&gt;&gt;sch : setStrategy(strategy)
+f-&gt;&gt;&gt;we : forecast(today, today plus 7 days)
+combinedFragment=alt~a1 f we
+f:[forecast received]
+we.&gt;f : Forecast
+..=a1
+f:[Open-Meteo not reachable]
+we.&gt;f : IOException
+f-&gt;&gt;&gt;f + : continue without rain data and warn the student
+--=a1
+f-&gt;&gt;&gt;sch : schedule(workspace, from, to, forecast)
+sch-&gt;&gt;&gt;ws : tasksToSchedule()
+ws.&gt;sch : tasks
+sch-&gt;&gt;&gt;st : sort(tasks)
+st.&gt;sch : tasks in deadline order
+sch-&gt;&gt;&gt;ws : busyBetween(from, to)
+ws.&gt;sch : busy times from events and planned blocks
+combinedFragment=loop~l1 sch ws
+sch:[each task, then each 30-minute start time until one fits]
+sch-&gt;&gt;&gt;sch + : fits(task, start, workspace, forecast)
+--=l1
+sch.&gt;f : ScheduleResult, placed blocks and reasons for tasks that did not fit
+f-&gt;&gt;&gt;f + : wrap each block in an AddBlockCommand
+f-&gt;&gt;&gt;ws : copy()
+ws.&gt;f : trial workspace with the commands applied
+f-&gt;&gt;&gt;cc : check(trial, forecast)
+cc.&gt;f : conflicts
+f.&gt;c : Proposal
+c-&gt;&gt;&gt;w : showProposal(proposal)
+ref=s c : SD5 - apply or discard the proposal</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

@@ -1,0 +1,482 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>620</x>
+      <y>90</y>
+      <w>140</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+MainController
+(see CD6)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1260</x>
+      <y>250</y>
+      <w>230</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>App
+--
+_+main(args: String[]): void_
+-createLlm(): LlmClient
+--
+reads PLANNER_LLM:
+gemini or ollama</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1880</x>
+      <y>90</y>
+      <w>120</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+PlannerCli
+(see CD6)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>20</x>
+      <y>255</y>
+      <w>280</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>JsonStorage
+--
+-file: Path
+--
++load(): Workspace
++save(workspace: Workspace): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>630</x>
+      <y>285</y>
+      <w>120</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+Agent
+(see CD3)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1870</x>
+      <y>285</y>
+      <w>140</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+CommandHistory
+(see CD2)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>630</x>
+      <y>780</y>
+      <w>120</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+Workspace
+(see CD1)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1080</x>
+      <y>480</y>
+      <w>590</w>
+      <h>650</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Facade&gt;&gt;
+PlannerFacade
+--
+-workspace: Workspace
+-agent: Agent
+-scheduler: Scheduler
+-checker: ConflictChecker
+-history: CommandHistory
+-extractor: TaskExtractor
+-weather: WeatherService
+-reports: ReportService
+-exporter: CalendarExporter
+-storage: JsonStorage
+-events: EventBus
+-pending: Proposal
+--
++PlannerFacade(workspace: Workspace, llm: LlmClient, storage: JsonStorage)
++tasksFromText(text: String): List&lt;Task&gt;
++saveTasks(tasks: List&lt;Task&gt;): void
++addTask(task: Task): void
++updateTask(task: Task): void
++deleteTask(taskId: String): void
++completeTask(taskId: String): void
++addEvent(event: FixedEvent): void
++exportCalendar(file: Path): void
++autoSchedule(strategyName: String): Proposal
++chat(message: String): AgentReply
++applyProposal(): String
++discardProposal(): void
++checkConflicts(): List&lt;Conflict&gt;
++undo(): boolean
++redo(): boolean
++reviewDay(done: List&lt;String&gt;, missed: List&lt;String&gt;): AgentReply
++weeklyReport(): WeeklyReport
++subscribe(observer: PlannerObserver): void
++getWorkspace(): Workspace
+-strategyFor(name: String): SchedulingStrategy
+-changed(message: String): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1880</x>
+      <y>780</y>
+      <w>120</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+EventBus
+(see CD6)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2210</x>
+      <y>285</y>
+      <w>140</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+WeatherService
+(see CD4)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>625</x>
+      <y>1240</y>
+      <w>130</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+TaskExtractor
+(see CD4)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1315</x>
+      <y>1240</y>
+      <w>120</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+Scheduler
+(see CD2)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1865</x>
+      <y>1240</y>
+      <w>150</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+ConflictChecker
+(see CD2)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>40</x>
+      <y>1420</y>
+      <w>240</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>WeeklyReport
+--
++stats: Map&lt;String, Integer&gt;
++summary: String</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>380</x>
+      <y>1400</y>
+      <w>620</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>ReportService
+--
+-llm: LlmClient
+--
++weeklyReport(workspace: Workspace, weekStart: LocalDate): WeeklyReport
+-countStats(workspace: Workspace, weekStart: LocalDate): Map&lt;String, Integer&gt;
+-fallbackSummary(stats: Map&lt;String, Integer&gt;): String</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1315</x>
+      <y>1435</y>
+      <w>120</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+LlmClient
+(see CD4)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1750</x>
+      <y>1415</y>
+      <w>380</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>CalendarExporter
+--
++export(workspace: Workspace, file: Path): void
+--
+writes an .ics file</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>20</x>
+      <y>10</y>
+      <w>1500</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>fontsize=18
+*CD5 - PlannerFacade, the one entry point (package app) and the services it uses*
+Pattern: Facade - the GUI and the CLI call only PlannerFacade; it hides the agent, scheduler, commands, weather, reports, export and storage</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>674</x>
+      <y>100</y>
+      <w>445</w>
+      <h>447</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+facade</panel_attributes>
+    <additional_attributes>406.0;407.8;40.8;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1601</x>
+      <y>100</y>
+      <w>358</w>
+      <h>420</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+facade</panel_attributes>
+    <additional_attributes>40.1;380.0;318.5;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1335</x>
+      <y>330</y>
+      <w>80</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;create&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;150.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>255</x>
+      <y>325</y>
+      <w>865</w>
+      <h>399</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>40.0;40.0;825.0;359.8</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>684</x>
+      <y>295</y>
+      <w>435</w>
+      <h>336</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>40.6;40.0;396.0;296.8</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1630</x>
+      <y>295</y>
+      <w>321</w>
+      <h>291</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>281.5;40.0;40.0;251.5</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>710</x>
+      <y>765</y>
+      <w>410</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>40.0;40.0;370.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1630</x>
+      <y>765</y>
+      <w>290</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>250.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1630</x>
+      <y>295</y>
+      <w>644</w>
+      <h>388</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>604.3;40.0;40.0;348.6</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>687</x>
+      <y>963</y>
+      <w>432</w>
+      <h>316</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>40.2;277.0;393.0;40.1</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1335</x>
+      <y>1090</y>
+      <w>80</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>40.0;150.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1630</x>
+      <y>1005</y>
+      <w>319</w>
+      <h>274</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>279.3;235.0;40.0;40.2</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>712</x>
+      <y>1047</y>
+      <w>407</w>
+      <h>392</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>40.7;353.0;368.0;40.1</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1615</x>
+      <y>1090</y>
+      <w>325</w>
+      <h>365</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1</panel_attributes>
+    <additional_attributes>286.2;325.0;40.3;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>240</x>
+      <y>1420</y>
+      <w>180</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;create&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;40.0;140.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>960</x>
+      <y>1420</y>
+      <w>395</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+llm</panel_attributes>
+    <additional_attributes>355.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+</diagram>

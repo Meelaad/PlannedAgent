@@ -2,43 +2,35 @@
 
 EECS 3311 Software Design, Fall 2026. Course project by Milad Jafarieh.
 
-PlannedAgent turns a messy to-do list into a time-blocked week with no clashes. You tell it what you need to do in plain language. Its AI agent then:
+PlannedAgent turns a quick list of things to do into a week plan with no clashes.
 
-* reads your tasks and calendar
-* finds free time and checks the weather for outdoor tasks
-* applies the rules you have taught it
-* proposes a plan you can apply, edit in plain language, and undo
+* You type your tasks in one sentence, and the agent turns them into tasks.
+* It plans your week around your classes, your rules ("no studying after 10pm") and the weather.
+* It shows you a proposal that you can apply, change by chat, or undo.
 
-PlannedAgent has a JavaFX GUI and a command-line interface. It works with the free Gemini API or a local Qwen model through Ollama.
+It has a Swing GUI and a command-line interface. It runs on the free Gemini API, or on a local Qwen model through Ollama.
 
 ## Project stages
 
 | Stage | Deliverable | Status |
 |---|---|---|
-| 1: Design | [Stage 1 Design Report](docs/stage1/Stage1-Design-Report.md): overview, 12 features, UML class / use-case / sequence diagrams, 10 design patterns, traceability | Submitted |
-| 2: AI-human collaborative implementation | Source code, setup guide, AI collaboration log | Upcoming |
-| 3: Testing and agent validation | JUnit tests, KUMA behavioural tests, failure analysis | Upcoming |
+| 1: Design | [Stage 1 Design Report](docs/stage1/Stage1-Design-Report.md) (overview, 11 features, class / use-case / sequence diagrams, 7 design patterns, traceability) | Done |
+| 2: Implementation | Source code, setup guide, AI collaboration log | Next |
+| 3: Testing | JUnit tests, KUMA agent tests, failure analysis | Later |
 
 ## Repository layout
 
 ```
-docs/stage1/Stage1-Design-Report.md   Stage 1 report (all required sections)
-docs/stage1/diagrams/uxf/             UMLet 15.1 sources for every UML diagram
-docs/stage1/diagrams/png/             PNG exports of the same diagrams (embedded in the report)
+docs/stage1/Stage1-Design-Report.md   Stage 1 report
+docs/stage1/diagrams/uxf/             UMLet source files for every UML diagram
+docs/stage1/diagrams/png/             The same diagrams as images
 ```
 
-### Diagram index
-
-* **Class diagrams:** `CD00` package overview, then `CD01` to `CD10` (domain, scheduling, agent, tools, LLM, commands/events, facade/services, ports/adapters, GUI/CLI).
-* **Use-case diagram:** `UC-use-case-diagram`.
-* **Sequence diagrams:** `SD01` to `SD14`.
-
-To regenerate the images, open a `.uxf` file in UMLet and use *File -> Export as...* PNG, keeping the same file name in `docs/stage1/diagrams/png/`. UMLet can also convert every file at once from a terminal (bash):
-
-```
-for f in docs/stage1/diagrams/uxf/*.uxf; do java -jar umlet.jar -action=convert -format=png -filename="$f" -output="docs/stage1/diagrams/png/$(basename "${f%.uxf}")"; done
-```
+Diagram names:
+* Class diagram views: `CD0` (overview) to `CD6`
+* Use-case diagram: `UC-use-case-diagram`
+* Sequence diagrams: `SD1` to `SD9`
 
 ## Planned technology
 
-Java 21 (core module built for Java 17), JavaFX, picocli, Gradle, JUnit 5, Jackson, the Gemini API (free tier) or Ollama (local Qwen), Open-Meteo, iCalendar (ical4j) and UMLet.
+Java 21, Swing, Maven, JUnit 5, Gson, the Gemini API (free tier) or Ollama with a local Qwen model, and the Open-Meteo weather API.

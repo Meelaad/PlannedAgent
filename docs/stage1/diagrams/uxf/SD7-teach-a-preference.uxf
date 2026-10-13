@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>1530</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD7 - Teach the agent a preference (F09 / UC09 - long-term memory)
+obj=Student~s ACTOR
+obj=:MainWindow~w
+obj=:MainController~c
+obj=:PlannerFacade~f
+obj=:Agent~a
+obj=llm:LlmClient~llm
+obj=remember:RememberPreferenceTool~rp
+obj=:Workspace~ws
+obj=:JsonStorage~st
+s-&gt;&gt;&gt;w : I never study after 10pm
+w-&gt;&gt;&gt;c : onSend(message)
+c-&gt;&gt;&gt;f : chat(message)
+f-&gt;&gt;&gt;a : handle(message, workspace)
+a-&gt;&gt;&gt;llm : complete(request)
+llm.&gt;a : step remember_preference, rule NO_WORK_AFTER, value 22h00
+a-&gt;&gt;&gt;rp : run(args, workspace)
+combinedFragment=alt~a1 a ws
+a:[known rule and a valid time]
+rp-&gt;&gt;&gt;ws : addPreference(preference)
+rp.&gt;a : ToolResult ok, saved
+..=a1
+a:[unknown rule or a bad time such as 25h00]
+rp.&gt;a : ToolResult error, the time must be 00h00 to 23h59
+--=a1
+a-&gt;&gt;&gt;llm : complete(request)
+llm.&gt;a : final answer - Got it, no study after 10pm
+a.&gt;f : AgentReply
+f-&gt;&gt;&gt;f + : changed("preference saved")
+f-&gt;&gt;&gt;st : save(workspace)
+f.&gt;c : reply
+c-&gt;&gt;&gt;w : showChat(text)
+ref=f ws : later, Scheduler.fits() reads getPreferences() - see SD3</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

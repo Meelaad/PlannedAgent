@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>1530</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD2 - Add tasks from plain text (F01, F02 / UC01, UC02)
+obj=Student~s ACTOR
+obj=:MainWindow~w
+obj=:MainController~c
+obj=:PlannerFacade~f
+obj=:TaskExtractor~x
+obj=llm:LlmClient~llm
+obj=:Workspace~ws
+obj=:JsonStorage~st
+obj=:EventBus~eb
+s-&gt;&gt;&gt;w : type the tasks in one sentence and click Add
+w-&gt;&gt;&gt;c : onAddText(text)
+c-&gt;&gt;&gt;f : tasksFromText(text)
+f-&gt;&gt;&gt;x : extract(text, today)
+x-&gt;&gt;&gt;llm : complete(request)
+combinedFragment=alt~a1 c eb
+c:[the LLM answered]
+llm.&gt;x : JSON list of tasks
+x-&gt;&gt;&gt;x + : readTasks(json)
+x.&gt;f : tasks, each in the To-do state
+f.&gt;c : tasks
+c-&gt;&gt;&gt;w : showTasks(tasks)
+s-&gt;&gt;&gt;w : check the list and click Save
+w-&gt;&gt;&gt;c : onSaveTasks(tasks)
+c-&gt;&gt;&gt;f : saveTasks(tasks)
+combinedFragment=loop~l1 f ws
+f:[each task]
+f-&gt;&gt;&gt;ws : addTask(task)
+--=l1
+f-&gt;&gt;&gt;f + : changed("tasks added")
+f-&gt;&gt;&gt;st : save(workspace)
+f-&gt;&gt;&gt;eb : notifyObservers("TASKS", "3 tasks added")
+..=a1
+c:[LlmException - no answer or quota used up]
+llm.&gt;x : LlmException
+x.&gt;f : LlmException
+f.&gt;c : LlmException
+c-&gt;&gt;&gt;w : showError("AI is not available, add the tasks by hand")
+--=a1</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

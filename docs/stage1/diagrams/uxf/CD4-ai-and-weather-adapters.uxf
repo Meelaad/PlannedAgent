@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>20</x>
+      <y>130</y>
+      <w>240</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;external&gt;&gt;
+&lt;&lt;Adapter: Adaptee&gt;&gt;
+Gemini REST API
+--
+cloud, free tier
+API key from an env variable</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>355</x>
+      <y>90</y>
+      <w>370</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Adapter: Adapter&gt;&gt;
+GeminiClient
+--
+-apiKey: String
+-model: String
+-http: HttpClient
+--
++GeminiClient(apiKey: String, model: String)
++complete(request: LlmRequest): String
+-toGeminiJson(request: LlmRequest): String
+-readText(json: String): String</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>870</x>
+      <y>135</y>
+      <w>320</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+&lt;&lt;Adapter: Target&gt;&gt;
+LlmClient
+--
++complete(request: LlmRequest): String</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1365</x>
+      <y>90</y>
+      <w>370</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Adapter: Adapter&gt;&gt;
+OllamaClient
+--
+-baseUrl: String
+-model: String
+-http: HttpClient
+--
++OllamaClient(baseUrl: String, model: String)
++complete(request: LlmRequest): String
+-toOllamaJson(request: LlmRequest): String
+-readText(json: String): String</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1860</x>
+      <y>130</y>
+      <w>200</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;external&gt;&gt;
+&lt;&lt;Adapter: Adaptee&gt;&gt;
+Ollama /api/chat
+--
+local Qwen model
+(no key, works offline)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>30</x>
+      <y>395</y>
+      <w>220</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;exception&gt;&gt;
+LlmException
+--
+no answer, quota used up,
+or unreadable reply</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>330</x>
+      <y>390</y>
+      <w>420</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>TaskExtractor
+--
+-llm: LlmClient
+--
++extract(text: String, today: LocalDate): List&lt;Task&gt;
+-readTasks(json: String): List&lt;Task&gt;</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>930</x>
+      <y>395</y>
+      <w>200</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>LlmRequest
+--
++system: String
++messages: List&lt;String&gt;
++wantJson: boolean</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>55</x>
+      <y>635</y>
+      <w>170</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;external&gt;&gt;
+&lt;&lt;Adapter: Adaptee&gt;&gt;
+Open-Meteo API
+--
+hourly rain chance
+(free, no key)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>330</x>
+      <y>610</y>
+      <w>420</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Adapter: Adapter&gt;&gt;
+OpenMeteoWeather
+--
+-http: HttpClient
+-latitude: double
+-longitude: double
+--
++forecast(from: LocalDate, to: LocalDate): Forecast
+-parse(json: String): Forecast</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>820</x>
+      <y>640</y>
+      <w>420</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+&lt;&lt;Adapter: Target&gt;&gt;
+WeatherService
+--
++forecast(from: LocalDate, to: LocalDate): Forecast</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1310</x>
+      <y>645</y>
+      <w>480</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>Forecast
+--
+-rainChance: Map&lt;LocalDateTime, Integer&gt;
+--
++isRainy(start: LocalDateTime, end: LocalDateTime): boolean</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>20</x>
+      <y>10</y>
+      <w>1500</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>fontsize=18
+*CD4 - LLM providers, task extraction and weather (packages ai, services)*
+Pattern: Adapter - GeminiClient and OllamaClient adapt two different LLM APIs to one LlmClient interface; OpenMeteoWeather adapts the weather API</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>685</x>
+      <y>145</y>
+      <w>225</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>185.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1150</x>
+      <y>145</y>
+      <w>255</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.0;215.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>220</x>
+      <y>145</y>
+      <w>175</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+HTTPS</panel_attributes>
+    <additional_attributes>40.0;40.0;135.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1695</x>
+      <y>145</y>
+      <w>205</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+HTTP localhost</panel_attributes>
+    <additional_attributes>165.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>176</x>
+      <y>240</y>
+      <w>256</w>
+      <h>195</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;throw&gt;&gt;</panel_attributes>
+    <additional_attributes>40.9;155.0;217.8;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>603</x>
+      <y>195</y>
+      <w>372</w>
+      <h>235</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+llm</panel_attributes>
+    <additional_attributes>332.8;40.0;40.7;195.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>990</x>
+      <y>195</y>
+      <w>80</w>
+      <h>240</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;200.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>710</x>
+      <y>650</y>
+      <w>150</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>110.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>185</x>
+      <y>650</y>
+      <w>185</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+HTTPS</panel_attributes>
+    <additional_attributes>40.0;40.0;145.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1200</x>
+      <y>650</y>
+      <w>150</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;create&gt;&gt;</panel_attributes>
+    <additional_attributes>110.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+</diagram>

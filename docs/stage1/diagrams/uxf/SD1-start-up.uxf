@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>1700</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD1 - Start-up: choosing the LLM and connecting the objects (Adapter, Facade, Observer)
+obj=:App~app
+obj=:GeminiClient~gem
+obj=:OllamaClient~oll
+obj=:JsonStorage~st
+obj=:PlannerFacade~f
+obj=:EventBus~eb
+obj=:MainWindow~w
+obj=:MainController~c
+obj=:ActivityLog~log
+obj=:PlannerCli~cli
+app-&gt;&gt;&gt;app + : createLlm()
+combinedFragment=alt~a1 app oll
+app:[PLANNER_LLM is gemini]
+app-&gt;&gt;&gt;gem : GeminiClient(apiKey, model)
+..=a1
+app:[PLANNER_LLM is ollama, the local Qwen model]
+app-&gt;&gt;&gt;oll : OllamaClient(baseUrl, model)
+--=a1
+app-&gt;&gt;&gt;st : load()
+st.&gt;app : workspace, or an empty one on first run
+app-&gt;&gt;&gt;f : PlannerFacade(workspace, llm, storage)
+app-&gt;&gt;&gt;log : ActivityLog(file)
+app-&gt;&gt;&gt;f : subscribe(log)
+f-&gt;&gt;&gt;eb : attach(observer)
+combinedFragment=alt~a2 app cli
+app:[no command-line arguments - start the GUI]
+app-&gt;&gt;&gt;w : MainWindow()
+app-&gt;&gt;&gt;c : MainController(facade, window)
+app-&gt;&gt;&gt;f : subscribe(controller)
+f-&gt;&gt;&gt;eb : attach(observer)
+app-&gt;&gt;&gt;w : showWindow()
+..=a2
+app:[arguments given - run the CLI]
+app-&gt;&gt;&gt;cli : PlannerCli(facade)
+app-&gt;&gt;&gt;cli : run(args)
+--=a2</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>1530</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD4 - The agent plans the week (F05 / UC05 - agent loop with tools and memory)
+obj=Student~s ACTOR
+obj=:MainWindow~w
+obj=:MainController~c
+obj=:PlannerFacade~f
+obj=:Agent~a
+obj=:ConversationMemory~m
+obj=llm:LlmClient~llm
+obj=tool:Tool~t
+obj=:EventBus~eb
+s-&gt;&gt;&gt;w : Plan my week, gym 3 times, keep Friday evening free
+w-&gt;&gt;&gt;c : onSend(message)
+c-&gt;&gt;&gt;f : chat(message)
+f-&gt;&gt;&gt;a : handle(message, workspace)
+a-&gt;&gt;&gt;m : add("user", message)
+combinedFragment=loop~l1 a eb
+a:[at most 6 steps, until the LLM gives a final answer]
+a-&gt;&gt;&gt;a + : buildRequest(workspace)
+a-&gt;&gt;&gt;llm : complete(request)
+llm.&gt;a : one JSON step
+a-&gt;&gt;&gt;a + : parseStep(text)
+combinedFragment=alt~a1 a eb
+a:[the step names a tool, e.g. get_tasks, get_schedule, schedule_tasks]
+a-&gt;&gt;&gt;eb : notifyObservers("AGENT", "using schedule_tasks")
+a-&gt;&gt;&gt;t : run(args, workspace)
+t.&gt;a : ToolResult, may hold a Proposal
+a-&gt;&gt;&gt;m : add("tool", result text)
+..=a1
+a:[the reply is not valid JSON]
+a-&gt;&gt;&gt;m : add("system", "answer in the agreed JSON format")
+..=a1
+a:[the step is the final answer]
+a-&gt;&gt;&gt;m : add("agent", answer)
+--=a1
+--=l1
+combinedFragment=alt~a2 f a
+f:[answer ready]
+a.&gt;f : AgentReply with text and proposal
+f-&gt;&gt;&gt;f + : keep the proposal as pending
+..=a2
+f:[LlmException or 6 steps used]
+a.&gt;f : AgentReply - I could not finish, try Auto-schedule
+--=a2
+f.&gt;c : reply
+c-&gt;&gt;&gt;w : showChat(text)
+c-&gt;&gt;&gt;w : showProposal(proposal)
+ref=s c : SD5 - apply or discard the proposal</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

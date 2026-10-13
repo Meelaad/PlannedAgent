@@ -7,7 +7,7 @@
       <x>220</x>
       <y>60</y>
       <w>1020</w>
-      <h>1100</h>
+      <h>1120</h>
     </coordinates>
     <panel_attributes>PlannedAgent system
 halign=left
@@ -22,55 +22,42 @@ valign=top</panel_attributes>
       <w>290</w>
       <h>62</h>
     </coordinates>
-    <panel_attributes>UC01 Capture tasks
-from free text</panel_attributes>
+    <panel_attributes>UC01 Add tasks
+from plain text</panel_attributes>
     <additional_attributes></additional_attributes>
   </element>
   <element>
     <id>UMLUseCase</id>
     <coordinates>
       <x>260</x>
-      <y>185</y>
+      <y>190</y>
       <w>290</w>
       <h>62</h>
     </coordinates>
-    <panel_attributes>UC02 Manage tasks
-and dependencies</panel_attributes>
+    <panel_attributes>UC02 Manage tasks</panel_attributes>
     <additional_attributes></additional_attributes>
   </element>
   <element>
     <id>UMLUseCase</id>
     <coordinates>
       <x>260</x>
-      <y>270</y>
+      <y>280</y>
       <w>290</w>
       <h>62</h>
     </coordinates>
-    <panel_attributes>UC03 Import / export
-calendar (.ics)</panel_attributes>
+    <panel_attributes>UC03 Add fixed events,
+export the calendar</panel_attributes>
     <additional_attributes></additional_attributes>
   </element>
   <element>
     <id>UMLUseCase</id>
     <coordinates>
       <x>260</x>
-      <y>355</y>
+      <y>370</y>
       <w>290</w>
       <h>62</h>
     </coordinates>
-    <panel_attributes>UC04 Plan the week
-with the agent</panel_attributes>
-    <additional_attributes></additional_attributes>
-  </element>
-  <element>
-    <id>UMLUseCase</id>
-    <coordinates>
-      <x>260</x>
-      <y>440</y>
-      <w>290</w>
-      <h>62</h>
-    </coordinates>
-    <panel_attributes>UC05 Auto-schedule
+    <panel_attributes>UC04 Auto-schedule
 with a strategy</panel_attributes>
     <additional_attributes></additional_attributes>
   </element>
@@ -78,108 +65,104 @@ with a strategy</panel_attributes>
     <id>UMLUseCase</id>
     <coordinates>
       <x>260</x>
-      <y>525</y>
+      <y>460</y>
       <w>290</w>
       <h>62</h>
     </coordinates>
-    <panel_attributes>UC06 Detect and
-resolve conflicts</panel_attributes>
+    <panel_attributes>UC05 Plan the week
+with the agent</panel_attributes>
     <additional_attributes></additional_attributes>
   </element>
   <element>
     <id>UMLUseCase</id>
     <coordinates>
       <x>260</x>
-      <y>610</y>
+      <y>550</y>
       <w>290</w>
       <h>62</h>
     </coordinates>
-    <panel_attributes>UC07 Edit the plan in
-natural language</panel_attributes>
+    <panel_attributes>UC06 Check conflicts</panel_attributes>
     <additional_attributes></additional_attributes>
   </element>
   <element>
     <id>UMLUseCase</id>
     <coordinates>
       <x>260</x>
-      <y>695</y>
+      <y>640</y>
       <w>290</w>
       <h>62</h>
     </coordinates>
-    <panel_attributes>UC09 Teach and manage
-preferences</panel_attributes>
+    <panel_attributes>UC07 Change the plan
+by chat</panel_attributes>
     <additional_attributes></additional_attributes>
   </element>
   <element>
     <id>UMLUseCase</id>
     <coordinates>
       <x>260</x>
-      <y>780</y>
+      <y>730</y>
       <w>290</w>
       <h>62</h>
     </coordinates>
-    <panel_attributes>UC10 Plan a goal
-(decomposition)</panel_attributes>
+    <panel_attributes>UC09 Teach a preference</panel_attributes>
     <additional_attributes></additional_attributes>
   </element>
   <element>
     <id>UMLUseCase</id>
     <coordinates>
       <x>260</x>
-      <y>865</y>
+      <y>820</y>
       <w>290</w>
       <h>62</h>
     </coordinates>
-    <panel_attributes>UC11 Review the day,
-reschedule missed tasks</panel_attributes>
+    <panel_attributes>UC10 Review the day</panel_attributes>
     <additional_attributes></additional_attributes>
   </element>
   <element>
     <id>UMLUseCase</id>
     <coordinates>
       <x>260</x>
-      <y>950</y>
+      <y>910</y>
       <w>290</w>
       <h>62</h>
     </coordinates>
-    <panel_attributes>UC12 View weekly
-insights</panel_attributes>
+    <panel_attributes>UC11 Get the weekly report</panel_attributes>
     <additional_attributes></additional_attributes>
   </element>
   <element>
     <id>UMLUseCase</id>
     <coordinates>
       <x>760</x>
-      <y>560</y>
+      <y>800</y>
       <w>290</w>
       <h>62</h>
     </coordinates>
-    <panel_attributes>UC08 Check weather for
-outdoor tasks</panel_attributes>
+    <panel_attributes>UC08 Use the weather
+forecast</panel_attributes>
     <additional_attributes></additional_attributes>
   </element>
   <element>
     <id>UMLUseCase</id>
     <coordinates>
       <x>760</x>
-      <y>740</y>
+      <y>900</y>
       <w>290</w>
       <h>62</h>
     </coordinates>
-    <panel_attributes>UC13 Review and apply
-a plan proposal</panel_attributes>
+    <panel_attributes>UC12 Apply or discard
+a proposal</panel_attributes>
     <additional_attributes></additional_attributes>
   </element>
   <element>
     <id>UMLUseCase</id>
     <coordinates>
       <x>760</x>
-      <y>920</y>
+      <y>1000</y>
       <w>290</w>
       <h>62</h>
     </coordinates>
-    <panel_attributes>UC14 Undo / redo
-a plan change</panel_attributes>
+    <panel_attributes>UC13 Undo or redo
+a change</panel_attributes>
     <additional_attributes></additional_attributes>
   </element>
   <element>
@@ -197,13 +180,13 @@ a plan change</panel_attributes>
   <element>
     <id>UMLActor</id>
     <coordinates>
-      <x>40</x>
+      <x>60</x>
       <y>150</y>
-      <w>150</w>
+      <w>130</w>
       <h>120</h>
     </coordinates>
-    <panel_attributes>External calendar app
-(.ics files)</panel_attributes>
+    <panel_attributes>Calendar app
+(receives .ics)</panel_attributes>
     <additional_attributes></additional_attributes>
   </element>
   <element>
@@ -211,19 +194,19 @@ a plan change</panel_attributes>
     <coordinates>
       <x>1300</x>
       <y>60</y>
-      <w>130</w>
+      <w>170</w>
       <h>130</h>
     </coordinates>
     <panel_attributes>LLM service
 (Gemini API or
-local Qwen)</panel_attributes>
+local Qwen via Ollama)</panel_attributes>
     <additional_attributes></additional_attributes>
   </element>
   <element>
     <id>UMLActor</id>
     <coordinates>
       <x>1300</x>
-      <y>460</y>
+      <y>760</y>
       <w>140</w>
       <h>120</h>
     </coordinates>
@@ -246,122 +229,111 @@ local Qwen)</panel_attributes>
     <id>Relation</id>
     <coordinates>
       <x>120</x>
-      <y>207</y>
-      <w>292</w>
-      <h>280</h>
+      <y>212</y>
+      <w>291</w>
+      <h>276</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>40.0;240.9;252.3;40.0</additional_attributes>
+    <additional_attributes>40.0;236.9;251.7;40.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>120</x>
-      <y>292</y>
-      <w>278</w>
-      <h>211</h>
+      <y>302</y>
+      <w>275</w>
+      <h>203</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>40.0;171.5;238.3;40.0</additional_attributes>
+    <additional_attributes>40.0;163.4;235.8;40.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>120</x>
-      <y>377</y>
-      <w>243</w>
-      <h>142</h>
+      <y>392</y>
+      <w>231</w>
+      <h>129</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>40.0;102.1;203.4;40.0</additional_attributes>
+    <additional_attributes>40.0;89.9;191.1;40.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>120</x>
-      <y>445</y>
+      <y>455</y>
       <w>180</w>
-      <h>89</h>
+      <h>83</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>40.0;49.7;140.0;40.0</additional_attributes>
+    <additional_attributes>40.0;43.4;140.0;40.4</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>120</x>
-      <y>470</y>
-      <w>180</w>
-      <h>98</h>
+      <y>474</y>
+      <w>210</w>
+      <h>115</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>40.0;40.3;140.0;58.9</additional_attributes>
+    <additional_attributes>40.0;40.9;170.2;76.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>120</x>
-      <y>485</y>
-      <w>259</w>
-      <h>164</h>
+      <y>491</y>
+      <w>270</w>
+      <h>188</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>40.0;40.9;219.0;125.0</additional_attributes>
+    <additional_attributes>40.0;40.4;230.6;149.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>120</x>
-      <y>501</y>
-      <w>283</w>
-      <h>233</h>
+      <y>507</y>
+      <w>289</w>
+      <h>262</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>40.0;40.4;243.8;194.0</additional_attributes>
+    <additional_attributes>40.0;40.9;249.4;223.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>120</x>
-      <y>517</y>
-      <w>295</w>
-      <h>302</h>
-    </coordinates>
-    <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>40.0;40.0;255.1;263.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>110</x>
+      <x>116</x>
       <y>520</y>
-      <w>311</w>
-      <h>385</h>
+      <w>302</w>
+      <h>340</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>40.5;40.0;271.5;345.0</additional_attributes>
+    <additional_attributes>40.3;40.0;262.5;300.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>102</x>
+      <x>105</x>
       <y>520</y>
-      <w>323</w>
-      <h>470</h>
+      <w>318</w>
+      <h>430</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>40.4;40.0;283.7;430.0</additional_attributes>
+    <additional_attributes>40.8;40.0;278.9;390.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>150</x>
       <y>193</y>
-      <w>196</w>
-      <h>116</h>
+      <w>209</w>
+      <h>126</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>40.0;40.5;156.2;77.0</additional_attributes>
+    <additional_attributes>40.0;40.4;169.1;87.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
@@ -372,193 +344,159 @@ local Qwen)</panel_attributes>
       <h>84</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>790.0;40.4;40.0;45.1</additional_attributes>
+    <additional_attributes>790.0;40.5;40.0;45.1</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>479</x>
-      <y>102</y>
-      <w>860</w>
-      <h>292</h>
+      <x>448</x>
+      <y>116</y>
+      <w>891</w>
+      <h>383</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>821.0;40.7;40.0;253.0</additional_attributes>
+    <additional_attributes>852.0;40.7;40.0;344.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>434</x>
-      <y>114</y>
-      <w>905</w>
-      <h>450</h>
+      <x>420</x>
+      <y>132</y>
+      <w>919</w>
+      <h>547</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>866.0;40.2;40.0;411.0</additional_attributes>
+    <additional_attributes>880.0;40.4;40.6;508.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>422</x>
-      <y>119</y>
-      <w>917</w>
-      <h>530</h>
+      <x>412</x>
+      <y>140</y>
+      <w>927</w>
+      <h>629</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>878.0;40.9;40.7;491.0</additional_attributes>
+    <additional_attributes>888.0;40.2;40.8;590.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>414</x>
-      <y>125</y>
-      <w>925</w>
-      <h>609</h>
+      <x>406</x>
+      <y>147</y>
+      <w>933</w>
+      <h>712</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>886.0;40.7;40.5;570.0</additional_attributes>
+    <additional_attributes>894.0;41.0;40.8;673.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>408</x>
-      <y>131</y>
-      <w>931</w>
-      <h>688</h>
+      <x>402</x>
+      <y>150</y>
+      <w>944</w>
+      <h>800</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>892.0;40.4;40.4;649.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>403</x>
-      <y>137</y>
-      <w>936</w>
-      <h>767</h>
-    </coordinates>
-    <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>897.0;40.2;40.6;728.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>399</x>
-      <y>142</y>
-      <w>940</w>
-      <h>847</h>
-    </coordinates>
-    <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>901.0;41.0;40.8;808.0</additional_attributes>
+    <additional_attributes>904.9;40.0;40.2;760.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>1010</x>
-      <y>490</y>
+      <y>781</y>
       <w>330</w>
-      <h>118</h>
+      <h>85</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>290.0;40.7;40.0;78.9</additional_attributes>
+    <additional_attributes>290.0;40.7;40.0;46.6</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>405</x>
-      <y>377</y>
-      <w>499</w>
-      <h>403</h>
+      <x>394</x>
+      <y>392</y>
+      <w>521</w>
+      <h>548</h>
     </coordinates>
     <panel_attributes>lt=.&gt;
 &lt;&lt;include&gt;&gt;</panel_attributes>
-    <additional_attributes>40.3;40.0;459.7;363.0</additional_attributes>
+    <additional_attributes>40.2;40.0;481.8;508.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>416</x>
-      <y>462</y>
-      <w>476</w>
-      <h>318</h>
+      <x>400</x>
+      <y>482</y>
+      <w>509</w>
+      <h>458</h>
     </coordinates>
     <panel_attributes>lt=.&gt;
 &lt;&lt;include&gt;&gt;</panel_attributes>
-    <additional_attributes>40.7;40.0;437.3;278.0</additional_attributes>
+    <additional_attributes>40.2;40.0;469.8;418.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>437</x>
-      <y>547</y>
-      <w>435</w>
-      <h>233</h>
+      <x>424</x>
+      <y>662</y>
+      <w>460</w>
+      <h>278</h>
     </coordinates>
     <panel_attributes>lt=.&gt;
 &lt;&lt;include&gt;&gt;</panel_attributes>
-    <additional_attributes>40.1;40.0;395.9;193.0</additional_attributes>
+    <additional_attributes>40.6;40.0;421.4;238.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>484</x>
-      <y>632</y>
-      <w>341</w>
-      <h>148</h>
+      <x>510</x>
+      <y>834</y>
+      <w>290</w>
+      <h>113</h>
     </coordinates>
     <panel_attributes>lt=.&gt;
 &lt;&lt;include&gt;&gt;</panel_attributes>
-    <additional_attributes>40.2;40.0;301.8;108.0</additional_attributes>
+    <additional_attributes>40.0;40.2;250.0;73.8</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>489</x>
-      <y>762</y>
-      <w>332</w>
-      <h>143</h>
-    </coordinates>
-    <panel_attributes>lt=.&gt;
-&lt;&lt;include&gt;&gt;</panel_attributes>
-    <additional_attributes>40.0;103.0;292.0;40.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>440</x>
-      <y>377</y>
-      <w>428</w>
-      <h>223</h>
+      <x>401</x>
+      <y>392</y>
+      <w>507</w>
+      <h>448</h>
     </coordinates>
     <panel_attributes>lt=.&gt;
 &lt;&lt;extend&gt;&gt;
 (outdoor tasks)</panel_attributes>
-    <additional_attributes>389.4;183.0;40.6;40.0</additional_attributes>
+    <additional_attributes>468.0;408.0;40.0;40.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>494</x>
-      <y>462</y>
-      <w>321</w>
-      <h>138</h>
+      <x>410</x>
+      <y>482</y>
+      <w>488</w>
+      <h>358</h>
     </coordinates>
     <panel_attributes>lt=.&gt;
 &lt;&lt;extend&gt;&gt;</panel_attributes>
-    <additional_attributes>281.8;98.0;40.2;40.0</additional_attributes>
+    <additional_attributes>449.4;318.0;40.6;40.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>865</x>
-      <y>762</y>
+      <y>922</y>
       <w>80</w>
-      <h>198</h>
+      <h>118</h>
     </coordinates>
     <panel_attributes>lt=.&gt;
 &lt;&lt;extend&gt;&gt;
 (after apply)</panel_attributes>
-    <additional_attributes>40.0;158.0;40.0;40.0</additional_attributes>
+    <additional_attributes>40.0;78.0;40.0;40.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
@@ -566,10 +504,10 @@ local Qwen)</panel_attributes>
       <x>65</x>
       <y>520</y>
       <w>880</w>
-      <h>600</h>
+      <h>620</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>40.0;40.0;40.0;560.0;840.0;560.0;840.0;462.0</additional_attributes>
+    <additional_attributes>40.0;40.0;40.0;580.0;840.0;580.0;840.0;542.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
@@ -577,33 +515,22 @@ local Qwen)</panel_attributes>
       <x>75</x>
       <y>520</y>
       <w>1135</w>
-      <h>630</h>
+      <h>650</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>40.0;40.0;40.0;590.0;1095.0;590.0;1095.0;251.0;975.0;251.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>85</x>
-      <y>520</y>
-      <w>1155</w>
-      <h>660</h>
-    </coordinates>
-    <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>40.0;40.0;40.0;620.0;1115.0;620.0;1115.0;71.0;965.0;71.0</additional_attributes>
+    <additional_attributes>40.0;40.0;40.0;610.0;1095.0;610.0;1095.0;411.0;975.0;411.0</additional_attributes>
   </element>
   <element>
     <id>Text</id>
     <coordinates>
       <x>20</x>
       <y>10</y>
-      <w>1300</w>
+      <w>1400</w>
       <h>60</h>
     </coordinates>
     <panel_attributes>fontsize=18
 *UC - PlannedAgent use-case diagram*
-Primary actor: Student. Secondary actors: LLM service, Weather service, external calendar app.</panel_attributes>
+Primary actor: Student. Secondary actors: LLM service, Weather service, Calendar app.</panel_attributes>
     <additional_attributes></additional_attributes>
   </element>
 </diagram>

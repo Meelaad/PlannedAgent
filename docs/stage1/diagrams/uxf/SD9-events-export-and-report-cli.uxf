@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>1190</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD9 - Fixed events, calendar export and the weekly report from the CLI (F03, F11 / UC03, UC11)
+obj=Student~s ACTOR
+obj=:PlannerCli~cli
+obj=:PlannerFacade~f
+obj=:Workspace~ws
+obj=:CalendarExporter~ce
+obj=:ReportService~rs
+obj=llm:LlmClient~llm
+s-&gt;&gt;&gt;cli : plannedagent event add, EECS 3311 lecture, Tue 8h00 to 9h50
+cli-&gt;&gt;&gt;f : addEvent(event)
+f-&gt;&gt;&gt;ws : addEvent(event)
+f-&gt;&gt;&gt;f + : changed("event added")
+s-&gt;&gt;&gt;cli : plannedagent export week.ics
+cli-&gt;&gt;&gt;f : exportCalendar(file)
+f-&gt;&gt;&gt;ce : export(workspace, file)
+ce.&gt;f : file written
+f.&gt;cli : done
+cli-&gt;&gt;&gt;cli + : print("Saved week.ics")
+s-&gt;&gt;&gt;cli : plannedagent report
+cli-&gt;&gt;&gt;f : weeklyReport()
+f-&gt;&gt;&gt;rs : weeklyReport(workspace, weekStart)
+rs-&gt;&gt;&gt;rs + : countStats(workspace, weekStart)
+rs-&gt;&gt;&gt;llm : complete(request with the numbers)
+combinedFragment=alt~a1 rs llm
+rs:[the LLM answered]
+llm.&gt;rs : short summary and 3 tips
+..=a1
+rs:[LlmException]
+llm.&gt;rs : LlmException
+rs-&gt;&gt;&gt;rs + : fallbackSummary(stats)
+--=a1
+rs.&gt;f : WeeklyReport
+f.&gt;cli : report
+cli-&gt;&gt;&gt;cli + : print(report text)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

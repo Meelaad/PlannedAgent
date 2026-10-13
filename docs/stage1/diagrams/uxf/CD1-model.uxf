@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>55</x>
+      <y>215</y>
+      <w>130</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+Priority
+--
+LOW
+MEDIUM
+HIGH</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>290</x>
+      <y>115</y>
+      <w>280</w>
+      <h>310</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;State: Context&gt;&gt;
+Task
+--
+-id: String
+-title: String
+-minutes: int
+-deadline: LocalDateTime
+-priority: Priority
+-outdoor: boolean
+-state: TaskState
+--
++schedule(): void
++unschedule(): void
++complete(): void
++markMissed(): void
++needsScheduling(): boolean
++getStatus(): String
++setState(state: TaskState): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>640</x>
+      <y>90</y>
+      <w>560</w>
+      <h>360</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;MVC: Model&gt;&gt;
+&lt;&lt;Command: Receiver&gt;&gt;
+Workspace
+--
+-tasks: List&lt;Task&gt;
+-events: List&lt;FixedEvent&gt;
+-plan: Plan
+-preferences: List&lt;Preference&gt;
+--
++getTask(id: String): Task
++addTask(task: Task): void
++removeTask(id: String): void
++getTasks(): List&lt;Task&gt;
++addEvent(event: FixedEvent): void
++getEvents(): List&lt;FixedEvent&gt;
++tasksToSchedule(): List&lt;Task&gt;
++busyBetween(from: LocalDateTime, to: LocalDateTime): List&lt;TimeBlock&gt;
++getPlan(): Plan
++addPreference(preference: Preference): void
++getPreferences(): List&lt;Preference&gt;
++copy(): Workspace</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1270</x>
+      <y>200</y>
+      <w>350</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>Plan
+--
+-blocks: List&lt;TimeBlock&gt;
+--
++add(block: TimeBlock): void
++remove(blockId: String): TimeBlock
++find(blockId: String): TimeBlock
++blocksOn(day: LocalDate): List&lt;TimeBlock&gt;</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1690</x>
+      <y>190</y>
+      <w>490</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>TimeBlock
+--
+-id: String
+-taskId: String
+-start: LocalDateTime
+-end: LocalDateTime
+--
++moveTo(newStart: LocalDateTime): void
++overlaps(start: LocalDateTime, end: LocalDateTime): boolean</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>305</x>
+      <y>540</y>
+      <w>250</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+&lt;&lt;State: State&gt;&gt;
+TaskState
+--
++schedule(task: Task): void
++unschedule(task: Task): void
++complete(task: Task): void
++markMissed(task: Task): void
++needsScheduling(): boolean
++name(): String</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>805</x>
+      <y>560</y>
+      <w>230</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>Preference
+--
+-rule: String
+-value: String
+-text: String
+--
+rules: NO_WORK_AFTER,
+NO_WORK_BEFORE, DAY_OFF</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1320</x>
+      <y>560</y>
+      <w>250</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>FixedEvent
+--
+-id: String
+-title: String
+-start: LocalDateTime
+-end: LocalDateTime
+--
+e.g. a lecture or a work shift</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1830</x>
+      <y>570</y>
+      <w>210</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>Conflict
+--
+-type: String
+-message: String
+--
+types: OVERLAP, LATE,
+RAIN, PREFERENCE</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>20</x>
+      <y>960</y>
+      <w>200</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;State: ConcreteState&gt;&gt;
+TodoState
+--
+schedule -&gt; Scheduled
+complete -&gt; Done
+other calls: error</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>330</x>
+      <y>950</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;State: ConcreteState&gt;&gt;
+ScheduledState
+--
+unschedule -&gt; To-do
+complete -&gt; Done
+markMissed -&gt; Missed
+other calls: error</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>820</x>
+      <y>960</y>
+      <w>200</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;State: ConcreteState&gt;&gt;
+MissedState
+--
+schedule -&gt; Scheduled
+complete -&gt; Done
+other calls: error</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1340</x>
+      <y>965</y>
+      <w>210</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;State: ConcreteState&gt;&gt;
+DoneState
+--
+finished task:
+every change is an error</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>20</x>
+      <y>10</y>
+      <w>1500</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>fontsize=18
+*CD1 - Model: tasks, task states and the workspace (package model)*
+Patterns: State (Task is the Context, TaskState the State, four ConcreteStates). Workspace is the MVC Model and the Command Receiver.</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>145</x>
+      <y>230</y>
+      <w>185</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+priority</panel_attributes>
+    <additional_attributes>40.0;40.0;145.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>530</x>
+      <y>230</y>
+      <w>150</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=0..*
+tasks</panel_attributes>
+    <additional_attributes>110.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1160</x>
+      <y>230</y>
+      <w>150</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=1
+plan</panel_attributes>
+    <additional_attributes>40.0;40.0;110.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1580</x>
+      <y>230</y>
+      <w>150</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=0..*
+blocks</panel_attributes>
+    <additional_attributes>40.0;40.0;110.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>880</x>
+      <y>410</y>
+      <w>80</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=0..*
+preferences</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;150.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1142</x>
+      <y>410</y>
+      <w>240</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=0..*
+events</panel_attributes>
+    <additional_attributes>40.5;40.0;200.9;150.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>390</x>
+      <y>385</y>
+      <w>80</w>
+      <h>195</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+state</panel_attributes>
+    <additional_attributes>40.0;155.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>124</x>
+      <y>680</y>
+      <w>273</w>
+      <h>320</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>233.5;40.0;40.3;280.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>390</x>
+      <y>680</y>
+      <w>80</w>
+      <h>310</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;270.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>504</x>
+      <y>680</y>
+      <w>385</w>
+      <h>320</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.5;40.0;346.0;280.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>515</x>
+      <y>637</y>
+      <w>865</w>
+      <h>377</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.4;825.0;338.2</additional_attributes>
+  </element>
+</diagram>

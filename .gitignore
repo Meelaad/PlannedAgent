@@ -9,14 +9,23 @@ target/
 .idea/
 *.iml
 .vscode/
+.classpath
+.project
+.settings/
 
 # OS
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# Secrets and local data
+# Local secrets
 .env
+.env.*
+!.env.example
 *.env
+config.local.json
+
+# Local data
 .plannedagent/
 traces/
+*.log

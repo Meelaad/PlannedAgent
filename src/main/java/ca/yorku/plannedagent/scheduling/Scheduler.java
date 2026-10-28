@@ -1,5 +1,6 @@
 package ca.yorku.plannedagent.scheduling;
 
+import ca.yorku.plannedagent.model.Preference;
 import ca.yorku.plannedagent.model.Task;
 import ca.yorku.plannedagent.model.TimeBlock;
 import ca.yorku.plannedagent.model.Workspace;
@@ -85,6 +86,11 @@ public class Scheduler {
         }
         if (task.getDeadline() != null && end.isAfter(task.getDeadline())) {
             return false;
+        }
+        for (Preference preference : workspace.getPreferences()) {
+            if (!preference.allows(start, end)) {
+                return false;
+            }
         }
         return workspace.busyBetween(start, end).isEmpty();
     }

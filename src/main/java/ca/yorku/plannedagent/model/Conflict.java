@@ -34,6 +34,19 @@ public class Conflict {
     }
 
     @Override
+    public boolean equals(Object o) {
+        return o instanceof Conflict other
+                && type.equals(other.type)
+                && message.equals(other.message)
+                && blockIds.equals(other.blockIds);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, message, blockIds);
+    }
+
+    @Override
     public String toString() {
         return type + ": " + message;
     }

@@ -1,6 +1,7 @@
 package ca.yorku.plannedagent.scheduling;
 
 import ca.yorku.plannedagent.model.FixedEvent;
+import ca.yorku.plannedagent.model.Preference;
 import ca.yorku.plannedagent.model.Priority;
 import ca.yorku.plannedagent.model.Task;
 import ca.yorku.plannedagent.model.TimeBlock;
@@ -120,6 +121,28 @@ class SchedulerTest {
         ScheduleResult result = scheduler.schedule(workspace, MONDAY_8, MONDAY_8.plusDays(1));
         assertTrue(result.getPlaced().isEmpty());
         assertTrue(result.getNotPlaced().isEmpty());
+    }
+
+    @Test
+    void obeysNoWorkAfter() {
+        workspace.addPreference(new Preference(Preference.NO_WORK_AFTER, "20:00", "nothing after 8pm"));
+        task("Report", 120, null, Priority.MEDIUM);
+        LocalDateTime evening = MONDAY_8.withHour(19);
+
+        TimeBlock block = scheduler.schedule(workspace, evening, evening.plusDays(1)).getPlaced().get(0);
+
+        assertEquals(MONDAY_8.plusDays(1), block.getStart());
+    }
+
+    @Test
+    void obeysNoWorkBeforeAndDayOff() {
+        workspace.addPreference(new Preference(Preference.NO_WORK_BEFORE, "10:00", "not before 10"));
+        workspace.addPreference(new Preference(Preference.DAY_OFF, "MONDAY", "Mondays off"));
+        task("Report", 60, null, Priority.MEDIUM);
+
+        TimeBlock block = scheduler.schedule(workspace, MONDAY_8, MONDAY_8.plusDays(3)).getPlaced().get(0);
+
+        assertEquals(MONDAY_8.plusDays(1).withHour(10), block.getStart());
     }
 
     @Test

@@ -1,10 +1,15 @@
 package ca.yorku.plannedagent.model;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /** State pattern context: status changes are delegated to the current TaskState. */
 public class Task {
+
+    public static final int MIN_MINUTES = 5;
+    public static final int MAX_MINUTES = 600;
 
     private String id;
     private String title;
@@ -53,6 +58,21 @@ public class Task {
 
     public TaskState getState() {
         return state;
+    }
+
+    /** What is wrong with this task, if anything. Empty means it can be saved. */
+    public List<String> problems(LocalDateTime now) {
+        List<String> problems = new ArrayList<>();
+        if (title.isBlank()) {
+            problems.add("The title is empty");
+        }
+        if (minutes < MIN_MINUTES || minutes > MAX_MINUTES) {
+            problems.add("The length must be " + MIN_MINUTES + " to " + MAX_MINUTES + " minutes");
+        }
+        if (deadline != null && deadline.isBefore(now)) {
+            problems.add("The deadline is in the past");
+        }
+        return problems;
     }
 
     public Task copy() {

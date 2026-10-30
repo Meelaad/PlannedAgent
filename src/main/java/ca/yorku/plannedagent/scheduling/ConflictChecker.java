@@ -8,16 +8,17 @@ import ca.yorku.plannedagent.model.Task;
 import ca.yorku.plannedagent.model.TimeBlock;
 import ca.yorku.plannedagent.model.TimeFormat;
 import ca.yorku.plannedagent.model.Workspace;
+import ca.yorku.plannedagent.services.Forecast;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-/** Finds overlaps, blocks that end after their deadline, and blocks that break a preference. */
+/** Finds overlaps, blocks that end after their deadline, outdoor blocks in rain, and broken preferences. */
 public class ConflictChecker {
 
-    public List<Conflict> check(Workspace workspace) {
+    public List<Conflict> check(Workspace workspace, Forecast forecast) {
         List<Conflict> conflicts = new ArrayList<>();
         findOverlaps(workspace, conflicts);
         for (TimeBlock block : workspace.getPlan().getBlocks()) {
@@ -27,6 +28,12 @@ public class ConflictChecker {
                 conflicts.add(new Conflict(Conflict.LATE,
                         "'" + title + "' ends " + TimeFormat.dayTime(block.getEnd())
                                 + ", after its deadline " + TimeFormat.dayTime(task.getDeadline()),
+                        List.of(block.getId())));
+            }
+            if (task != null && task.isOutdoor() && forecast.isRainy(block.getStart(), block.getEnd())) {
+                conflicts.add(new Conflict(Conflict.RAIN,
+                        "'" + title + "' at " + TimeFormat.range(block.getStart(), block.getEnd()) + " has a "
+                                + forecast.maxChance(block.getStart(), block.getEnd()) + "% chance of rain",
                         List.of(block.getId())));
             }
             for (Preference preference : workspace.getPreferences()) {
@@ -42,13 +49,13 @@ public class ConflictChecker {
     }
 
     /** The conflicts the commands would add, found by trying them on a copy. Existing conflicts are left out. */
-    public List<Conflict> checkChanges(Workspace workspace, List<PlanCommand> commands) {
+    public List<Conflict> checkChanges(Workspace workspace, List<PlanCommand> commands, Forecast forecast) {
         Workspace copy = workspace.copy();
-        List<Conflict> before = check(copy);
+        List<Conflict> before = check(copy, forecast);
         for (PlanCommand command : commands) {
             command.execute(copy);
         }
-        List<Conflict> after = check(copy);
+        List<Conflict> after = check(copy, forecast);
         after.removeAll(before);
         return after;
     }

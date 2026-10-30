@@ -1,5 +1,6 @@
 package ca.yorku.plannedagent.ai;
 
+import ca.yorku.plannedagent.StubServer;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.junit.jupiter.api.AfterEach;

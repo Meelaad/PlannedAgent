@@ -6,15 +6,19 @@ import ca.yorku.plannedagent.model.Priority;
 import ca.yorku.plannedagent.model.Task;
 import ca.yorku.plannedagent.model.TimeBlock;
 import ca.yorku.plannedagent.model.Workspace;
+import ca.yorku.plannedagent.services.Forecast;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class SchedulerTest {
 
+    private static final Forecast NO_RAIN = Forecast.none();
     private static final LocalDateTime MONDAY_8 = LocalDateTime.of(2026, 10, 26, 8, 0);
 
     private Workspace workspace;
@@ -31,7 +35,7 @@ class SchedulerTest {
         workspace.addEvent(new FixedEvent("Lecture", MONDAY_8, MONDAY_8.plusMinutes(90)));
         Task report = task("Report", 120, null, Priority.MEDIUM);
 
-        ScheduleResult result = scheduler.schedule(workspace, MONDAY_8, MONDAY_8.plusDays(7));
+        ScheduleResult result = scheduler.schedule(workspace, MONDAY_8, MONDAY_8.plusDays(7), NO_RAIN);
 
         assertEquals(1, result.getPlaced().size());
         TimeBlock block = result.getPlaced().get(0);
@@ -45,7 +49,7 @@ class SchedulerTest {
         task("A", 60, null, Priority.MEDIUM);
         task("B", 60, null, Priority.MEDIUM);
 
-        ScheduleResult result = scheduler.schedule(workspace, MONDAY_8, MONDAY_8.plusDays(1));
+        ScheduleResult result = scheduler.schedule(workspace, MONDAY_8, MONDAY_8.plusDays(1), NO_RAIN);
 
         TimeBlock a = result.getPlaced().get(0);
         TimeBlock b = result.getPlaced().get(1);
@@ -56,7 +60,7 @@ class SchedulerTest {
     @Test
     void doesNotChangeTheWorkspace() {
         task("Report", 60, null, Priority.MEDIUM);
-        scheduler.schedule(workspace, MONDAY_8, MONDAY_8.plusDays(1));
+        scheduler.schedule(workspace, MONDAY_8, MONDAY_8.plusDays(1), NO_RAIN);
         assertTrue(workspace.getPlan().getBlocks().isEmpty());
         assertEquals("TODO", workspace.getTask("t1").getStatus());
     }
@@ -64,8 +68,26 @@ class SchedulerTest {
     @Test
     void startsAtTheNextHalfHour() {
         task("Report", 60, null, Priority.MEDIUM);
-        ScheduleResult result = scheduler.schedule(workspace, MONDAY_8.plusMinutes(47), MONDAY_8.plusDays(1));
+        ScheduleResult result = scheduler.schedule(workspace, MONDAY_8.plusMinutes(47), MONDAY_8.plusDays(1),
+                NO_RAIN);
         assertEquals(MONDAY_8.plusMinutes(60), result.getPlaced().get(0).getStart());
+    }
+
+    @Test
+    void outdoorTaskWaitsForDryHours() {
+        Task run = new Task("Run", 60, null, Priority.MEDIUM, true);
+        workspace.addTask(run);
+        task("Reading", 60, null, Priority.MEDIUM);
+        Map<LocalDateTime, Integer> rain = new HashMap<>();
+        for (int hour = 8; hour < 11; hour++) {
+            rain.put(MONDAY_8.withHour(hour), 80);
+        }
+        rain.put(MONDAY_8.withHour(11), 30);
+
+        ScheduleResult result = scheduler.schedule(workspace, MONDAY_8, MONDAY_8.plusDays(1), new Forecast(rain));
+
+        assertEquals(MONDAY_8.withHour(11), result.getPlaced().get(0).getStart());
+        assertEquals(MONDAY_8, result.getPlaced().get(1).getStart());
     }
 
     @Test
@@ -73,7 +95,7 @@ class SchedulerTest {
         task("Late work", 120, null, Priority.MEDIUM);
         LocalDateTime evening = MONDAY_8.withHour(21);
 
-        ScheduleResult result = scheduler.schedule(workspace, evening, evening.plusDays(1));
+        ScheduleResult result = scheduler.schedule(workspace, evening, evening.plusDays(1), NO_RAIN);
 
         TimeBlock block = result.getPlaced().get(0);
         assertEquals(MONDAY_8.plusDays(1), block.getStart());
@@ -84,7 +106,7 @@ class SchedulerTest {
         workspace.addEvent(new FixedEvent("Shift", MONDAY_8, MONDAY_8.plusHours(14)));
         Task report = task("Report", 120, MONDAY_8.plusHours(10), Priority.HIGH);
 
-        ScheduleResult result = scheduler.schedule(workspace, MONDAY_8, MONDAY_8.plusDays(7));
+        ScheduleResult result = scheduler.schedule(workspace, MONDAY_8, MONDAY_8.plusDays(7), NO_RAIN);
 
         assertTrue(result.getPlaced().isEmpty());
         assertEquals("no free time before its deadline", result.getNotPlaced().get(report.getId()));
@@ -93,7 +115,7 @@ class SchedulerTest {
     @Test
     void reportsDeadlineThatAlreadyPassed() {
         Task old = task("Old", 30, MONDAY_8.minusDays(1), Priority.LOW);
-        ScheduleResult result = scheduler.schedule(workspace, MONDAY_8, MONDAY_8.plusDays(7));
+        ScheduleResult result = scheduler.schedule(workspace, MONDAY_8, MONDAY_8.plusDays(7), NO_RAIN);
         assertEquals("its deadline has already passed", result.getNotPlaced().get(old.getId()));
     }
 
@@ -104,11 +126,11 @@ class SchedulerTest {
         Task high = task("High", 60, MONDAY_8.plusHours(1), Priority.HIGH);
 
         scheduler.setStrategy(new ShortestFirstStrategy());
-        assertEquals(low.getId(), scheduler.schedule(workspace, MONDAY_8, MONDAY_8.plusDays(1))
+        assertEquals(low.getId(), scheduler.schedule(workspace, MONDAY_8, MONDAY_8.plusDays(1), NO_RAIN)
                 .getPlaced().get(0).getTaskId());
 
         scheduler.setStrategy(new PriorityFirstStrategy());
-        assertEquals(high.getId(), scheduler.schedule(workspace, MONDAY_8, MONDAY_8.plusDays(1))
+        assertEquals(high.getId(), scheduler.schedule(workspace, MONDAY_8, MONDAY_8.plusDays(1), NO_RAIN)
                 .getPlaced().get(0).getTaskId());
     }
 
@@ -118,7 +140,7 @@ class SchedulerTest {
         Task done = task("Done", 30, null, Priority.LOW);
         scheduled.schedule();
         done.complete();
-        ScheduleResult result = scheduler.schedule(workspace, MONDAY_8, MONDAY_8.plusDays(1));
+        ScheduleResult result = scheduler.schedule(workspace, MONDAY_8, MONDAY_8.plusDays(1), NO_RAIN);
         assertTrue(result.getPlaced().isEmpty());
         assertTrue(result.getNotPlaced().isEmpty());
     }
@@ -129,7 +151,7 @@ class SchedulerTest {
         task("Report", 120, null, Priority.MEDIUM);
         LocalDateTime evening = MONDAY_8.withHour(19);
 
-        TimeBlock block = scheduler.schedule(workspace, evening, evening.plusDays(1)).getPlaced().get(0);
+        TimeBlock block = scheduler.schedule(workspace, evening, evening.plusDays(1), NO_RAIN).getPlaced().get(0);
 
         assertEquals(MONDAY_8.plusDays(1), block.getStart());
     }
@@ -140,7 +162,7 @@ class SchedulerTest {
         workspace.addPreference(new Preference(Preference.DAY_OFF, "MONDAY", "Mondays off"));
         task("Report", 60, null, Priority.MEDIUM);
 
-        TimeBlock block = scheduler.schedule(workspace, MONDAY_8, MONDAY_8.plusDays(3)).getPlaced().get(0);
+        TimeBlock block = scheduler.schedule(workspace, MONDAY_8, MONDAY_8.plusDays(3), NO_RAIN).getPlaced().get(0);
 
         assertEquals(MONDAY_8.plusDays(1).withHour(10), block.getStart());
     }

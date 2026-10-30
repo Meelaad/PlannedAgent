@@ -1,4 +1,4 @@
-package ca.yorku.plannedagent.ai;
+package ca.yorku.plannedagent;
 
 import com.sun.net.httpserver.HttpServer;
 
@@ -9,17 +9,17 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 
 /** A tiny local HTTP server that records the last request and answers with a fixed reply. */
-class StubServer implements AutoCloseable {
+public class StubServer implements AutoCloseable {
 
     private final HttpServer server;
-    volatile int status = 200;
-    volatile String reply = "{}";
-    volatile String lastPath;
-    volatile String lastQuery;
-    volatile String lastBody;
-    volatile String lastApiKeyHeader;
+    public volatile int status = 200;
+    public volatile String reply = "{}";
+    public volatile String lastPath;
+    public volatile String lastQuery;
+    public volatile String lastBody;
+    public volatile String lastApiKeyHeader;
 
-    StubServer() throws IOException {
+    public StubServer() throws IOException {
         server = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
         server.createContext("/", exchange -> {
             lastPath = exchange.getRequestURI().getPath();
@@ -36,7 +36,7 @@ class StubServer implements AutoCloseable {
         server.start();
     }
 
-    String url() {
+    public String url() {
         return "http://127.0.0.1:" + server.getAddress().getPort();
     }
 

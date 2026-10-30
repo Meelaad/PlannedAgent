@@ -9,16 +9,19 @@ import ca.yorku.plannedagent.model.Priority;
 import ca.yorku.plannedagent.model.Task;
 import ca.yorku.plannedagent.model.TimeBlock;
 import ca.yorku.plannedagent.model.Workspace;
+import ca.yorku.plannedagent.services.Forecast;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ConflictCheckerTest {
 
+    private static final Forecast NO_RAIN = Forecast.none();
     private static final LocalDateTime TUESDAY_10 = LocalDateTime.of(2026, 10, 27, 10, 0);
 
     private Workspace workspace;
@@ -35,7 +38,7 @@ class ConflictCheckerTest {
 
     @Test
     void emptyPlanHasNoConflicts() {
-        assertTrue(checker.check(workspace).isEmpty());
+        assertTrue(checker.check(workspace, NO_RAIN).isEmpty());
     }
 
     @Test
@@ -43,7 +46,7 @@ class ConflictCheckerTest {
         workspace.addEvent(new FixedEvent("Lecture", TUESDAY_10, TUESDAY_10.plusMinutes(80)));
         workspace.getPlan().add(new TimeBlock("b1", gym.getId(), TUESDAY_10.plusHours(1), TUESDAY_10.plusHours(2)));
 
-        List<Conflict> conflicts = checker.check(workspace);
+        List<Conflict> conflicts = checker.check(workspace, NO_RAIN);
 
         assertEquals(1, conflicts.size());
         assertEquals(Conflict.OVERLAP, conflicts.get(0).getType());
@@ -55,7 +58,7 @@ class ConflictCheckerTest {
     void touchingBlocksDoNotOverlap() {
         workspace.addEvent(new FixedEvent("Lecture", TUESDAY_10, TUESDAY_10.plusHours(1)));
         workspace.getPlan().add(new TimeBlock("b1", gym.getId(), TUESDAY_10.plusHours(1), TUESDAY_10.plusHours(2)));
-        assertTrue(checker.check(workspace).isEmpty());
+        assertTrue(checker.check(workspace, NO_RAIN).isEmpty());
     }
 
     @Test
@@ -63,7 +66,7 @@ class ConflictCheckerTest {
         workspace.addEvent(new FixedEvent("Shift", TUESDAY_10, TUESDAY_10.plusHours(4)));
         workspace.addEvent(new FixedEvent("Lab", TUESDAY_10.plusHours(1), TUESDAY_10.plusHours(2)));
         workspace.addEvent(new FixedEvent("Call", TUESDAY_10.plusHours(3), TUESDAY_10.plusHours(5)));
-        assertEquals(2, checker.check(workspace).size());
+        assertEquals(2, checker.check(workspace, NO_RAIN).size());
     }
 
     @Test
@@ -72,10 +75,26 @@ class ConflictCheckerTest {
         workspace.addTask(report);
         workspace.getPlan().add(new TimeBlock("b1", report.getId(), TUESDAY_10, TUESDAY_10.plusHours(2)));
 
-        List<Conflict> conflicts = checker.check(workspace);
+        List<Conflict> conflicts = checker.check(workspace, NO_RAIN);
 
         assertEquals(1, conflicts.size());
         assertEquals(Conflict.LATE, conflicts.get(0).getType());
+    }
+
+    @Test
+    void findsOutdoorBlockInRain() {
+        Task run = new Task("Run", 45, null, Priority.LOW, true);
+        workspace.addTask(run);
+        workspace.getPlan().add(new TimeBlock("b1", run.getId(), TUESDAY_10, TUESDAY_10.plusMinutes(45)));
+        workspace.getPlan().add(new TimeBlock("b2", gym.getId(), TUESDAY_10.plusHours(1), TUESDAY_10.plusHours(2)));
+        Forecast wet = new Forecast(Map.of(TUESDAY_10, 70, TUESDAY_10.plusHours(1), 90));
+
+        List<Conflict> conflicts = checker.check(workspace, wet);
+
+        assertEquals(1, conflicts.size());
+        assertEquals(Conflict.RAIN, conflicts.get(0).getType());
+        assertTrue(conflicts.get(0).getMessage().contains("70% chance of rain"));
+        assertTrue(checker.check(workspace, NO_RAIN).isEmpty());
     }
 
     @Test
@@ -83,7 +102,7 @@ class ConflictCheckerTest {
         workspace.addPreference(new Preference(Preference.NO_WORK_AFTER, "22:00", "no studying after 10pm"));
         workspace.getPlan().add(new TimeBlock("b1", gym.getId(), TUESDAY_10.withHour(22), TUESDAY_10.withHour(23)));
 
-        List<Conflict> conflicts = checker.check(workspace);
+        List<Conflict> conflicts = checker.check(workspace, NO_RAIN);
 
         assertEquals(Conflict.PREFERENCE, conflicts.get(0).getType());
         assertTrue(conflicts.get(0).getMessage().endsWith("no work after 22:00"));
@@ -95,12 +114,12 @@ class ConflictCheckerTest {
         workspace.addEvent(new FixedEvent("Lab", TUESDAY_10.plusHours(1), TUESDAY_10.plusHours(2)));
         TimeBlock block = new TimeBlock("b9", gym.getId(), TUESDAY_10.plusDays(1), TUESDAY_10.plusDays(1).plusHours(1));
 
-        assertTrue(checker.checkChanges(workspace, List.of(new AddBlockCommand(block, "Gym"))).isEmpty());
+        assertTrue(checker.checkChanges(workspace, List.of(new AddBlockCommand(block, "Gym")), NO_RAIN).isEmpty());
 
         workspace.getPlan().add(block.copy());
         gym.schedule();
         List<Conflict> added = checker.checkChanges(workspace,
-                List.of(new MoveBlockCommand("b9", TUESDAY_10.plusHours(3), "Gym")));
+                List.of(new MoveBlockCommand("b9", TUESDAY_10.plusHours(3), "Gym")), NO_RAIN);
         assertEquals(1, added.size());
         assertEquals(TUESDAY_10.plusDays(1), workspace.getPlan().find("b9").getStart());
     }

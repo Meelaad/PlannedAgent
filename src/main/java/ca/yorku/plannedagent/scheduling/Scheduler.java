@@ -4,6 +4,7 @@ import ca.yorku.plannedagent.model.Preference;
 import ca.yorku.plannedagent.model.Task;
 import ca.yorku.plannedagent.model.TimeBlock;
 import ca.yorku.plannedagent.model.Workspace;
+import ca.yorku.plannedagent.services.Forecast;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -34,8 +35,12 @@ public class Scheduler {
         return strategy;
     }
 
-    /** Does not change the workspace plan: the caller decides what to do with the result. */
-    public ScheduleResult schedule(Workspace workspace, LocalDateTime from, LocalDateTime to) {
+    /**
+     * Does not change the workspace plan: the caller decides what to do with the result.
+     * Outdoor tasks are only placed in dry hours; pass Forecast.none() when there is no forecast.
+     */
+    public ScheduleResult schedule(Workspace workspace, LocalDateTime from, LocalDateTime to, Forecast forecast) {
+        Objects.requireNonNull(forecast, "forecast");
         Workspace work = workspace.copy();
         LocalDateTime first = roundUp(from);
         List<TimeBlock> placed = new ArrayList<>();
@@ -50,7 +55,7 @@ public class Scheduler {
                 notPlaced.put(task.getId(), "its deadline has already passed");
                 continue;
             }
-            LocalDateTime start = findStart(task, first, to, work);
+            LocalDateTime start = findStart(task, first, to, work, forecast);
             if (start == null) {
                 boolean deadlineInWindow = task.getDeadline() != null && task.getDeadline().isBefore(to);
                 notPlaced.put(task.getId(), deadlineInWindow
@@ -66,18 +71,19 @@ public class Scheduler {
         return new ScheduleResult(placed, notPlaced);
     }
 
-    private LocalDateTime findStart(Task task, LocalDateTime first, LocalDateTime to, Workspace work) {
+    private LocalDateTime findStart(Task task, LocalDateTime first, LocalDateTime to, Workspace work,
+                                    Forecast forecast) {
         for (LocalDateTime start = first;
              !start.plusMinutes(task.getMinutes()).isAfter(to);
              start = start.plusMinutes(STEP_MINUTES)) {
-            if (fits(task, start, work)) {
+            if (fits(task, start, work, forecast)) {
                 return start;
             }
         }
         return null;
     }
 
-    private boolean fits(Task task, LocalDateTime start, Workspace workspace) {
+    private boolean fits(Task task, LocalDateTime start, Workspace workspace, Forecast forecast) {
         LocalDateTime end = start.plusMinutes(task.getMinutes());
         if (start.toLocalTime().isBefore(DAY_START)
                 || end.toLocalDate().isAfter(start.toLocalDate())
@@ -91,6 +97,9 @@ public class Scheduler {
             if (!preference.allows(start, end)) {
                 return false;
             }
+        }
+        if (task.isOutdoor() && forecast.isRainy(start, end)) {
+            return false;
         }
         return workspace.busyBetween(start, end).isEmpty();
     }

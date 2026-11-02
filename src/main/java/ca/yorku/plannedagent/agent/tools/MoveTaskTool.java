@@ -15,9 +15,14 @@ import ca.yorku.plannedagent.services.WeatherService;
 
 import java.io.IOException;
 import java.time.Clock;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -42,7 +47,8 @@ public class MoveTaskTool implements Tool {
     @Override
     public String description() {
         return "proposes moving a planned block to a new start time (same length). "
-                + "Args: blockId (a b-id from get_schedule), newStart (YYYY-MM-DDTHH:MM).";
+                + "Args: blockId (a b-id from get_schedule), day (a weekday like WEDNESDAY, TODAY, TOMORROW "
+                + "or a date YYYY-MM-DD), time (HH:MM, 24-hour).";
     }
 
     @Override
@@ -63,10 +69,9 @@ public class MoveTaskTool implements Tool {
 
         LocalDateTime newStart;
         try {
-            String text = args.getOrDefault("newStart", "").trim();
-            newStart = LocalDateTime.parse(text.length() > 16 ? text.substring(0, 16) : text);
-        } catch (DateTimeParseException e) {
-            return ToolResult.error("newStart must look like 2026-11-04T07:00");
+            newStart = newStart(args);
+        } catch (DateTimeParseException | IllegalArgumentException e) {
+            return ToolResult.error("Give day (WEDNESDAY, TOMORROW or 2026-11-04) and time (07:00)");
         }
         if (newStart.isBefore(LocalDateTime.now(clock))) {
             return ToolResult.error("newStart " + newStart + " is in the past");
@@ -98,6 +103,37 @@ public class MoveTaskTool implements Tool {
             summary.append("\nNo conflicts. This is a proposal; the student must apply it.");
         }
         return ToolResult.ok(summary.toString(), new Proposal(summary.toString(), commands, conflicts));
+    }
+
+    /**
+     * The date is worked out here, not by the LLM: small models often get the date of "Wednesday" wrong
+     * even when they know it. A full newStart is still accepted.
+     */
+    private LocalDateTime newStart(Map<String, String> args) {
+        String full = args.get("newStart");
+        if (full != null && !full.isBlank() && args.get("day") == null) {
+            String text = full.trim();
+            return LocalDateTime.parse(text.length() > 16 ? text.substring(0, 16) : text);
+        }
+        String dayText = args.getOrDefault("day", "").trim().toUpperCase(Locale.ROOT);
+        String timeText = args.getOrDefault("time", "").trim();
+        LocalTime time = LocalTime.parse(timeText.length() == 4 ? "0" + timeText : timeText);
+        LocalDate today = LocalDate.now(clock);
+        LocalDate day = switch (dayText) {
+            case "TODAY" -> today;
+            case "TOMORROW" -> today.plusDays(1);
+            default -> dayText.length() == 10 ? LocalDate.parse(dayText) : nextDay(today, time, DayOfWeek.valueOf(dayText));
+        };
+        return day.atTime(time);
+    }
+
+    /** The next such weekday; today counts if the time has not passed yet. */
+    private LocalDate nextDay(LocalDate today, LocalTime time, DayOfWeek wanted) {
+        LocalDate day = today.with(TemporalAdjusters.nextOrSame(wanted));
+        if (day.equals(today) && !today.atTime(time).isAfter(LocalDateTime.now(clock))) {
+            day = day.plusWeeks(1);
+        }
+        return day;
     }
 
     /** Accepts a block id, or a task id when that task has exactly one block. */

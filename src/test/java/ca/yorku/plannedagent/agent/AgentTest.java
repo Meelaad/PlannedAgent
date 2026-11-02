@@ -79,6 +79,9 @@ class AgentTest {
 
         String system = llm.requests.get(0).system;
         assertTrue(system.contains("Saturday 2026-10-31 09:00"));
+        assertTrue(system.contains("Wednesday 2026-11-04"));
+        assertTrue(system.contains("Saturday 2026-11-07"));
+        assertFalse(system.contains("2026-11-08"));
         assertTrue(system.contains("- get_schedule:"));
         assertTrue(system.contains("- schedule_tasks:"));
         assertTrue(system.contains("no work after 22:00"));

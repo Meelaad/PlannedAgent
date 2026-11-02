@@ -63,6 +63,22 @@ class ChangeToolsTest {
     }
 
     @Test
+    void weekdayAndTimeAreTurnedIntoADateInJava() {
+        assertEquals("Move 'Gym' to Wed Nov 4 10:00.", firstLine(Map.of("blockId", "b5", "day", "wednesday", "time", "10:00")));
+        assertEquals("Move 'Gym' to Sat Oct 31 10:00.", firstLine(Map.of("blockId", "b5", "day", "SATURDAY", "time", "10:00")));
+        assertEquals("Move 'Gym' to Sat Nov 7 08:00.", firstLine(Map.of("blockId", "b5", "day", "SATURDAY", "time", "08:00")));
+        assertEquals("Move 'Gym' to Sun Nov 1 09:30.", firstLine(Map.of("blockId", "b5", "day", "TOMORROW", "time", "9:30")));
+        assertEquals("Move 'Gym' to Thu Nov 5 16:00.", firstLine(Map.of("blockId", "b5", "day", "2026-11-05", "time", "16:00")));
+    }
+
+    @Test
+    void badDayOrTimeIsRejected() {
+        assertFalse(move.run(Map.of("blockId", "b5", "day", "someday", "time", "10:00"), workspace).ok);
+        assertFalse(move.run(Map.of("blockId", "b5", "day", "WEDNESDAY", "time", "7am"), workspace).ok);
+        assertFalse(move.run(Map.of("blockId", "b5", "day", "WEDNESDAY"), workspace).ok);
+    }
+
+    @Test
     void taskIdIsAcceptedWhenItHasOneBlock() {
         ToolResult result = move.run(Map.of("blockId", "t1", "newStart", "2026-11-04T10:00:00"), workspace);
         assertTrue(result.ok);
@@ -109,6 +125,12 @@ class ChangeToolsTest {
         ToolResult result = offline.run(Map.of("blockId", "b5", "newStart", "2026-11-04T10:00"), workspace);
         assertTrue(result.ok);
         assertTrue(result.text.contains("weather service is not available"));
+    }
+
+    private String firstLine(Map<String, String> args) {
+        ToolResult result = move.run(args, workspace);
+        assertTrue(result.ok, result.text);
+        return result.text.lines().findFirst().orElseThrow();
     }
 
     @Test

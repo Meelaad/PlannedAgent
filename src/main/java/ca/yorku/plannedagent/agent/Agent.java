@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * The agent loop. Each step the LLM answers with one JSON object: a tool call or a final answer.
@@ -32,6 +33,7 @@ public class Agent {
             + "{\"tool\": \"name\", \"args\": {...}} or {\"answer\": \"text\"}";
     static final String GIVE_UP = "I could not finish. Try Auto-schedule.";
     private static final DateTimeFormatter NOW = DateTimeFormatter.ofPattern("EEEE yyyy-MM-dd HH:mm", Locale.ENGLISH);
+    private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("EEEE yyyy-MM-dd", Locale.ENGLISH);
 
     private final LlmClient llm;
     private final Map<String, Tool> tools = new LinkedHashMap<>();
@@ -102,9 +104,14 @@ public class Agent {
                 .collect(Collectors.joining("\n"));
         String rules = workspace.getPreferences().isEmpty() ? "none"
                 : workspace.getPreferences().stream().map(Preference::describe).collect(Collectors.joining("; "));
+        LocalDateTime now = LocalDateTime.now(clock);
+        String nextDays = IntStream.rangeClosed(1, 7)
+                .mapToObj(i -> DAY.format(now.toLocalDate().plusDays(i)))
+                .collect(Collectors.joining(", "));
         String system = """
                 You are PlannedAgent, a planning assistant for a university student.
                 It is now %s.
+                The next days are: %s. When the student names a day, use its date from this list.
                 You work in steps. Each reply must be exactly ONE JSON object and nothing else:
                 - to use a tool: {"tool": "<name>", "args": {"<arg>": "<value>"}}
                 - to finish: {"answer": "<short reply to the student>"}
@@ -120,7 +127,7 @@ public class Agent {
                 - If the request is unclear, ask one short question as your answer.
                 - Keep answers short and friendly.
                 The student's saved rules: %s
-                """.formatted(NOW.format(LocalDateTime.now(clock)), toolList, rules);
+                """.formatted(NOW.format(now), nextDays, toolList, rules);
         return new LlmRequest(system, memory.recent(), true);
     }
 

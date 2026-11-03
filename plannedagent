@@ -1,0 +1,3 @@
+#!/bin/sh
+# Runs PlannedAgent from the built jar. Build first with: ./mvnw package
+exec java -jar "$(dirname "$0")/target/plannedagent.jar" "$@"

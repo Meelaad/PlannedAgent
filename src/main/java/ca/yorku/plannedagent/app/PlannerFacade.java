@@ -284,7 +284,7 @@ public class PlannerFacade {
         }
     }
 
-    private LocalDateTime now() {
+    public LocalDateTime now() {
         return LocalDateTime.now(clock);
     }
 

@@ -24,14 +24,21 @@ import ca.yorku.plannedagent.scheduling.DeadlineFirstStrategy;
 import ca.yorku.plannedagent.scheduling.Scheduler;
 import ca.yorku.plannedagent.scheduling.SchedulingStrategies;
 import ca.yorku.plannedagent.scheduling.SchedulingStrategy;
+import ca.yorku.plannedagent.services.CalendarExporter;
 import ca.yorku.plannedagent.services.Forecast;
 import ca.yorku.plannedagent.services.JsonStorage;
 import ca.yorku.plannedagent.services.OpenMeteoWeather;
+import ca.yorku.plannedagent.services.ReportService;
 import ca.yorku.plannedagent.services.WeatherService;
+import ca.yorku.plannedagent.services.WeeklyReport;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Clock;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -53,6 +60,8 @@ public class PlannerFacade {
     private final CommandHistory history;
     private final TaskExtractor extractor;
     private final WeatherService weather;
+    private final ReportService reports;
+    private final CalendarExporter exporter;
     private final JsonStorage storage;
     private final EventBus events;
     private final Clock clock;
@@ -72,6 +81,8 @@ public class PlannerFacade {
         this.checker = new ConflictChecker();
         this.history = storage.loadHistory();
         this.extractor = new TaskExtractor(llm);
+        this.reports = new ReportService(llm);
+        this.exporter = new CalendarExporter(clock);
         this.agent = new Agent(llm, List.of(
                 new GetTasksTool(),
                 new GetScheduleTool(clock),
@@ -138,12 +149,26 @@ public class PlannerFacade {
     public void completeTask(String taskId) {
         Task task = findTask(taskId);
         task.complete();
+        task.setDoneAt(now());
         changed(EventBus.TASKS, "Completed '" + task.getTitle() + "'");
     }
 
     public void addEvent(FixedEvent event) {
         workspace.addEvent(event);
         changed(EventBus.EVENTS, "Added event '" + event.getTitle() + "'");
+    }
+
+    /** Returns how many entries were written. */
+    public int exportCalendar(Path file) {
+        int count = exporter.export(workspace, file);
+        events.notifyObservers(EventBus.EVENTS, "Exported " + count + " entries to " + file.getFileName());
+        return count;
+    }
+
+    /** The report for the current week (Monday to Sunday). Uses a template if the AI is not available. */
+    public WeeklyReport weeklyReport() {
+        LocalDate monday = now().toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        return reports.weeklyReport(workspace, monday);
     }
 
     public Proposal autoSchedule(String strategyName) {

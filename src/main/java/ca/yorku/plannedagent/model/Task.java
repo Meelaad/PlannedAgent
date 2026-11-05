@@ -18,6 +18,8 @@ public class Task {
     private Priority priority;
     private boolean outdoor;
     private TaskState state;
+    private LocalDateTime doneAt;
+    private LocalDateTime missedAt;
 
     public Task(String title, int minutes, LocalDateTime deadline, Priority priority, boolean outdoor) {
         this.title = title == null ? "" : title.trim();
@@ -79,6 +81,8 @@ public class Task {
         Task copy = new Task(title, minutes, deadline, priority, outdoor);
         copy.id = id;
         copy.state = state;
+        copy.doneAt = doneAt;
+        copy.missedAt = missedAt;
         return copy;
     }
 
@@ -128,6 +132,24 @@ public class Task {
 
     public void setOutdoor(boolean outdoor) {
         this.outdoor = outdoor;
+    }
+
+    /** When the task was completed, for the weekly report. */
+    public LocalDateTime getDoneAt() {
+        return doneAt;
+    }
+
+    public void setDoneAt(LocalDateTime doneAt) {
+        this.doneAt = doneAt;
+    }
+
+    /** When the task was last marked as missed, for the weekly report. */
+    public LocalDateTime getMissedAt() {
+        return missedAt;
+    }
+
+    public void setMissedAt(LocalDateTime missedAt) {
+        this.missedAt = missedAt;
     }
 
     @Override

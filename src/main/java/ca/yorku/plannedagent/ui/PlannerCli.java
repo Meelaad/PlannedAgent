@@ -12,6 +12,8 @@ import ca.yorku.plannedagent.model.Task;
 import ca.yorku.plannedagent.model.TimeBlock;
 import ca.yorku.plannedagent.model.TimeFormat;
 import ca.yorku.plannedagent.model.Workspace;
+import ca.yorku.plannedagent.services.ReportService;
+import ca.yorku.plannedagent.services.WeeklyReport;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,6 +22,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -86,6 +89,11 @@ public class PlannerCli {
                 }
                 case "conflicts" -> printConflicts();
                 case "ask" -> ask(a);
+                case "export" -> {
+                    Path file = Path.of(a.first("a file name, e.g. export week.ics"));
+                    print("Exported " + facade.exportCalendar(file) + " entries to " + file.toAbsolutePath());
+                }
+                case "report" -> printReport();
                 case "undo" -> print(facade.undo() ? "Undone." : "Nothing to undo.");
                 case "redo" -> print(facade.redo() ? "Redone." : "Nothing to redo.");
                 case "help", "-h", "--help" -> printHelp();
@@ -234,6 +242,19 @@ public class PlannerCli {
         conflicts.forEach(c -> print(c.getType() + ": " + c.getMessage()));
     }
 
+    private void printReport() {
+        WeeklyReport report = facade.weeklyReport();
+        Map<String, Integer> stats = report.stats;
+        print("Week of " + DAY.format(report.weekStart));
+        print("  Planned:      " + stats.get(WeeklyReport.PLANNED_MINUTES) + " min");
+        print("  Done:         " + stats.get(WeeklyReport.TASKS_DONE) + " tasks, "
+                + stats.get(WeeklyReport.DONE_MINUTES) + " min");
+        print("  Missed:       " + stats.get(WeeklyReport.TASKS_MISSED) + " tasks");
+        print("  Busiest day:  " + ReportService.dayName(stats.get(WeeklyReport.BUSIEST_DAY)));
+        print("");
+        print(report.summary + (report.writtenByAi ? "" : "   (template summary)"));
+    }
+
     private void printHelp() {
         print("""
                 PlannedAgent - turns your to-do list into a week plan.
@@ -246,6 +267,8 @@ public class PlannerCli {
                   events | week                     list events / show the next 7 days
                   schedule [--strategy deadline|priority|shortest] [--yes]
                   conflicts                         check the plan for problems
+                  export <file.ics>                 export events and planned blocks to a calendar file
+                  report                            this week's numbers and a short summary (AI)
                   ask "<message>" [--yes]           talk to the agent (AI)
                   undo | redo                       undo or redo the last applied change""");
     }

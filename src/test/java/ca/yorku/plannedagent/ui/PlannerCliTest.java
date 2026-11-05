@@ -116,6 +116,21 @@ class PlannerCliTest {
     }
 
     @Test
+    void exportAndReport() throws Exception {
+        facade = facade(new ScriptedLlm());
+        run("", "new", "Gym", "--minutes", "60");
+        run("", "schedule", "--yes");
+        run("", "done", "t1");
+
+        assertTrue(run("", "export", dir.resolve("week.ics").toString()).contains("Exported 1 entries"));
+        assertTrue(java.nio.file.Files.readString(dir.resolve("week.ics")).contains("SUMMARY:Gym"));
+
+        String report = run("", "report");
+        assertTrue(report.contains("Done:         1 tasks, 60 min"));
+        assertTrue(report.contains("(template summary)"));
+    }
+
+    @Test
     void unknownCommandShowsHelp() {
         facade = facade(new ScriptedLlm());
         String output = run("", "fly");

@@ -1,5 +1,9 @@
 package ca.yorku.plannedagent.services;
 
+import ca.yorku.plannedagent.commands.AddBlockCommand;
+import ca.yorku.plannedagent.commands.CommandHistory;
+import ca.yorku.plannedagent.commands.MoveBlockCommand;
+import ca.yorku.plannedagent.commands.PlanCommand;
 import ca.yorku.plannedagent.model.DoneState;
 import ca.yorku.plannedagent.model.MissedState;
 import ca.yorku.plannedagent.model.ScheduledState;
@@ -9,7 +13,13 @@ import ca.yorku.plannedagent.model.TodoState;
 import ca.yorku.plannedagent.model.Workspace;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
@@ -17,6 +27,7 @@ import com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,11 +40,17 @@ import java.util.Objects;
 public class JsonStorage {
 
     private final Path file;
+    private final Path historyFile;
     private final Gson gson;
+    private final Gson historyGson;
 
     public JsonStorage(Path file) {
         this.file = Objects.requireNonNull(file, "file");
+        this.historyFile = file.resolveSibling("history.json");
         this.gson = createGson();
+        this.historyGson = gson.newBuilder()
+                .registerTypeHierarchyAdapter(PlanCommand.class, new PlanCommandAdapter(gson))
+                .create();
     }
 
     /** Returns an empty workspace if the file does not exist yet. A damaged file is reported, never overwritten. */
@@ -58,18 +75,45 @@ public class JsonStorage {
 
     public void save(Workspace workspace) {
         Objects.requireNonNull(workspace, "workspace");
+        writeAtomically(file, gson.toJson(workspace));
+    }
+
+    /**
+     * The undo history is kept next to the workspace so undo also works between two CLI commands.
+     * Unlike the workspace it is not precious: if it cannot be read, undo simply starts empty.
+     */
+    public CommandHistory loadHistory() {
+        if (!Files.exists(historyFile)) {
+            return new CommandHistory();
+        }
         try {
-            Path dir = file.toAbsolutePath().getParent();
+            CommandHistory history = historyGson.fromJson(Files.readString(historyFile, StandardCharsets.UTF_8),
+                    CommandHistory.class);
+            return history == null ? new CommandHistory() : history;
+        } catch (IOException | RuntimeException e) {
+            System.err.println("The undo history could not be read and was reset: " + e.getMessage());
+            return new CommandHistory();
+        }
+    }
+
+    public void saveHistory(CommandHistory history) {
+        Objects.requireNonNull(history, "history");
+        writeAtomically(historyFile, historyGson.toJson(history));
+    }
+
+    private static void writeAtomically(Path target, String json) {
+        try {
+            Path dir = target.toAbsolutePath().getParent();
             Files.createDirectories(dir);
-            Path temp = Files.createTempFile(dir, "workspace", ".tmp");
+            Path temp = Files.createTempFile(dir, "plannedagent", ".tmp");
             try {
-                Files.writeString(temp, gson.toJson(workspace), StandardCharsets.UTF_8);
-                Files.move(temp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+                Files.writeString(temp, json, StandardCharsets.UTF_8);
+                Files.move(temp, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             } finally {
                 Files.deleteIfExists(temp);
             }
         } catch (IOException e) {
-            throw new UncheckedIOException("Could not save " + file, e);
+            throw new UncheckedIOException("Could not save " + target, e);
         }
     }
 
@@ -92,6 +136,39 @@ public class JsonStorage {
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter().nullSafe())
                 .registerTypeHierarchyAdapter(TaskState.class, new TaskStateAdapter().nullSafe())
                 .create();
+    }
+
+    /** Stores each command with a "type" so the right class comes back. */
+    private static final class PlanCommandAdapter implements JsonSerializer<PlanCommand>, JsonDeserializer<PlanCommand> {
+        private final Gson base;
+
+        PlanCommandAdapter(Gson base) {
+            this.base = base;
+        }
+
+        @Override
+        public JsonElement serialize(PlanCommand command, Type type, JsonSerializationContext context) {
+            JsonObject json = base.toJsonTree(command).getAsJsonObject();
+            if (command instanceof AddBlockCommand) {
+                json.addProperty("type", "add");
+            } else if (command instanceof MoveBlockCommand) {
+                json.addProperty("type", "move");
+            } else {
+                throw new JsonParseException("Cannot save command " + command.getClass().getSimpleName());
+            }
+            return json;
+        }
+
+        @Override
+        public PlanCommand deserialize(JsonElement json, Type type, JsonDeserializationContext context) {
+            JsonElement kind = json.getAsJsonObject().get("type");
+            String name = kind == null ? "" : kind.getAsString();
+            return switch (name) {
+                case "add" -> base.fromJson(json, AddBlockCommand.class);
+                case "move" -> base.fromJson(json, MoveBlockCommand.class);
+                default -> throw new JsonParseException("Unknown command type '" + name + "'");
+            };
+        }
     }
 
     private static final class LocalDateTimeAdapter extends TypeAdapter<LocalDateTime> {

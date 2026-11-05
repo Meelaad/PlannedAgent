@@ -110,6 +110,23 @@ class PlannerFacadeTest {
     }
 
     @Test
+    void undoWorksInTheNextRun() {
+        PlannerFacade first = facade(new ScriptedLlm(), DRY);
+        first.addTask(new Task("Report", 60, null, null, false));
+        first.autoSchedule("deadline");
+        first.applyProposal();
+
+        PlannerFacade second = new PlannerFacade(storage.load(), new ScriptedLlm(), storage, DRY, CLOCK);
+        assertTrue(second.undo());
+        assertEquals("TODO", second.getWorkspace().getTask("t1").getStatus());
+        assertTrue(storage.load().getPlan().getBlocks().isEmpty());
+
+        PlannerFacade third = new PlannerFacade(storage.load(), new ScriptedLlm(), storage, DRY, CLOCK);
+        assertTrue(third.redo());
+        assertEquals(1, storage.load().getPlan().getBlocks().size());
+    }
+
+    @Test
     void unknownStrategyFallsBackWithAWarning() {
         PlannerFacade facade = facade(new ScriptedLlm(), DRY);
         facade.addTask(new Task("Report", 60, null, null, false));

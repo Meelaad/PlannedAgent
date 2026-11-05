@@ -1,5 +1,8 @@
 package ca.yorku.plannedagent.services;
 
+import ca.yorku.plannedagent.commands.AddBlockCommand;
+import ca.yorku.plannedagent.commands.CommandHistory;
+import ca.yorku.plannedagent.commands.MoveBlockCommand;
 import ca.yorku.plannedagent.model.FixedEvent;
 import ca.yorku.plannedagent.model.Preference;
 import ca.yorku.plannedagent.model.Priority;
@@ -12,6 +15,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -109,6 +113,39 @@ class JsonStorageTest {
         Task task = new JsonStorage(file).load().getTask("t1");
         assertEquals("TODO", task.getStatus());
         assertEquals(Priority.MEDIUM, task.getPriority());
+    }
+
+    @Test
+    void historyRoundTripKeepsCommandTypesAndOrder() {
+        Workspace workspace = new Workspace();
+        Task gym = new Task("Gym", 60, null, Priority.LOW, false);
+        workspace.addTask(gym);
+        CommandHistory history = new CommandHistory();
+        TimeBlock block = new TimeBlock("b2", gym.getId(), FRIDAY_17, FRIDAY_17.plusHours(1));
+        history.run(List.of(new AddBlockCommand(block, "Gym")), workspace);
+        history.run(List.of(new MoveBlockCommand("b2", FRIDAY_17.plusDays(1), "Gym")), workspace);
+
+        JsonStorage storage = new JsonStorage(dir.resolve("workspace.json"));
+        storage.save(workspace);
+        storage.saveHistory(history);
+        Workspace loadedWorkspace = storage.load();
+        CommandHistory loaded = storage.loadHistory();
+
+        assertTrue(loaded.undo(loadedWorkspace));
+        assertEquals(FRIDAY_17, loadedWorkspace.getPlan().find("b2").getStart());
+        assertTrue(loaded.undo(loadedWorkspace));
+        assertTrue(loadedWorkspace.getPlan().getBlocks().isEmpty());
+        assertEquals("TODO", loadedWorkspace.getTask("t1").getStatus());
+        assertFalse(loaded.undo(loadedWorkspace));
+        assertTrue(loaded.redo(loadedWorkspace));
+        assertEquals("SCHEDULED", loadedWorkspace.getTask("t1").getStatus());
+    }
+
+    @Test
+    void damagedHistoryStartsEmpty() throws Exception {
+        Files.writeString(dir.resolve("history.json"), "{\"undoStack\": [[{\"type\": \"teleport\"}]]}");
+        CommandHistory history = new JsonStorage(dir.resolve("workspace.json")).loadHistory();
+        assertFalse(history.canUndo());
     }
 
     @Test

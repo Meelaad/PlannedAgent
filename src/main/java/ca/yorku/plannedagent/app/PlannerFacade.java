@@ -70,7 +70,7 @@ public class PlannerFacade {
         this.events = new EventBus();
         this.scheduler = new Scheduler();
         this.checker = new ConflictChecker();
-        this.history = new CommandHistory();
+        this.history = storage.loadHistory();
         this.extractor = new TaskExtractor(llm);
         this.agent = new Agent(llm, List.of(
                 new GetTasksTool(),
@@ -290,6 +290,7 @@ public class PlannerFacade {
 
     private void changed(String type, String message) {
         storage.save(workspace);
+        storage.saveHistory(history);
         events.notifyObservers(type, message);
     }
 

@@ -27,13 +27,21 @@ public class CommandHistory {
         redoStack.clear();
     }
 
+    /**
+     * If the plan changed since (e.g. the task was completed), the step cannot be undone any more.
+     * It is then left as it is, dropped from the history, and reported, so older steps can still be undone.
+     */
     public boolean undo(Workspace workspace) {
         if (undoStack.isEmpty()) {
             return false;
         }
-        List<PlanCommand> group = undoStack.peek();
-        undoAll(group, workspace);
-        undoStack.pop();
+        List<PlanCommand> group = undoStack.pop();
+        try {
+            undoAll(group, workspace);
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException("That change can no longer be undone (" + e.getMessage()
+                    + "), so it was removed from the history", e);
+        }
         redoStack.push(group);
         return true;
     }
@@ -42,9 +50,13 @@ public class CommandHistory {
         if (redoStack.isEmpty()) {
             return false;
         }
-        List<PlanCommand> group = redoStack.peek();
-        executeAll(group, workspace);
-        redoStack.pop();
+        List<PlanCommand> group = redoStack.pop();
+        try {
+            executeAll(group, workspace);
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException("That change can no longer be redone (" + e.getMessage()
+                    + "), so it was removed from the history", e);
+        }
         undoStack.push(group);
         return true;
     }

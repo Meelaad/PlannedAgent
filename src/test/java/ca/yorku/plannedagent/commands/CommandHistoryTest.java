@@ -100,14 +100,20 @@ class CommandHistoryTest {
     }
 
     @Test
-    void undoIsRefusedWhenTheTaskChangedSince() {
+    void stepThatCannotBeUndoneIsDroppedSoOlderStepsStillWork() {
+        history.run(List.of(add("b2", report, WEDNESDAY_7.plusHours(3))), workspace);
         history.run(List.of(add("b1", gym, WEDNESDAY_7)), workspace);
         gym.complete();
 
-        assertThrows(IllegalStateException.class, () -> history.undo(workspace));
+        IllegalStateException e = assertThrows(IllegalStateException.class, () -> history.undo(workspace));
+        assertTrue(e.getMessage().contains("can no longer be undone"));
         assertEquals("DONE", gym.getStatus());
         assertNotNull(workspace.getPlan().find("b1"));
-        assertTrue(history.canUndo());
+        assertFalse(history.canRedo());
+
+        assertTrue(history.undo(workspace));
+        assertNull(workspace.getPlan().find("b2"));
+        assertEquals("TODO", report.getStatus());
     }
 
     @Test

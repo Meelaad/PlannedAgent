@@ -131,6 +131,31 @@ class PlannerCliTest {
     }
 
     @Test
+    void reviewAsksAboutTodaysBlocks() {
+        facade = facade(new ScriptedLlm());
+        run("", "new", "Read", "--minutes", "30");
+        run("", "new", "Gym", "--minutes", "60");
+        run("", "schedule", "--yes");
+
+        String output = run("d\nm\nn\n", "review");
+
+        assertTrue(output.contains("t1  Read  09:00-09:30  done, missed or skip?"));
+        assertTrue(output.contains("The AI is not available"));
+        assertTrue(output.contains("Discarded."));
+        assertEquals("DONE", facade.getWorkspace().getTask("t1").getStatus());
+        assertEquals("MISSED", facade.getWorkspace().getTask("t2").getStatus());
+    }
+
+    @Test
+    void reviewWithOptionsAndNothingToReview() {
+        facade = facade(new ScriptedLlm());
+        assertTrue(run("", "review").contains("Nothing to review today."));
+        run("", "new", "Read", "--minutes", "30");
+        run("", "schedule", "--yes");
+        assertTrue(run("", "review", "--done", "t1").contains("Review saved: 1 done."));
+    }
+
+    @Test
     void unknownCommandShowsHelp() {
         facade = facade(new ScriptedLlm());
         String output = run("", "fly");

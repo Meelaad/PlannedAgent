@@ -242,7 +242,13 @@ public class PlannerFacade {
     }
 
     public boolean undo() {
-        boolean done = history.undo(workspace);
+        boolean done;
+        try {
+            done = history.undo(workspace);
+        } catch (IllegalStateException e) {
+            storage.saveHistory(history);
+            throw e;
+        }
         if (done) {
             changed(EventBus.PLAN, "Undo");
         }
@@ -250,11 +256,69 @@ public class PlannerFacade {
     }
 
     public boolean redo() {
-        boolean done = history.redo(workspace);
+        boolean done;
+        try {
+            done = history.redo(workspace);
+        } catch (IllegalStateException e) {
+            storage.saveHistory(history);
+            throw e;
+        }
         if (done) {
             changed(EventBus.PLAN, "Redo");
         }
         return done;
+    }
+
+    /**
+     * End-of-day review (SD8): done tasks move to Done, missed tasks move to Missed and lose their blocks.
+     * Then the agent proposes new times for the missed tasks; if the AI is not available,
+     * plain auto-schedule (deadline first) is used instead.
+     */
+    public AgentReply reviewDay(List<String> done, List<String> missed) {
+        if (done.isEmpty() && missed.isEmpty()) {
+            throw new IllegalArgumentException("Mark at least one task as done or missed");
+        }
+        List<Task> doneTasks = done.stream().map(this::findTask).toList();
+        List<Task> missedTasks = missed.stream().map(this::findTask).toList();
+        for (Task task : missedTasks) {
+            if (doneTasks.contains(task)) {
+                throw new IllegalArgumentException("'" + task.getTitle() + "' cannot be both done and missed");
+            }
+            task.copy().markMissed();
+        }
+        doneTasks.forEach(task -> task.copy().complete());
+
+        LocalDateTime now = now();
+        for (Task task : doneTasks) {
+            task.complete();
+            task.setDoneAt(now);
+        }
+        for (Task task : missedTasks) {
+            task.markMissed();
+            task.setMissedAt(now);
+            for (TimeBlock block : workspace.getPlan().blocksFor(task.getId())) {
+                workspace.getPlan().remove(block.getId());
+            }
+        }
+        changed(EventBus.TASKS, "Review: " + doneTasks.size() + " done, " + missedTasks.size() + " missed");
+
+        if (missedTasks.isEmpty()) {
+            return new AgentReply("Review saved: " + doneTasks.size() + " done. Nice work!", null);
+        }
+        String names = String.join(", ", missedTasks.stream()
+                .map(t -> "'" + t.getTitle() + "' (" + t.getId() + ")").toList());
+        try {
+            AgentReply reply = agent.handle("I missed these tasks today: " + names
+                    + ". Please find new times for them in my free time.", workspace);
+            if (reply.proposal != null) {
+                setPending(reply.proposal);
+            }
+            return reply;
+        } catch (LlmException e) {
+            Proposal proposal = autoSchedule("deadline");
+            return new AgentReply("The AI is not available, so Auto-schedule (deadline first) found new times "
+                    + "for the missed tasks.", proposal.isEmpty() ? null : proposal);
+        }
     }
 
     public void subscribe(PlannerObserver observer) {

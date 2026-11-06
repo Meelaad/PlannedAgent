@@ -127,6 +127,83 @@ class PlannerFacadeTest {
     }
 
     @Test
+    void reviewMarksTasksAndTheAgentReschedulesMissedOnes() {
+        ScriptedLlm llm = new ScriptedLlm(
+                "{\"tool\": \"schedule_tasks\", \"args\": {}}",
+                "{\"answer\": \"I found a new time for Gym.\"}");
+        PlannerFacade facade = scheduledFacade(llm);
+
+        AgentReply reply = facade.reviewDay(List.of("t1"), List.of("t2"));
+
+        Workspace workspace = facade.getWorkspace();
+        assertEquals("DONE", workspace.getTask("t1").getStatus());
+        assertEquals("MISSED", workspace.getTask("t2").getStatus());
+        assertEquals(NOW, workspace.getTask("t2").getMissedAt());
+        assertTrue(workspace.getPlan().blocksFor("t2").isEmpty());
+        assertEquals(1, workspace.getPlan().blocksFor("t1").size());
+        assertTrue(llm.requests.get(0).messages.get(0).contains("'Gym' (t2)"));
+        assertEquals("I found a new time for Gym.", reply.text);
+        assertEquals(1, reply.proposal.getCommands().size());
+        assertSame(reply.proposal, facade.getPending());
+
+        facade.applyProposal();
+        assertEquals("SCHEDULED", workspace.getTask("t2").getStatus());
+    }
+
+    @Test
+    void reviewFallsBackToAutoScheduleWithoutAi() {
+        PlannerFacade facade = scheduledFacade(new ScriptedLlm());
+
+        AgentReply reply = facade.reviewDay(List.of(), List.of("t2"));
+
+        assertTrue(reply.text.startsWith("The AI is not available"));
+        assertEquals(1, reply.proposal.getCommands().size());
+    }
+
+    @Test
+    void reviewWithOnlyDoneTasksNeedsNoAi() {
+        PlannerFacade facade = scheduledFacade(new ScriptedLlm());
+        AgentReply reply = facade.reviewDay(List.of("t1", "t2"), List.of());
+        assertEquals("Review saved: 2 done. Nice work!", reply.text);
+        assertNull(reply.proposal);
+    }
+
+    @Test
+    void reviewIsAllOrNothing() {
+        PlannerFacade facade = scheduledFacade(new ScriptedLlm());
+        Task neverPlanned = new Task("Never planned", 30, null, null, false);
+        facade.addTask(neverPlanned);
+
+        assertThrows(IllegalStateException.class,
+                () -> facade.reviewDay(List.of("t1"), List.of(neverPlanned.getId())));
+        assertEquals("SCHEDULED", facade.getWorkspace().getTask("t1").getStatus());
+        assertThrows(IllegalArgumentException.class, () -> facade.reviewDay(List.of("t1"), List.of("t1")));
+        assertThrows(IllegalArgumentException.class, () -> facade.reviewDay(List.of(), List.of()));
+        assertThrows(IllegalArgumentException.class, () -> facade.reviewDay(List.of("t9"), List.of()));
+    }
+
+    @Test
+    void undoAfterReviewSkipsWhatCannotBeUndone() {
+        PlannerFacade facade = scheduledFacade(new ScriptedLlm());
+        facade.reviewDay(List.of(), List.of("t2"));
+        facade.discardProposal();
+
+        IllegalStateException e = assertThrows(IllegalStateException.class, facade::undo);
+        assertTrue(e.getMessage().contains("can no longer be undone"));
+        assertFalse(facade.undo());
+        assertFalse(new PlannerFacade(storage.load(), new ScriptedLlm(), storage, DRY, CLOCK).undo());
+    }
+
+    private PlannerFacade scheduledFacade(ScriptedLlm llm) {
+        PlannerFacade facade = facade(llm, DRY);
+        facade.addTask(new Task("Report", 60, null, null, false));
+        facade.addTask(new Task("Gym", 60, null, null, false));
+        facade.autoSchedule("deadline");
+        facade.applyProposal();
+        return facade;
+    }
+
+    @Test
     void unknownStrategyFallsBackWithAWarning() {
         PlannerFacade facade = facade(new ScriptedLlm(), DRY);
         facade.addTask(new Task("Report", 60, null, null, false));

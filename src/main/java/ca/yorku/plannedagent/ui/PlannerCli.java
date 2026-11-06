@@ -88,6 +88,7 @@ public class PlannerCli {
                     confirm(proposal, a.flag("yes"));
                 }
                 case "conflicts" -> printConflicts();
+                case "review" -> review(a);
                 case "ask" -> ask(a);
                 case "export" -> {
                     Path file = Path.of(a.first("a file name, e.g. export week.ics"));
@@ -173,6 +174,48 @@ public class PlannerCli {
             print(reply.proposal.getSummary());
             confirm(reply.proposal, a.flag("yes"));
         }
+    }
+
+    private void review(Args a) {
+        List<String> done = new ArrayList<>(ids(a.option("done", "")));
+        List<String> missed = new ArrayList<>(ids(a.option("missed", "")));
+        if (done.isEmpty() && missed.isEmpty()) {
+            Workspace workspace = facade.getWorkspace();
+            List<TimeBlock> today = workspace.getPlan().blocksOn(facade.now().toLocalDate());
+            if (today.isEmpty()) {
+                print("Nothing to review today.");
+                return;
+            }
+            for (TimeBlock block : today) {
+                Task task = workspace.getTask(block.getTaskId());
+                if (task == null || !"SCHEDULED".equals(task.getStatus())) {
+                    continue;
+                }
+                String answer = answer(task.getId() + "  " + task.getTitle() + "  "
+                        + TimeFormat.time(block.getStart()) + "-" + TimeFormat.time(block.getEnd())
+                        + "  done, missed or skip? [d/m/s] ");
+                if (answer.startsWith("d")) {
+                    done.add(task.getId());
+                } else if (answer.startsWith("m")) {
+                    missed.add(task.getId());
+                }
+            }
+            if (done.isEmpty() && missed.isEmpty()) {
+                print("Nothing marked.");
+                return;
+            }
+        }
+        AgentReply reply = facade.reviewDay(done, missed);
+        print(reply.text);
+        if (reply.proposal != null) {
+            print("");
+            print(reply.proposal.getSummary());
+            confirm(reply.proposal, a.flag("yes"));
+        }
+    }
+
+    private static List<String> ids(String text) {
+        return Arrays.stream(text.split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList();
     }
 
     private void confirm(Proposal proposal, boolean yes) {
@@ -267,6 +310,7 @@ public class PlannerCli {
                   events | week                     list events / show the next 7 days
                   schedule [--strategy deadline|priority|shortest] [--yes]
                   conflicts                         check the plan for problems
+                  review [--done t1,t2] [--missed t3] [--yes]   end-of-day review (AI reschedules missed tasks)
                   export <file.ics>                 export events and planned blocks to a calendar file
                   report                            this week's numbers and a short summary (AI)
                   ask "<message>" [--yes]           talk to the agent (AI)
@@ -274,13 +318,17 @@ public class PlannerCli {
     }
 
     private boolean yes(String question) {
+        return answer(question).startsWith("y");
+    }
+
+    private String answer(String question) {
         out.print(question);
         out.flush();
         try {
             String line = in.readLine();
-            return line != null && line.trim().toLowerCase(Locale.ROOT).startsWith("y");
+            return line == null ? "" : line.trim().toLowerCase(Locale.ROOT);
         } catch (IOException e) {
-            return false;
+            return "";
         }
     }
 

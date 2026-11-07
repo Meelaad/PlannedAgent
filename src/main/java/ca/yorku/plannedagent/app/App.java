@@ -7,13 +7,22 @@ import ca.yorku.plannedagent.ai.OllamaClient;
 import ca.yorku.plannedagent.model.Workspace;
 import ca.yorku.plannedagent.services.JsonStorage;
 import ca.yorku.plannedagent.services.OpenMeteoWeather;
+import ca.yorku.plannedagent.ui.MainController;
+import ca.yorku.plannedagent.ui.MainWindow;
 import ca.yorku.plannedagent.ui.PlannerCli;
 
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import java.awt.GraphicsEnvironment;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.util.Locale;
 
-/** Start-up (SD1): reads the settings, picks the LLM, loads the workspace and wires the facade. */
+/**
+ * Start-up (SD1): reads the settings, picks the LLM, loads the workspace and wires the facade.
+ * With no arguments it opens the window; otherwise it runs the CLI command.
+ */
 public final class App {
 
     static final String KEY_PLACEHOLDER = "YOUR_LOCAL_API_KEY_HERE";
@@ -41,7 +50,20 @@ public final class App {
                 Clock.systemDefaultZone());
         facade.subscribe(new ActivityLog(dataDir.resolve("activity.log")));
 
-        new PlannerCli(facade).run(args);
+        if (args.length > 0 || GraphicsEnvironment.isHeadless()) {
+            new PlannerCli(facade).run(args);
+            return;
+        }
+        SwingUtilities.invokeLater(() -> {
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (ReflectiveOperationException | UnsupportedLookAndFeelException e) {
+                // the default look and feel is fine too
+            }
+            MainWindow window = new MainWindow();
+            facade.subscribe(new MainController(facade, window));
+            window.showWindow();
+        });
     }
 
     /** PLANNER_LLM picks the adapter. Without a usable setup the app still runs; only AI calls fail, with a hint. */

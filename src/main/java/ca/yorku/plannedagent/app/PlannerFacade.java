@@ -354,7 +354,8 @@ public class PlannerFacade {
     private void setPending(Proposal proposal) {
         pending = proposal;
         if (proposal != null) {
-            events.notifyObservers(EventBus.PROPOSAL, proposal.getCommands().size() + " changes waiting");
+            int count = proposal.getCommands().size();
+            events.notifyObservers(EventBus.PROPOSAL, count + (count == 1 ? " change" : " changes") + " waiting");
         }
     }
 

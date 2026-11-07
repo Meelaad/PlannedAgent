@@ -301,7 +301,7 @@ public class PlannerCli {
     private void printHelp() {
         print("""
                 PlannedAgent - turns your to-do list into a week plan.
-                Usage: plannedagent <command> [options]
+                Usage: plannedagent <command> [options]   (no command opens the window)
 
                   add "<text>" [--yes]              add tasks from one sentence (AI)
                   new "<title>" --minutes N [--due YYYY-MM-DDTHH:MM] [--priority low|medium|high] [--outdoor]

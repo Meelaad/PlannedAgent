@@ -5,12 +5,15 @@ import ca.yorku.plannedagent.ai.LlmException;
 import ca.yorku.plannedagent.app.EventBus;
 import ca.yorku.plannedagent.app.PlannerFacade;
 import ca.yorku.plannedagent.app.PlannerObserver;
+import ca.yorku.plannedagent.model.FixedEvent;
 import ca.yorku.plannedagent.model.Task;
+import ca.yorku.plannedagent.model.TimeBlock;
 import ca.yorku.plannedagent.model.TimeFormat;
 import ca.yorku.plannedagent.model.Workspace;
 
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -43,28 +46,59 @@ public class MainController implements PlannerObserver {
                 window.showError("No tasks were found in that text.");
                 return;
             }
-            List<Task> valid = new ArrayList<>();
-            StringBuilder list = new StringBuilder();
-            for (Task task : tasks) {
-                List<String> problems = task.problems(facade.now());
-                list.append(problems.isEmpty() ? "  " : "! ").append(task.getTitle()).append(", ")
-                        .append(task.getMinutes()).append(" min, due ").append(TimeFormat.dayTime(task.getDeadline()))
-                        .append(", ").append(task.getPriority())
-                        .append(problems.isEmpty() ? "" : "  (" + String.join(", ", problems) + ")").append('\n');
-                if (problems.isEmpty()) {
-                    valid.add(task);
-                }
-            }
-            if (!valid.isEmpty() && window.confirm("Save these tasks?\n\n" + list
-                    + (valid.size() < tasks.size() ? "\nTasks marked ! have a problem and will be skipped." : ""),
-                    "Tasks from your text")) {
-                onSaveTasks(valid);
+            List<Task> chosen = window.reviewExtractedTasks(tasks, facade.now());
+            if (chosen != null) {
+                onSaveTasks(chosen);
             }
         });
     }
 
     public void onSaveTasks(List<Task> tasks) {
         safely(() -> facade.saveTasks(tasks));
+    }
+
+    public void onAddTask(Task task) {
+        safely(() -> facade.addTask(task));
+    }
+
+    public void onEditTask(Task task) {
+        safely(() -> facade.updateTask(task));
+    }
+
+    public void onAddEvent(FixedEvent event) {
+        safely(() -> facade.addEvent(event));
+    }
+
+    public void onExport(Path file) {
+        safely(() -> window.showStatus("Exported " + facade.exportCalendar(file) + " entries to " + file));
+    }
+
+    /** Collects today's scheduled blocks for the review dialog. */
+    public void onReviewToday() {
+        Workspace workspace = facade.getWorkspace();
+        List<ReviewDialog.Item> items = new ArrayList<>();
+        for (TimeBlock block : workspace.getPlan().blocksOn(facade.now().toLocalDate())) {
+            Task task = workspace.getTask(block.getTaskId());
+            if (task != null && "SCHEDULED".equals(task.getStatus())) {
+                items.add(new ReviewDialog.Item(task.getId(), task.getTitle() + "  "
+                        + TimeFormat.time(block.getStart()) + "-" + TimeFormat.time(block.getEnd())));
+            }
+        }
+        if (items.isEmpty()) {
+            window.showError("Nothing to review: there are no scheduled blocks today.");
+            return;
+        }
+        ReviewDialog.Result result = window.askReview(items);
+        if (result != null && !(result.done().isEmpty() && result.missed().isEmpty())) {
+            onReview(result.done(), result.missed());
+        }
+    }
+
+    public void onReview(List<String> done, List<String> missed) {
+        background("Reviewing your day...", () -> facade.reviewDay(done, missed), (AgentReply reply) -> {
+            window.showChat("Agent: " + reply.text);
+            window.showProposal(reply.proposal);
+        });
     }
 
     public void onDeleteTask(String taskId) {
@@ -185,7 +219,8 @@ public class MainController implements PlannerObserver {
                 } catch (ExecutionException e) {
                     Throwable cause = e.getCause();
                     window.showError(cause instanceof LlmException
-                            ? "The AI is not available right now (" + cause.getMessage() + ")."
+                            ? "The AI is not available right now (" + cause.getMessage() + "). "
+                            + "Auto-schedule, New and the other buttons still work."
                             : String.valueOf(cause.getMessage()));
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();

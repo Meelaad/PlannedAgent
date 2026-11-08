@@ -15,6 +15,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -26,16 +27,22 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.io.File;
+import java.nio.file.Path;
 import java.awt.Font;
 import java.time.Clock;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -63,6 +70,7 @@ public class MainWindow extends JFrame {
     private final JLabel statusBar = new JLabel(" ");
     private final List<JComponent> actions = new ArrayList<>();
 
+    private final Clock clock;
     private MainController controller;
     private boolean proposalCanApply;
 
@@ -72,6 +80,7 @@ public class MainWindow extends JFrame {
 
     public MainWindow(Clock clock) {
         super("PlannedAgent");
+        this.clock = clock;
         weekView = new WeekView(clock);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         buildTasksPanel();
@@ -188,6 +197,15 @@ public class MainWindow extends JFrame {
         setCursor(busy ? java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR) : null);
     }
 
+    /** Lets the student check and fix the tasks the AI read; returns the ones to save, or null. */
+    List<Task> reviewExtractedTasks(List<Task> tasks, LocalDateTime now) {
+        return ExtractedTasksDialog.show(this, tasks, now);
+    }
+
+    ReviewDialog.Result askReview(List<ReviewDialog.Item> items) {
+        return ReviewDialog.show(this, items);
+    }
+
     boolean confirm(String message, String title) {
         return JOptionPane.showConfirmDialog(this, message, title, JOptionPane.YES_NO_OPTION)
                 == JOptionPane.YES_OPTION;
@@ -222,6 +240,23 @@ public class MainWindow extends JFrame {
         tasksPanel.add(new JScrollPane(taskTable), BorderLayout.CENTER);
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        buttons.add(button("New", () -> {
+            Task task = TaskDialog.show(this, null);
+            if (task != null) {
+                controller.onAddTask(task);
+            }
+        }));
+        buttons.add(button("Edit", () -> {
+            Task selected = taskModel.taskAt(taskTable.getSelectedRow());
+            if (selected == null) {
+                showError("Select a task first.");
+                return;
+            }
+            Task edited = TaskDialog.show(this, selected);
+            if (edited != null) {
+                controller.onEditTask(edited);
+            }
+        }));
         buttons.add(button("Mark done", () -> withSelectedTask(id -> controller.onComplete(id))));
         buttons.add(button("Delete", () -> withSelectedTask(id -> controller.onDeleteTask(id))));
         tasksPanel.add(buttons, BorderLayout.SOUTH);
@@ -239,7 +274,26 @@ public class MainWindow extends JFrame {
         planRow.add(button("Undo", () -> controller.onUndo()));
         planRow.add(button("Redo", () -> controller.onRedo()));
         JPanel moreRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        moreRow.add(button("Add event", () -> {
+            FixedEvent event = EventDialog.show(this, LocalDate.now(clock));
+            if (event != null) {
+                controller.onAddEvent(event);
+            }
+        }));
+        moreRow.add(button("Review today", () -> controller.onReviewToday()));
         moreRow.add(button("Weekly report", () -> controller.onReport()));
+        moreRow.add(button("Export .ics", () -> {
+            JFileChooser chooser = new JFileChooser();
+            chooser.setFileFilter(new FileNameExtensionFilter("Calendar files (*.ics)", "ics"));
+            chooser.setSelectedFile(new File("plannedagent-week.ics"));
+            if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                Path file = chooser.getSelectedFile().toPath();
+                if (!file.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".ics")) {
+                    file = file.resolveSibling(file.getFileName() + ".ics");
+                }
+                controller.onExport(file);
+            }
+        }));
         JPanel toolbar = new JPanel(new GridLayout(2, 1));
         toolbar.add(planRow);
         toolbar.add(moreRow);

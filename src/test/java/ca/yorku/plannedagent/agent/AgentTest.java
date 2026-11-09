@@ -85,6 +85,7 @@ class AgentTest {
         assertTrue(system.contains("- get_schedule:"));
         assertTrue(system.contains("- schedule_tasks:"));
         assertTrue(system.contains("no work after 22:00"));
+        assertTrue(system.contains("no markdown"));
         assertTrue(llm.requests.get(0).wantJson);
     }
 

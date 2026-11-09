@@ -125,7 +125,8 @@ public class Agent {
                 - Times are local, written as YYYY-MM-DDTHH:MM.
                 - If a tool returns an error, fix the arguments and try again, or ask the student.
                 - If the request is unclear, ask one short question as your answer.
-                - Keep answers short and friendly.
+                - Keep answers short and friendly, in plain text: no markdown, no asterisks, no headings.
+                  Write time ranges with a normal hyphen, like 09:00-10:00.
                 The student's saved rules: %s
                 """.formatted(NOW.format(now), nextDays, toolList, rules);
         return new LlmRequest(system, memory.recent(), true);

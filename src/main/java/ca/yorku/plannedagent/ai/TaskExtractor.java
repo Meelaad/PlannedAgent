@@ -91,6 +91,9 @@ public class TaskExtractor {
                 - minutes: how long the task takes, from 5 to 600. "about 3 hours" is 180. Guess sensibly if not given.
                 - deadline: local date and time as YYYY-MM-DDTHH:MM, or null if the note gives none.
                   A day name means the next such day from the list above. With no time, use 23:59.
+                  A day belongs only to the task it is written next to. A task with no day of its own
+                  gets null; never copy another task's deadline. Example: "report Friday, gym twice"
+                  gives the report a Friday deadline and both gym tasks null.
                 - priority: HIGH for exams, assignments and anything due within 2 days, LOW for chores with
                   no deadline, otherwise MEDIUM.
                 - outdoor: true only for things done outside, like a run, a bike ride or a walk.

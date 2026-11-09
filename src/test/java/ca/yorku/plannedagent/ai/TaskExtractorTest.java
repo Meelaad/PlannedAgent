@@ -50,6 +50,7 @@ class TaskExtractorTest {
 
         assertTrue(sent.get().system.contains("Thursday 2026-10-29"));
         assertTrue(sent.get().system.contains("Friday 2026-10-30"));
+        assertTrue(sent.get().system.contains("never copy another task's deadline"));
         assertTrue(sent.get().wantJson);
         assertEquals(List.of("user: groceries"), sent.get().messages);
     }

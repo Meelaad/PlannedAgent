@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>380</x>
+      <y>90</y>
+      <w>460</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>AgentStep
+--
++tool: String
++args: Map&lt;String, String&gt;
++answer: String
+--
+_+call(tool: String, args: Map&lt;String, String&gt;): AgentStep_
+_+answer(answer: String): AgentStep_
++isAnswer(): boolean</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1015</x>
+      <y>90</y>
+      <w>320</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;short-term memory&gt;&gt;
+ConversationMemory
+--
+-messages: List&lt;String&gt;
+-limit: int = 20
+--
++add(role: String, text: String): void
++recent(): List&lt;String&gt;
++clear(): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1585</x>
+      <y>135</y>
+      <w>120</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=.
+&lt;&lt;interface&gt;&gt;
+LlmClient
+(see CD4)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>525</x>
+      <y>470</y>
+      <w>170</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>AgentReply
+--
++text: String
++proposal: Proposal</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>900</x>
+      <y>350</y>
+      <w>550</w>
+      <h>320</h>
+    </coordinates>
+    <panel_attributes>Agent
+--
+-llm: LlmClient
+-tools: Map&lt;String, Tool&gt;
+-memory: ConversationMemory
+-events: EventBus
+-clock: Clock
+-maxSteps: int = 6
+--
++Agent(llm: LlmClient, tools: List&lt;Tool&gt;, memory: ConversationMemory,
+     events: EventBus, clock: Clock)
++handle(message: String, workspace: Workspace): AgentReply
++getMemory(): ConversationMemory
+-runTool(step: AgentStep, workspace: Workspace): ToolResult
+-buildRequest(workspace: Workspace): LlmRequest
+-parseStep(text: String): AgentStep
+--
+the prompt lists the tools, the saved rules,
+today and the dates of the next 7 days</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1585</x>
+      <y>485</y>
+      <w>120</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+EventBus
+(see CD6)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>410</x>
+      <y>770</y>
+      <w>400</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>ToolResult
+--
++ok: boolean
++text: String
++proposal: Proposal
+--
+_+ok(text: String): ToolResult_
+_+ok(text: String, proposal: Proposal): ToolResult_
+_+error(text: String): ToolResult_</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>915</x>
+      <y>795</y>
+      <w>520</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+Tool
+--
++name(): String
++description(): String
++run(args: Map&lt;String, String&gt;, workspace: Workspace): ToolResult</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>20</x>
+      <y>1315</y>
+      <w>300</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;tool: get_tasks&gt;&gt;
+GetTasksTool
+--
+lists every task with its id, length,
+deadline, priority and status</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>475</x>
+      <y>1305</y>
+      <w>270</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;tool: get_schedule&gt;&gt;
+GetScheduleTool
+--
+-clock: Clock
+--
+args: from, days (1 to 14)
+lists events and blocks with ids</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1510</x>
+      <y>1280</y>
+      <w>270</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;tool: schedule_tasks&gt;&gt;
+ScheduleTasksTool
+--
+-scheduler: Scheduler
+-weather: WeatherService
+-checker: ConflictChecker
+-clock: Clock
+--
+args: strategy, days (1 to 14)
+returns a Proposal of new blocks</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>950</x>
+      <y>1230</y>
+      <w>450</w>
+      <h>270</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;tool: move_task&gt;&gt;
+MoveTaskTool
+--
+-checker: ConflictChecker
+-weather: WeatherService
+-clock: Clock
+--
+-newStart(args: Map&lt;String, String&gt;): LocalDateTime
+-nextDay(today: LocalDate, time: LocalTime,
+     wanted: DayOfWeek): LocalDate
+_-findBlock(id: String, workspace: Workspace): TimeBlock_
+--
+args: blockId, day, time
+Java works out the date;
+checks the move on a copy,
+returns a Proposal</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1840</x>
+      <y>1310</y>
+      <w>230</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;tool: remember_preference&gt;&gt;
+RememberPreferenceTool
+--
+args: rule, value, text
+Preference checks them,
+then it is saved</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>20</x>
+      <y>10</y>
+      <w>1500</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>fontsize=18
+*CD3 - The AI agent, its memory and its tools (packages agent, agent.tools, as implemented)*
+The Agent runs a short loop: ask the LLM for the next step, run the chosen tool, remember the result, repeat (at most 6 steps)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1135</x>
+      <y>210</y>
+      <w>80</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+memory</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;140.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1356</x>
+      <y>165</y>
+      <w>280</w>
+      <h>225</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+llm</panel_attributes>
+    <additional_attributes>240.6;40.0;40.2;185.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>702</x>
+      <y>210</y>
+      <w>246</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;create&gt;&gt;</panel_attributes>
+    <additional_attributes>40.9;40.0;207.1;140.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>655</x>
+      <y>470</y>
+      <w>285</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;create&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;40.0;245.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1410</x>
+      <y>470</y>
+      <w>215</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+events</panel_attributes>
+    <additional_attributes>175.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1135</x>
+      <y>630</y>
+      <w>80</w>
+      <h>205</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2=1..*
+tools</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;165.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>770</x>
+      <y>810</y>
+      <w>185</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;create&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;40.0;145.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>227</x>
+      <y>865</y>
+      <w>880</w>
+      <h>490</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>840.7;40.0;40.6;450.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>635</x>
+      <y>865</y>
+      <w>518</w>
+      <h>480</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>479.7;40.0;40.8;440.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1185</x>
+      <y>865</y>
+      <w>422</w>
+      <h>455</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.2;40.0;382.4;415.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1135</x>
+      <y>865</y>
+      <w>80</w>
+      <h>405</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;365.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1218</x>
+      <y>865</y>
+      <w>693</w>
+      <h>485</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.3;40.0;653.7;445.0</additional_attributes>
+  </element>
+</diagram>

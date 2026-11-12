@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>20</x>
+      <y>165</y>
+      <w>340</w>
+      <h>150</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;utility&gt;&gt;
+SchedulingStrategies
+--
+_+NAMES: List&lt;String&gt;_
+--
+_+byName(name: String): SchedulingStrategy_
+--
+deadline, priority or shortest;
+null for an unknown name</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>430</x>
+      <y>90</y>
+      <w>510</w>
+      <h>300</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Strategy: Context&gt;&gt;
+Scheduler
+--
+-strategy: SchedulingStrategy
+_~STEP_MINUTES: int = 30_
+_~DAY_START: LocalTime = 08:00_
+_~DAY_END: LocalTime = 22:00_
+--
++setStrategy(strategy: SchedulingStrategy): void
++getStrategy(): SchedulingStrategy
++schedule(workspace: Workspace, from: LocalDateTime,
+     to: LocalDateTime, forecast: Forecast): ScheduleResult
+-findStart(task: Task, first: LocalDateTime, to: LocalDateTime,
+     work: Workspace, forecast: Forecast): LocalDateTime
+-fits(task: Task, start: LocalDateTime, workspace: Workspace,
+     forecast: Forecast): boolean
+--
+works on a copy of the workspace</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1010</x>
+      <y>130</y>
+      <w>580</w>
+      <h>220</h>
+    </coordinates>
+    <panel_attributes>ScheduleResult
+--
+-placed: List&lt;TimeBlock&gt;
+-notPlaced: Map&lt;String, String&gt;
+--
++ScheduleResult(placed: List&lt;TimeBlock&gt;, notPlaced: Map&lt;String, String&gt;)
++getPlaced(): List&lt;TimeBlock&gt;
++getNotPlaced(): Map&lt;String, String&gt;
++toProposal(heading: String, workspace: Workspace,
+     checker: ConflictChecker, forecast: Forecast,
+     warnings: List&lt;String&gt;): Proposal
+--
+one AddBlockCommand per placed block</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1660</x>
+      <y>145</y>
+      <w>540</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>ConflictChecker
+--
++check(workspace: Workspace, forecast: Forecast): List&lt;Conflict&gt;
++checkChanges(workspace: Workspace, commands: List&lt;PlanCommand&gt;,
+     forecast: Forecast): List&lt;Conflict&gt;
+-findOverlaps(workspace: Workspace, conflicts: List&lt;Conflict&gt;): void
+--
+finds overlaps, blocks after a deadline,
+outdoor blocks in rain, broken preferences;
+checkChanges runs the commands on a copy
+and returns only the new conflicts</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2410</x>
+      <y>215</y>
+      <w>120</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+Conflict
+(see CD1)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>535</x>
+      <y>585</y>
+      <w>300</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+&lt;&lt;Strategy: Strategy&gt;&gt;
+SchedulingStrategy
+--
++name(): String
++sort(tasks: List&lt;Task&gt;): List&lt;Task&gt;</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1705</x>
+      <y>525</y>
+      <w>450</w>
+      <h>230</h>
+    </coordinates>
+    <panel_attributes>Proposal
+--
+-summary: String
+-commands: List&lt;PlanCommand&gt;
+-conflicts: List&lt;Conflict&gt;
+--
++Proposal(summary: String, commands: List&lt;PlanCommand&gt;,
+     conflicts: List&lt;Conflict&gt;)
++getSummary(): String
++getCommands(): List&lt;PlanCommand&gt;
++getConflicts(): List&lt;Conflict&gt;
++hasConflicts(): boolean
++isEmpty(): boolean</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2320</x>
+      <y>575</y>
+      <w>300</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+&lt;&lt;Command: Command&gt;&gt;
+PlanCommand
+--
++execute(workspace: Workspace): void
++undo(workspace: Workspace): void
++describe(): String</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2740</x>
+      <y>490</y>
+      <w>520</w>
+      <h>300</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Command: Invoker&gt;&gt;
+CommandHistory
+--
+_~LIMIT: int = 20_
+-undoStack: Deque&lt;List&lt;PlanCommand&gt;&gt;
+-redoStack: Deque&lt;List&lt;PlanCommand&gt;&gt;
+--
++run(commands: List&lt;PlanCommand&gt;, workspace: Workspace): void
++undo(workspace: Workspace): boolean
++redo(workspace: Workspace): boolean
++canUndo(): boolean
++canRedo(): boolean
+_-executeAll(group: List&lt;PlanCommand&gt;, workspace: Workspace): void_
+_-undoAll(group: List&lt;PlanCommand&gt;, workspace: Workspace): void_
+--
+a group is all or nothing;
+a step that can no longer be
+undone is dropped and reported</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>70</x>
+      <y>1060</y>
+      <w>240</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Strategy: ConcreteStrategy&gt;&gt;
+DeadlineFirstStrategy
+--
+earliest deadline first</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>565</x>
+      <y>1060</y>
+      <w>240</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Strategy: ConcreteStrategy&gt;&gt;
+PriorityFirstStrategy
+--
+highest priority first</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1180</x>
+      <y>1060</y>
+      <w>240</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Strategy: ConcreteStrategy&gt;&gt;
+ShortestFirstStrategy
+--
+shortest task first</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1840</x>
+      <y>1065</y>
+      <w>180</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=.
+&lt;&lt;Command: Receiver&gt;&gt;
+Workspace
+(see CD1)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2270</x>
+      <y>1000</y>
+      <w>400</w>
+      <h>200</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Command: ConcreteCommand&gt;&gt;
+AddBlockCommand
+--
+-block: TimeBlock
+-title: String
+-previousState: TaskState
+--
++AddBlockCommand(block: TimeBlock, title: String)
++getBlock(): TimeBlock
+--
+execute: task.schedule(), plan.add(block)
+undo: task.unschedule(), plan.remove(id)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2760</x>
+      <y>990</y>
+      <w>480</w>
+      <h>220</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Command: ConcreteCommand&gt;&gt;
+MoveBlockCommand
+--
+-blockId: String
+-newStart: LocalDateTime
+-title: String
+-oldStart: LocalDateTime
+--
++MoveBlockCommand(blockId: String, newStart: LocalDateTime,
+     title: String)
+--
+execute: block.moveTo(newStart)
+undo: block.moveTo(oldStart)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>20</x>
+      <y>10</y>
+      <w>1500</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>fontsize=18
+*CD2 - Scheduling and plan changes (packages scheduling, commands, as implemented)*
+Patterns: Strategy (Scheduler + SchedulingStrategy) and Command (PlanCommand, CommandHistory = Invoker, Workspace = Receiver)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>242</x>
+      <y>275</y>
+      <w>414</w>
+      <h>350</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;create&gt;&gt;</panel_attributes>
+    <additional_attributes>374.9;310.0;40.8;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>900</x>
+      <y>200</y>
+      <w>150</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;create&gt;&gt;</panel_attributes>
+    <additional_attributes>110.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>645</x>
+      <y>350</y>
+      <w>80</w>
+      <h>275</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2=1
+strategy</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;235.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>193</x>
+      <y>655</y>
+      <w>472</w>
+      <h>445</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>432.8;40.0;40.0;405.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>645</x>
+      <y>655</y>
+      <w>80</w>
+      <h>445</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;405.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>718</x>
+      <y>655</y>
+      <w>567</w>
+      <h>445</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.5;40.0;528.5;405.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1550</x>
+      <y>200</y>
+      <w>150</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>110.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1433</x>
+      <y>310</y>
+      <w>355</w>
+      <h>255</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;create&gt;&gt;</panel_attributes>
+    <additional_attributes>315.9;215.0;40.2;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2160</x>
+      <y>200</y>
+      <w>290</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;create&gt;&gt;</panel_attributes>
+    <additional_attributes>250.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2018</x>
+      <y>295</y>
+      <w>404</w>
+      <h>320</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;run on a copy&gt;&gt;</panel_attributes>
+    <additional_attributes>364.2;280.0;40.2;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2045</x>
+      <y>225</y>
+      <w>431</w>
+      <h>340</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=0..*
+conflicts</panel_attributes>
+    <additional_attributes>391.2;40.0;40.2;300.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2115</x>
+      <y>600</y>
+      <w>245</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2=1..*
+commands</panel_attributes>
+    <additional_attributes>40.0;40.0;205.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2580</x>
+      <y>600</y>
+      <w>200</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2=0..*
+undo / redo</panel_attributes>
+    <additional_attributes>160.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1931</x>
+      <y>665</y>
+      <w>502</w>
+      <h>440</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;act on&gt;&gt;</panel_attributes>
+    <additional_attributes>40.1;400.0;462.7;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2430</x>
+      <y>665</y>
+      <w>80</w>
+      <h>375</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;40.0;40.0;335.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2504</x>
+      <y>665</y>
+      <w>408</w>
+      <h>365</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.9;40.0;369.3;325.0</additional_attributes>
+  </element>
+</diagram>

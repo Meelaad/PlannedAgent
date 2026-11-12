@@ -1,0 +1,456 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>20</x>
+      <y>265</y>
+      <w>540</w>
+      <h>220</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Swing JPanel, Scrollable&gt;&gt;
+WeekView
+--
+-clock: Clock
+-highlighted: Set&lt;String&gt;
+--
+~WeekView(clock: Clock)
+~show(plan: Plan, events: List&lt;FixedEvent&gt;, tasks: List&lt;Task&gt;): void
+~highlight(ids: Set&lt;String&gt;): void
+#paintComponent(graphics: Graphics): void
+--
+draws the 7 days; blocks in a
+conflict are drawn in red</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>640</x>
+      <y>145</y>
+      <w>580</w>
+      <h>460</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;MVC: View&gt;&gt;
+&lt;&lt;Swing JFrame&gt;&gt;
+MainWindow
+--
+-tasksPanel: JPanel
+-weekPanel: JPanel
+-chatPanel: JPanel
+-taskModel: TaskTableModel
+-weekView: WeekView
+-controller: MainController
+--
++MainWindow()
+~bind(controller: MainController): void
++showWindow(): void
++showTasks(tasks: List&lt;Task&gt;): void
++showWeek(plan: Plan, events: List&lt;FixedEvent&gt;, tasks: List&lt;Task&gt;): void
++showChat(text: String): void
++showProposal(proposal: Proposal): void
++showConflicts(conflicts: List&lt;Conflict&gt;): void
++showReport(report: WeeklyReport): void
++showError(message: String): void
+~showStatus(text: String): void
+~showAgentStatus(text: String): void
+~setBusy(busy: boolean, message: String): void
+~reviewExtractedTasks(tasks: List&lt;Task&gt;, now: LocalDateTime): List&lt;Task&gt;
+~askReview(items: List&lt;ReviewDialog.Item&gt;): ReviewDialog.Result
+~confirm(message: String, title: String): boolean</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1300</x>
+      <y>90</y>
+      <w>470</w>
+      <h>570</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;MVC: Controller&gt;&gt;
+&lt;&lt;Observer: ConcreteObserver&gt;&gt;
+MainController
+--
+-facade: PlannerFacade
+-window: MainWindow
+--
++MainController(facade: PlannerFacade, window: MainWindow)
++onAddText(text: String): void
++onSaveTasks(tasks: List&lt;Task&gt;): void
++onAddTask(task: Task): void
++onEditTask(task: Task): void
++onDeleteTask(taskId: String): void
++onComplete(taskId: String): void
++onAddEvent(event: FixedEvent): void
++onAutoSchedule(strategyName: String): void
++onCheckConflicts(): void
++onSend(message: String): void
++onApply(): void
++onDiscard(): void
++onUndo(): void
++onRedo(): void
++onReviewToday(): void
++onReview(done: List&lt;String&gt;, missed: List&lt;String&gt;): void
++onReport(): void
++onExport(file: Path): void
++update(type: String, message: String): void
+-refresh(): void
+-safely(action: Runnable): void
+-background(busyMessage: String, work: Supplier&lt;T&gt;,
+     onDone: Consumer&lt;T&gt;): void
+--
+slow calls (LLM, weather) run in a
+SwingWorker so the window does not freeze</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2085</x>
+      <y>340</y>
+      <w>130</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=.
+&lt;&lt;Facade&gt;&gt;
+PlannerFacade
+(see CD5)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2550</x>
+      <y>205</y>
+      <w>390</w>
+      <h>340</h>
+    </coordinates>
+    <panel_attributes>PlannerCli
+--
+-facade: PlannerFacade
+-in: BufferedReader
+-out: PrintStream
+--
++PlannerCli(facade: PlannerFacade)
++run(args: String[]): void
+-addFromText(a: Args): void
+-event(a: Args): void
+-ask(a: Args): void
+-review(a: Args): void
+-confirm(proposal: Proposal, yes: boolean): void
+-printReport(): void
+-print(text: String): void
+--
+commands: add, new, tasks, done, delete,
+event, events, week, schedule, conflicts,
+ask, undo, redo, review, report, export,
+help; --yes applies without asking</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>145</x>
+      <y>800</y>
+      <w>290</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Swing AbstractTableModel&gt;&gt;
+TaskTableModel
+--
+-tasks: List&lt;Task&gt;
+--
+~setTasks(tasks: List&lt;Task&gt;): void
+~taskAt(row: int): Task</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>865</x>
+      <y>825</y>
+      <w>130</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=.
+&lt;&lt;MVC: Model&gt;&gt;
+Workspace
+(see CD1)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1355</x>
+      <y>770</y>
+      <w>360</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Observer: ConcreteObserver&gt;&gt;
+ActivityLog
+--
+-file: Path
+-clock: Clock
+--
++ActivityLog(file: Path)
++update(type: String, message: String): void
+--
+writes one line per event
+to activity.log</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1970</x>
+      <y>810</y>
+      <w>360</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+&lt;&lt;Observer: Observer&gt;&gt;
+PlannerObserver
+--
++update(type: String, message: String): void</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2530</x>
+      <y>770</y>
+      <w>430</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;Observer: Subject&gt;&gt;
+EventBus
+--
+-observers: List&lt;PlannerObserver&gt;
+--
++attach(observer: PlannerObserver): void
++detach(observer: PlannerObserver): void
++notifyObservers(type: String, message: String): void
+--
+types: TASKS, EVENTS, PLAN, PROPOSAL,
+AGENT, PREFERENCES, WARNING</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>100</x>
+      <y>1115</y>
+      <w>380</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>TaskDialog
+--
+_~show(parent: Component, existing: Task): Task_
+--
+new or edit a task</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>710</x>
+      <y>1115</y>
+      <w>440</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>EventDialog
+--
+_~show(parent: Component, today: LocalDate): FixedEvent_
+--
+add a fixed event</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1325</x>
+      <y>1105</y>
+      <w>420</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>ReviewDialog
+--
+_~show(parent: Component, items: List&lt;Item&gt;): Result_
+--
+done / missed / skip
+for today's blocks</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1850</x>
+      <y>1100</y>
+      <w>600</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>ExtractedTasksDialog
+--
+_~show(parent: Component, tasks: List&lt;Task&gt;, now: LocalDateTime): List&lt;Task&gt;_
+--
+editable table of the tasks
+the AI found; nothing is saved
+until the student clicks Save</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2565</x>
+      <y>1105</y>
+      <w>360</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;utility&gt;&gt;
+Forms
+--
+_~parseDeadline(text: String): LocalDateTime_
+_~parseDate(text: String): LocalDate_
+_~parseTime(text: String): LocalTime_</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>20</x>
+      <y>10</y>
+      <w>1500</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>fontsize=18
+*CD6 - GUI (MVC), command line and notifications (packages ui, app, as implemented)*
+Patterns: MVC (Workspace = Model, MainWindow = View, MainController = Controller) and Observer (EventBus = Subject, PlannerObserver = Observer)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>100</x>
+      <y>1030</y>
+      <w>450</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>MainWindow opens these dialogs. Each has a static show()
+that returns what the student entered, or null on Cancel.</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>520</x>
+      <y>335</y>
+      <w>160</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=1
+weekView</panel_attributes>
+    <additional_attributes>120.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>329</x>
+      <y>554</y>
+      <w>350</w>
+      <h>285</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2=1
+taskModel</panel_attributes>
+    <additional_attributes>311.0;40.8;40.2;246.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1180</x>
+      <y>335</y>
+      <w>160</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+window</panel_attributes>
+    <additional_attributes>40.0;40.0;120.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1730</x>
+      <y>335</y>
+      <w>395</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+facade</panel_attributes>
+    <additional_attributes>355.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2175</x>
+      <y>335</y>
+      <w>415</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+facade</panel_attributes>
+    <additional_attributes>40.0;40.0;375.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>890</x>
+      <y>565</y>
+      <w>80</w>
+      <h>300</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;display&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;260.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1730</x>
+      <y>520</y>
+      <w>396</w>
+      <h>329</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>356.6;290.0;40.0;40.3</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1675</x>
+      <y>820</y>
+      <w>335</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>295.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2290</x>
+      <y>820</y>
+      <w>280</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2=0..*
+observers</panel_attributes>
+    <additional_attributes>240.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+</diagram>

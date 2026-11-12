@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>460</x>
+      <y>90</y>
+      <w>370</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>ui  (MVC: View and Controller)
+--
+MainWindow, WeekView, TaskTableModel (Swing)
+MainController
+PlannerCli
+TaskDialog, EventDialog, ReviewDialog,
+ExtractedTasksDialog, Forms
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>480</x>
+      <y>300</y>
+      <w>330</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>app  (Facade, Observer)
+--
+PlannerFacade
+EventBus, PlannerObserver
+ActivityLog
+App (main), Config (.env)
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>20</x>
+      <y>490</y>
+      <w>330</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>agent  (AI agent)
+--
+Agent, ConversationMemory
+AgentStep, AgentReply
+Tool, ToolResult
+agent.tools: the 5 tools
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>480</x>
+      <y>495</y>
+      <w>330</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>scheduling  (Strategy)
+--
+Scheduler, SchedulingStrategies
+SchedulingStrategy + 3 strategies
+ScheduleResult, ConflictChecker
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>940</x>
+      <y>495</y>
+      <w>330</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>commands  (Command)
+--
+PlanCommand
+AddBlockCommand, MoveBlockCommand
+CommandHistory, Proposal
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>20</x>
+      <y>690</y>
+      <w>330</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>ai  (Adapter)
+--
+LlmClient
+GeminiClient, OllamaClient
+LlmRequest, LlmException
+TaskExtractor
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>480</x>
+      <y>690</y>
+      <w>330</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>services  (Adapter)
+--
+WeatherService, OpenMeteoWeather
+Forecast
+ReportService, WeeklyReport
+CalendarExporter, JsonStorage
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>940</x>
+      <y>680</y>
+      <w>330</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>model  (State, MVC: Model)
+--
+Workspace
+Task, TaskState + 4 states
+Plan, TimeBlock, FixedEvent
+Preference, Conflict, Priority
+TimeFormat
+halign=left</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>100</x>
+      <y>890</y>
+      <w>170</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;external&gt;&gt;
+Gemini API (cloud)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>550</x>
+      <y>890</y>
+      <w>190</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;external&gt;&gt;
+Ollama + Qwen (local)</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1035</x>
+      <y>890</y>
+      <w>140</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;external&gt;&gt;
+Open-Meteo API</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>20</x>
+      <y>10</y>
+      <w>1500</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>fontsize=18
+*CD0 - Overview: packages and how they depend on each other (as implemented)*
+Arrows point from the user interface down to the model. Everything except the ui package is plain Java.</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>605</x>
+      <y>180</y>
+      <w>80</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;120.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>278</x>
+      <y>370</y>
+      <w>273</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>40.2;120.0;233.8;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>605</x>
+      <y>370</y>
+      <w>80</w>
+      <h>165</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;125.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>738</x>
+      <y>370</y>
+      <w>285</w>
+      <h>165</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>245.9;125.0;40.2;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>310</x>
+      <y>505</y>
+      <w>210</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>170.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>770</x>
+      <y>505</y>
+      <w>210</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>170.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>145</x>
+      <y>560</y>
+      <w>80</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;130.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>720</x>
+      <y>555</y>
+      <w>275</w>
+      <h>165</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>235.5;125.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1065</x>
+      <y>555</y>
+      <w>80</w>
+      <h>165</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>40.0;125.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>770</x>
+      <y>705</y>
+      <w>210</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>170.0;40.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>145</x>
+      <y>760</y>
+      <w>80</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+HTTPS</panel_attributes>
+    <additional_attributes>40.0;130.0;40.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>753</x>
+      <y>760</y>
+      <w>323</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+HTTPS</panel_attributes>
+    <additional_attributes>284.4;130.0;40.8;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>293</x>
+      <y>760</y>
+      <w>323</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+HTTP localhost</panel_attributes>
+    <additional_attributes>284.4;130.0;40.8;40.0</additional_attributes>
+  </element>
+</diagram>

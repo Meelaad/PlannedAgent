@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>2040</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD5 - Apply a proposal, then undo it (F07, F02 / UC12, UC13 - Command, State and Observer at run time) - as implemented
+obj=Student~s ACTOR
+obj=:MainWindow~w
+obj=:MainController~c
+obj=:PlannerFacade~f
+obj=proposal:Proposal~p
+obj=:CommandHistory~h
+obj=cmd:AddBlockCommand~ab
+obj=task:Task~t
+obj=state:TodoState~ts
+obj=:Plan~pl
+obj=:JsonStorage~st
+obj=:EventBus~eb
+s-&gt;&gt;&gt;w : click Apply
+w-&gt;&gt;&gt;c : onApply()
+c-&gt;&gt;&gt;f : applyProposal()
+f-&gt;&gt;&gt;p : hasConflicts()
+combinedFragment=alt~a1 c eb
+c:[the proposal has conflicts - Apply is greyed out and the facade refuses too]
+p.&gt;f : true
+f.&gt;c : IllegalStateException
+c-&gt;&gt;&gt;w : showError(message)
+..=a1
+c:[no conflicts]
+p.&gt;f : false
+f-&gt;&gt;&gt;p : getCommands()
+p.&gt;f : commands
+f-&gt;&gt;&gt;h : run(commands, workspace)
+combinedFragment=loop~l1 h pl
+h:[each command - if one fails, the ones before it are undone]
+h-&gt;&gt;&gt;ab : execute(workspace)
+ab-&gt;&gt;&gt;t : schedule()
+t-&gt;&gt;&gt;ts : schedule(task)
+ts-&gt;&gt;&gt;t : setState(new ScheduledState())
+ab-&gt;&gt;&gt;pl : add(block)
+--=l1
+h-&gt;&gt;&gt;h + : push on the undo stack, clear redo
+f-&gt;&gt;&gt;f + : changed("PLAN", "Applied 4 changes")
+f-&gt;&gt;&gt;st : save(workspace)
+f-&gt;&gt;&gt;st : saveHistory(history)
+f-&gt;&gt;&gt;eb : notifyObservers("PLAN", "Applied 4 changes")
+eb-&gt;&gt;&gt;c : update("PLAN", "Applied 4 changes")
+c-&gt;&gt;&gt;c + : refresh()
+c-&gt;&gt;&gt;w : showWeek(plan, events, tasks)
+--=a1
+s-&gt;&gt;&gt;w : click Undo
+w-&gt;&gt;&gt;c : onUndo()
+c-&gt;&gt;&gt;f : undo()
+f-&gt;&gt;&gt;h : undo(workspace)
+combinedFragment=alt~a2 c eb
+c:[nothing to undo]
+h.&gt;f : false
+f.&gt;c : false
+c-&gt;&gt;&gt;w : showStatus("Nothing to undo.")
+..=a2
+c:[the step can be undone]
+combinedFragment=loop~l2 h pl
+h:[each command, in reverse order]
+h-&gt;&gt;&gt;ab : undo(workspace)
+ab-&gt;&gt;&gt;t : unschedule()
+ab-&gt;&gt;&gt;t : setState(previousState)
+ab-&gt;&gt;&gt;pl : remove(blockId)
+--=l2
+h.&gt;f : true
+f-&gt;&gt;&gt;f + : changed("PLAN", "Undo")
+f-&gt;&gt;&gt;st : saveHistory(history)
+f-&gt;&gt;&gt;eb : notifyObservers("PLAN", "Undo")
+..=a2
+c:[the task changed since, e.g. it was completed]
+h.&gt;f : IllegalStateException - the step is dropped from the history
+f-&gt;&gt;&gt;st : saveHistory(history)
+f.&gt;c : IllegalStateException
+c-&gt;&gt;&gt;w : showError(message)
+--=a2</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>1700</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD6 - Check conflicts, then fix one by chat (F06, F07 / UC06, UC07) - as implemented
+obj=Student~s ACTOR
+obj=:MainWindow~w
+obj=:MainController~c
+obj=:PlannerFacade~f
+obj=:ConflictChecker~cc
+obj=:Agent~a
+obj=llm:LlmClient~llm
+obj=move_task:MoveTaskTool~mt
+obj=weather:WeatherService~we
+obj=:Plan~pl
+s-&gt;&gt;&gt;w : click Check conflicts
+w-&gt;&gt;&gt;c : onCheckConflicts()
+c-&gt;&gt;&gt;f : checkConflicts() - in a SwingWorker
+f-&gt;&gt;&gt;f + : forecast(now, now + 14 days)
+f-&gt;&gt;&gt;cc : check(workspace, forecast)
+cc.&gt;f : conflicts, e.g. Gym overlaps the EECS 3311 lecture
+f.&gt;c : conflicts
+c-&gt;&gt;&gt;w : showConflicts(conflicts) - drawn in red
+s-&gt;&gt;&gt;w : Move gym to Wednesday at 7am
+w-&gt;&gt;&gt;c : onSend(message)
+c-&gt;&gt;&gt;f : chat(message)
+f-&gt;&gt;&gt;a : handle(message, workspace)
+ref=a llm : SD4 loop - the LLM first calls get_schedule to see the block ids
+a-&gt;&gt;&gt;llm : complete(request)
+llm.&gt;a : move_task: b3, WEDNESDAY, 07:00
+a-&gt;&gt;&gt;mt : run(args, workspace)
+combinedFragment=alt~a1 a pl
+a:[the block exists, the day and time are valid and in the future]
+mt-&gt;&gt;&gt;mt + : findBlock(id, workspace)
+mt-&gt;&gt;&gt;pl : find(blockId)
+pl.&gt;mt : block
+mt-&gt;&gt;&gt;mt + : newStart(args) - next Wednesday
+mt-&gt;&gt;&gt;we : forecast(day, day)
+we.&gt;mt : Forecast
+mt-&gt;&gt;&gt;cc : checkChanges(workspace, [MoveBlockCommand], forecast)
+cc.&gt;mt : the new conflicts, if any (found on a copy)
+mt.&gt;a : ToolResult ok, Proposal with the MoveBlockCommand
+..=a1
+a:[unknown block, a fixed event, or a bad day or time]
+mt.&gt;a : ToolResult error, e.g. call get_schedule to see block ids
+a-&gt;&gt;&gt;llm : complete(request with the error)
+llm.&gt;a : a corrected call, or a question for the student
+--=a1
+a.&gt;f : AgentReply
+f-&gt;&gt;&gt;f + : setPending(proposal)
+f.&gt;c : reply
+c-&gt;&gt;&gt;w : showProposal(proposal)
+ref=s c : SD5 - apply, and undo if needed</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

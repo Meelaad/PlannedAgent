@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>1700</w>
+      <h>1200</h>
+    </coordinates>
+    <panel_attributes>title=SD7 - Teach the agent a preference (F09 / UC09 - long-term memory) - as implemented
+obj=Student~s ACTOR
+obj=:MainWindow~w
+obj=:MainController~c
+obj=:PlannerFacade~f
+obj=:Agent~a
+obj=llm:LlmClient~llm
+obj=remember:RememberPreferenceTool~rp
+obj=:Workspace~ws
+obj=:JsonStorage~st
+obj=:EventBus~eb
+s-&gt;&gt;&gt;w : I never study after 10pm
+w-&gt;&gt;&gt;c : onSend(message)
+c-&gt;&gt;&gt;f : chat(message)
+f-&gt;&gt;&gt;f + : copy the preferences
+f-&gt;&gt;&gt;a : handle(message, workspace)
+a-&gt;&gt;&gt;llm : complete(request)
+llm.&gt;a : remember_preference: NO_WORK_AFTER, 22:00
+a-&gt;&gt;&gt;rp : run(args, workspace)
+combinedFragment=alt~a1 a ws
+a:[known rule and a valid value - the Preference constructor checks them]
+rp-&gt;&gt;&gt;rp + : new Preference(...)
+rp-&gt;&gt;&gt;ws : addPreference(preference)
+rp.&gt;a : ToolResult ok, saved
+..=a1
+a:[unknown rule or a bad value such as 25:00]
+rp.&gt;a : ToolResult error with the reason
+--=a1
+a-&gt;&gt;&gt;llm : complete(request)
+llm.&gt;a : answer: Got it, no study after 22:00
+a.&gt;f : AgentReply
+combinedFragment=alt~a2 f eb
+f:[the preferences changed]
+f-&gt;&gt;&gt;f + : changed(type, message)
+f-&gt;&gt;&gt;st : save(workspace)
+f-&gt;&gt;&gt;eb : notifyObservers("PREFERENCES", "Preferences: no work after 22:00")
+--=a2
+f.&gt;c : reply
+c-&gt;&gt;&gt;w : showChat("Agent: " + text)
+ref=f ws : later, Scheduler.fits() and ConflictChecker.check() call Preference.allows() - see SD3</panel_attributes>
+    <additional_attributes></additional_attributes>
+  </element>
+</diagram>

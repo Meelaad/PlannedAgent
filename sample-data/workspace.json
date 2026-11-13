@@ -1,0 +1,115 @@
+{
+  "tasks": [
+    {
+      "id": "t1",
+      "title": "EECS 3311 stage 3 tests",
+      "minutes": 180,
+      "deadline": "2026-12-01T23:59",
+      "priority": "HIGH",
+      "outdoor": false,
+      "state": "TODO"
+    },
+    {
+      "id": "t2",
+      "title": "Statistics assignment 4",
+      "minutes": 120,
+      "deadline": "2026-11-27T17:00",
+      "priority": "MEDIUM",
+      "outdoor": false,
+      "state": "TODO"
+    },
+    {
+      "id": "t3",
+      "title": "Read chapter 9 (algorithms)",
+      "minutes": 90,
+      "priority": "MEDIUM",
+      "outdoor": false,
+      "state": "TODO"
+    },
+    {
+      "id": "t4",
+      "title": "Gym",
+      "minutes": 60,
+      "priority": "LOW",
+      "outdoor": false,
+      "state": "TODO"
+    },
+    {
+      "id": "t5",
+      "title": "Bike ride",
+      "minutes": 45,
+      "priority": "LOW",
+      "outdoor": true,
+      "state": "TODO"
+    },
+    {
+      "id": "t6",
+      "title": "Groceries",
+      "minutes": 30,
+      "priority": "LOW",
+      "outdoor": false,
+      "state": "TODO"
+    }
+  ],
+  "events": [
+    {
+      "id": "e7",
+      "title": "EECS 3311 lecture",
+      "start": "2026-11-11T10:00",
+      "end": "2026-11-11T11:30"
+    },
+    {
+      "id": "e8",
+      "title": "EECS 3311 lecture",
+      "start": "2026-11-16T10:00",
+      "end": "2026-11-16T11:30"
+    },
+    {
+      "id": "e9",
+      "title": "EECS 3311 lecture",
+      "start": "2026-11-18T10:00",
+      "end": "2026-11-18T11:30"
+    },
+    {
+      "id": "e10",
+      "title": "Statistics lecture",
+      "start": "2026-11-12T13:00",
+      "end": "2026-11-12T14:30"
+    },
+    {
+      "id": "e11",
+      "title": "Statistics lecture",
+      "start": "2026-11-17T13:00",
+      "end": "2026-11-17T14:30"
+    },
+    {
+      "id": "e12",
+      "title": "Statistics lecture",
+      "start": "2026-11-19T13:00",
+      "end": "2026-11-19T14:30"
+    },
+    {
+      "id": "e13",
+      "title": "Work shift",
+      "start": "2026-11-14T12:00",
+      "end": "2026-11-14T17:00"
+    },
+    {
+      "id": "e14",
+      "title": "Work shift",
+      "start": "2026-11-21T12:00",
+      "end": "2026-11-21T17:00"
+    }
+  ],
+  "plan": {
+    "blocks": []
+  },
+  "preferences": [
+    {
+      "rule": "NO_WORK_AFTER",
+      "value": "21:00",
+      "text": "I never study after 9pm"
+    }
+  ],
+  "lastId": 14
+}

@@ -104,6 +104,20 @@ Commands that make a proposal (`schedule`, `ask`, `review`) show it and ask befo
 
 You can also open the folder in IntelliJ IDEA or Eclipse as a Maven project and run `ca.yorku.plannedagent.app.App`.
 
+## Sample data
+
+`sample-data/workspace.json` is a small example to try the app without typing everything in: six tasks, lectures and work shifts for Nov 11 to 21, 2026, and one rule (no work after 21:00). It has no personal data and no keys.
+
+Copy it to a local data folder (`.plannedagent/` is git-ignored) and point the app at the copy:
+
+```sh
+cp -r sample-data .plannedagent
+PLANNER_DATA=.plannedagent ./plannedagent tasks
+PLANNER_DATA=.plannedagent ./plannedagent schedule
+```
+
+On Windows, or to keep using it, put `PLANNER_DATA=.plannedagent` in `.env` instead.
+
 ## Example
 
 ```

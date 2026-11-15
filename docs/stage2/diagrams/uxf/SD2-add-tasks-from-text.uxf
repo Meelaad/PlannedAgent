@@ -30,6 +30,7 @@ combinedFragment=alt~a1 c eb
 c:[the LLM answered]
 llm.&gt;x : JSON list of tasks
 x-&gt;&gt;&gt;x + : readTasks(json)
+tick=1
 x.&gt;f : tasks, each in the To-do state
 f.&gt;c : tasks
 c-&gt;&gt;&gt;w : reviewExtractedTasks(tasks, now)
@@ -38,12 +39,14 @@ s-&gt;&gt;&gt;d : fix titles, lengths or deadlines, untick wrong rows, click Sav
 d.&gt;w : chosen tasks
 w.&gt;c : chosen tasks
 c-&gt;&gt;&gt;c + : onSaveTasks(tasks)
+tick=1
 c-&gt;&gt;&gt;f : saveTasks(tasks)
 combinedFragment=loop~l1 f ws
 f:[each task, after problems(now) found nothing wrong]
 f-&gt;&gt;&gt;ws : addTask(task)
 --=l1
 f-&gt;&gt;&gt;f + : changed("TASKS", "Added 3 tasks")
+tick=1
 f-&gt;&gt;&gt;st : save(workspace)
 f-&gt;&gt;&gt;eb : notifyObservers("TASKS", "Added 3 tasks")
 eb-&gt;&gt;&gt;c : update("TASKS", "Added 3 tasks")

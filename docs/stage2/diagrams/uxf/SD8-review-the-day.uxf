@@ -26,8 +26,10 @@ c-&gt;&gt;&gt;w : askReview(items)
 s-&gt;&gt;&gt;w : tick Done or Missed for each block
 w.&gt;c : done ids, missed ids
 c-&gt;&gt;&gt;c + : onReview(done, missed)
+tick=1
 c-&gt;&gt;&gt;f : reviewDay(done, missed) - in a SwingWorker
 f-&gt;&gt;&gt;f + : try the changes on copies first
+tick=1
 combinedFragment=loop~l1 f t
 f:[each task marked done]
 f-&gt;&gt;&gt;t : complete()
@@ -38,19 +40,23 @@ f-&gt;&gt;&gt;t : markMissed()
 f-&gt;&gt;&gt;pl : remove(blockId)
 --=l2
 f-&gt;&gt;&gt;f + : changed("TASKS", message)
+tick=1
 f-&gt;&gt;&gt;eb : notifyObservers("TASKS", "Review: 1 done, 1 missed")
 combinedFragment=alt~a1 f a
 f:[nothing was missed]
 f-&gt;&gt;&gt;f + : reply - Review saved. Nice work!
+tick=1
 ..=a1
 f:[some tasks were missed - the agent proposes new times]
 f-&gt;&gt;&gt;a : handle("I missed these tasks today: ...", workspace)
 a.&gt;f : AgentReply with a proposal
 f-&gt;&gt;&gt;f + : setPending(proposal)
+tick=1
 ..=a1
 f:[LlmException - fall back to plain scheduling]
 a.&gt;f : LlmException
 f-&gt;&gt;&gt;f + : autoSchedule("deadline")
+tick=1
 --=a1
 f.&gt;c : reply
 c-&gt;&gt;&gt;w : showChat("Agent: " + text)

@@ -46,12 +46,15 @@ ts-&gt;&gt;&gt;t : setState(new ScheduledState())
 ab-&gt;&gt;&gt;pl : add(block)
 --=l1
 h-&gt;&gt;&gt;h + : push on the undo stack, clear redo
+tick=1
 f-&gt;&gt;&gt;f + : changed("PLAN", "Applied 4 changes")
+tick=1
 f-&gt;&gt;&gt;st : save(workspace)
 f-&gt;&gt;&gt;st : saveHistory(history)
 f-&gt;&gt;&gt;eb : notifyObservers("PLAN", "Applied 4 changes")
 eb-&gt;&gt;&gt;c : update("PLAN", "Applied 4 changes")
 c-&gt;&gt;&gt;c + : refresh()
+tick=1
 c-&gt;&gt;&gt;w : showWeek(plan, events, tasks)
 --=a1
 s-&gt;&gt;&gt;w : click Undo
@@ -74,6 +77,7 @@ ab-&gt;&gt;&gt;pl : remove(blockId)
 --=l2
 h.&gt;f : true
 f-&gt;&gt;&gt;f + : changed("PLAN", "Undo")
+tick=1
 f-&gt;&gt;&gt;st : saveHistory(history)
 f-&gt;&gt;&gt;eb : notifyObservers("PLAN", "Undo")
 ..=a2

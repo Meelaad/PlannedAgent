@@ -25,7 +25,9 @@ s-&gt;&gt;&gt;w : choose deadline and click Auto-schedule
 w-&gt;&gt;&gt;c : onAutoSchedule("deadline")
 c-&gt;&gt;&gt;f : autoSchedule("deadline") - in a SwingWorker
 f-&gt;&gt;&gt;f + : strategyFor("deadline", warnings)
+tick=1
 f-&gt;&gt;&gt;f + : forecast(now, now + 7 days)
+tick=1
 f-&gt;&gt;&gt;we : forecast(from, to)
 combinedFragment=alt~a1 f we
 f:[forecast received]
@@ -34,6 +36,7 @@ we.&gt;f : Forecast, rain chance per hour
 f:[Open-Meteo not reachable]
 we.&gt;f : IOException
 f-&gt;&gt;&gt;f + : Forecast.none() + a warning
+tick=1
 --=a1
 f-&gt;&gt;&gt;sch : setStrategy(strategy)
 f-&gt;&gt;&gt;sch : schedule(workspace, now, until, forecast)
@@ -46,16 +49,20 @@ st.&gt;sch : tasks in deadline order
 combinedFragment=loop~l1 sch ws
 sch:[each task, each 30-minute start between 08:00 and 22:00 until fits() passes: deadline, preferences, rain, busyBetween()]
 sch-&gt;&gt;&gt;sch + : fits(task, start, work, forecast)
+tick=1
 --=l1
 sch-&gt;&gt;&gt;r : ScheduleResult(placed, notPlaced)
 sch.&gt;f : result
 f-&gt;&gt;&gt;r : toProposal(heading, workspace, checker, forecast, warnings)
 r-&gt;&gt;&gt;r + : one AddBlockCommand per placed block
+tick=1
 r-&gt;&gt;&gt;cc : checkChanges(workspace, commands, forecast)
 cc-&gt;&gt;&gt;cc + : check() before and after
+tick=1
 cc.&gt;r : only the new conflicts
 r.&gt;f : Proposal with the summary, the commands and the conflicts
 f-&gt;&gt;&gt;f + : setPending(proposal)
+tick=1
 f-&gt;&gt;&gt;eb : notifyObservers("PROPOSAL", "4 changes waiting")
 f.&gt;c : proposal
 c-&gt;&gt;&gt;w : showProposal(proposal)

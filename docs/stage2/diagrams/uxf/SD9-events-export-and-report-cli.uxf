@@ -20,26 +20,34 @@ obj=:ReportService~rs
 obj=llm:LlmClient~llm
 s-&gt;&gt;&gt;cli : plannedagent event add "EECS 3311 lecture" start end
 cli-&gt;&gt;&gt;cli + : event(a) - new FixedEvent(...)
+tick=1
 cli-&gt;&gt;&gt;f : addEvent(event)
 f-&gt;&gt;&gt;ws : addEvent(event)
 f-&gt;&gt;&gt;f + : changed("EVENTS", message)
+tick=1
 cli-&gt;&gt;&gt;cli + : print("Added event e1 ...")
+tick=1
 s-&gt;&gt;&gt;cli : plannedagent export week.ics
 cli-&gt;&gt;&gt;f : exportCalendar(file)
 f-&gt;&gt;&gt;ce : export(workspace, file)
 ce-&gt;&gt;&gt;ce + : one VEVENT per event and block
+tick=1
 ce.&gt;f : number of entries written
 f-&gt;&gt;&gt;eb : notifyObservers("EVENTS", "Exported 5 entries to week.ics")
 f.&gt;cli : count
 cli-&gt;&gt;&gt;cli + : print("Exported 5 entries to ...")
+tick=1
 s-&gt;&gt;&gt;cli : plannedagent report
 cli-&gt;&gt;&gt;cli + : printReport()
+tick=1
 cli-&gt;&gt;&gt;f : weeklyReport()
 f-&gt;&gt;&gt;rs : weeklyReport(workspace, monday)
 rs-&gt;&gt;&gt;rs + : countStats(workspace, weekStart)
+tick=1
 combinedFragment=alt~a1 rs llm
 rs:[nothing planned, done or missed this week - no LLM call]
 rs-&gt;&gt;&gt;rs + : summary: No tasks were planned
+tick=1
 ..=a1
 rs:[the LLM answered]
 rs-&gt;&gt;&gt;llm : complete(request with the numbers only)
@@ -49,6 +57,7 @@ rs:[LlmException - the CLI marks it (template summary)]
 rs-&gt;&gt;&gt;llm : complete(request)
 llm.&gt;rs : LlmException
 rs-&gt;&gt;&gt;rs + : fallbackSummary(stats)
+tick=1
 --=a1
 rs.&gt;f : WeeklyReport
 f.&gt;cli : report

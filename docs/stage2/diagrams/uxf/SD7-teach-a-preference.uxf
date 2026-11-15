@@ -24,6 +24,7 @@ s-&gt;&gt;&gt;w : I never study after 10pm
 w-&gt;&gt;&gt;c : onSend(message)
 c-&gt;&gt;&gt;f : chat(message)
 f-&gt;&gt;&gt;f + : copy the preferences
+tick=1
 f-&gt;&gt;&gt;a : handle(message, workspace)
 a-&gt;&gt;&gt;llm : complete(request)
 llm.&gt;a : remember_preference: NO_WORK_AFTER, 22:00
@@ -31,6 +32,7 @@ a-&gt;&gt;&gt;rp : run(args, workspace)
 combinedFragment=alt~a1 a ws
 a:[known rule and a valid value - the Preference constructor checks them]
 rp-&gt;&gt;&gt;rp + : new Preference(...)
+tick=1
 rp-&gt;&gt;&gt;ws : addPreference(preference)
 rp.&gt;a : ToolResult ok, saved
 ..=a1
@@ -43,6 +45,7 @@ a.&gt;f : AgentReply
 combinedFragment=alt~a2 f eb
 f:[the preferences changed]
 f-&gt;&gt;&gt;f + : changed(type, message)
+tick=1
 f-&gt;&gt;&gt;st : save(workspace)
 f-&gt;&gt;&gt;eb : notifyObservers("PREFERENCES", "Preferences: no work after 22:00")
 --=a2

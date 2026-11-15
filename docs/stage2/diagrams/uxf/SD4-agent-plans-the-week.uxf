@@ -28,15 +28,18 @@ a-&gt;&gt;&gt;m : add("user", message)
 combinedFragment=loop~l1 a eb
 a:[at most 6 steps, until the LLM gives a final answer]
 a-&gt;&gt;&gt;a + : buildRequest(workspace)
+tick=1
 a-&gt;&gt;&gt;m : recent()
 a-&gt;&gt;&gt;llm : complete(request)
 llm.&gt;a : one JSON object
 a-&gt;&gt;&gt;a + : parseStep(text)
+tick=1
 combinedFragment=alt~a1 a eb
 a:[a tool call, e.g. get_tasks, get_schedule, schedule_tasks]
 a-&gt;&gt;&gt;m : add("agent", the call as JSON)
 a-&gt;&gt;&gt;eb : notifyObservers("AGENT", "using schedule_tasks")
 a-&gt;&gt;&gt;a + : runTool(step, workspace)
+tick=1
 a-&gt;&gt;&gt;t : run(args, workspace)
 t.&gt;a : ToolResult, may hold a Proposal
 a-&gt;&gt;&gt;m : add("tool", result or error text)
@@ -52,6 +55,7 @@ combinedFragment=alt~a2 f a
 f:[answer ready]
 a.&gt;f : AgentReply with the text and the last proposal
 f-&gt;&gt;&gt;f + : setPending(proposal)
+tick=1
 ..=a2
 f:[6 steps used]
 a.&gt;f : AgentReply("I could not finish...")
@@ -59,6 +63,7 @@ a.&gt;f : AgentReply("I could not finish...")
 f:[LlmException - the AI is not available]
 a.&gt;f : LlmException
 f-&gt;&gt;&gt;f + : reply: the AI is not available
+tick=1
 --=a2
 f.&gt;c : reply
 c-&gt;&gt;&gt;w : showChat("Agent: " + text)

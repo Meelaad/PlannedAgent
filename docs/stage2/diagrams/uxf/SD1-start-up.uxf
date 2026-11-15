@@ -28,6 +28,7 @@ app-&gt;&gt;&gt;st : load()
 st.&gt;app : workspace, or an empty one on first run
 app-&gt;&gt;&gt;cfg : getDouble("PLANNER_LAT", fallback)
 app-&gt;&gt;&gt;app + : createLlm(config)
+tick=1
 combinedFragment=alt~a1 app oll
 app:[PLANNER_LLM is gemini and GEMINI_API_KEY is set]
 app-&gt;&gt;&gt;gem : GeminiClient(apiKey, model)
@@ -37,6 +38,7 @@ app-&gt;&gt;&gt;oll : OllamaClient(baseUrl, model)
 ..=a1
 app:[no key, or an unknown PLANNER_LLM - the app still runs, every AI call fails with a hint]
 app-&gt;&gt;&gt;app + : unavailable(reason)
+tick=1
 --=a1
 app-&gt;&gt;&gt;f : PlannerFacade(workspace, llm, storage, new OpenMeteoWeather(lat, lon), clock)
 f-&gt;&gt;&gt;st : loadHistory()
@@ -50,6 +52,7 @@ app-&gt;&gt;&gt;w : MainWindow()
 app-&gt;&gt;&gt;c : MainController(facade, window)
 c-&gt;&gt;&gt;w : bind(controller)
 c-&gt;&gt;&gt;c + : refresh()
+tick=1
 app-&gt;&gt;&gt;f : subscribe(controller)
 f-&gt;&gt;&gt;eb : attach(observer)
 app-&gt;&gt;&gt;w : showWindow()

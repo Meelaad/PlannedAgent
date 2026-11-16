@@ -15,7 +15,7 @@ It has a Swing GUI and a command-line interface. It runs on the free Gemini API,
 | Stage | Deliverable | Status |
 |---|---|---|
 | 1: Design | [Stage 1 Design Report](docs/stage1/Stage1-Design-Report.md) (overview, 11 features, class / use-case / sequence diagrams, 7 design patterns, traceability) | Done |
-| 2: Implementation | Source code in `src/`, this setup guide | Done |
+| 2: Implementation | Source code in `src/`, this setup guide, [Stage 2 Implementation Report](docs/stage2/stage2-report.pdf) (feature mapping, patterns, updated class and sequence diagrams, changes, AI collaboration, verification) | Done |
 | 3: Testing | JUnit tests, KUMA agent tests, failure analysis | Next |
 
 ## Features
